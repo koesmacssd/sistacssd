@@ -293,6 +293,9 @@ function doPost(e) {
         }
         return manageItems(postData, userEmail);
         
+      case 'updateSelfProfile':
+        return updateSelfProfile(postData, userEmail);
+        
       default:
         return jsonResponse(false, "Action POST '" + action + "' tidak dikenali.");
     }
@@ -1070,4 +1073,29 @@ function triggerAuthorization() {
   } catch (e) {
     Logger.log("Otorisasi gagal atau folder tidak ditemukan: " + e.toString());
   }
+}
+
+// User memperbarui profil mandiri (Nama dan Ruangan)
+function updateSelfProfile(postData, userEmail) {
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(USERS_SHEET_NAME);
+  var nama = postData.nama;
+  var namaRuangan = postData.nama_ruangan;
+  
+  if (!nama || !namaRuangan) {
+    return jsonResponse(false, "Nama dan Ruangan tidak boleh kosong.");
+  }
+  
+  var data = sheet.getDataRange().getValues();
+  var searchEmail = userEmail.toString().trim().toLowerCase();
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] && data[i][1].toString().trim().toLowerCase() === searchEmail) {
+      var row = i + 1;
+      sheet.getRange(row, 3).setValue(nama.toString().trim());
+      sheet.getRange(row, 5).setValue(namaRuangan.toString().trim());
+      writeLog(userEmail, "Memperbarui profil mandiri: Nama=" + nama + ", Ruangan=" + namaRuangan);
+      return jsonResponse(true, "Profil berhasil diperbarui.");
+    }
+  }
+  return jsonResponse(false, "User tidak ditemukan.");
 }
