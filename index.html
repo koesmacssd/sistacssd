@@ -141,6 +141,11 @@
               <input type="text" id="reg-room-custom" class="mt-1 w-full bg-slate-900/60 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Tulis nama ruangan...">
             </div>
 
+            <div>
+              <label class="block text-sm font-medium text-slate-200">Nomor HP / WhatsApp</label>
+              <input type="tel" id="reg-phone" required class="mt-1 w-full bg-slate-900/60 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Contoh: 081234567890">
+            </div>
+
             <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-2.5 px-4 rounded-xl shadow-lg transition duration-150">
               Kirim Registrasi
             </button>
@@ -604,6 +609,7 @@
                       <th class="p-4">ID</th>
                       <th class="p-4">Nama Pengguna</th>
                       <th class="p-4">Email</th>
+                      <th class="p-4">Nomor HP</th>
                       <th class="p-4">Ruangan</th>
                       <th class="p-4">Peran Wewenang</th>
                       <th class="p-4">Status Akun</th>
@@ -808,6 +814,10 @@
               <div id="profile-custom-room-container" class="hidden">
                 <label class="block text-sm font-medium text-slate-700">Nama Ruangan Custom</label>
                 <input type="text" id="profile-room-custom" class="mt-1 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Ketik nama ruangan Anda...">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700">Nomor HP / WhatsApp</label>
+                <input type="tel" id="profile-phone" required class="mt-1 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Contoh: 081234567890">
               </div>
 
               <div class="flex justify-end space-x-2 pt-4 border-t border-slate-100 mt-6">
@@ -1067,14 +1077,15 @@
         const roomSelect = document.getElementById('reg-room').value;
         const roomCustom = document.getElementById('reg-room-custom').value.trim();
         const nama_ruangan = (roomSelect === 'Lainnya') ? roomCustom : roomSelect;
+        const no_hp = document.getElementById('reg-phone').value.trim();
 
-        if (!nama || !nama_ruangan) {
+        if (!nama || !nama_ruangan || !no_hp) {
           this.showToast('warning', 'Semua kolom wajib diisi.');
           return;
         }
 
         try {
-          const res = await this.callApiPost('registerUser', { nama, nama_ruangan });
+          const res = await this.callApiPost('registerUser', { nama, nama_ruangan, no_hp });
           if (res.success) {
             this.showToast('success', res.message);
             document.getElementById('pending-email-text').innerText = this.credential ? 'Google User' : this.devEmail;
@@ -1813,6 +1824,7 @@
                 <td class="p-4 font-bold text-slate-500 text-xs">${u.id}</td>
                 <td class="p-4 font-semibold text-slate-800">${u.nama}</td>
                 <td class="p-4 text-slate-600">${u.email}</td>
+                <td class="p-4 text-slate-600">${u.no_hp || '-'}</td>
                 <td class="p-4 font-medium text-slate-700">${u.nama_ruangan}</td>
                 <td class="p-4"><span class="text-xs font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md border border-brand-100">${u.peran}</span></td>
                 <td class="p-4">
@@ -2189,6 +2201,7 @@
         
         document.getElementById('profile-email').value = this.user.email;
         document.getElementById('profile-nama').value = this.user.nama;
+        document.getElementById('profile-phone').value = this.user.no_hp || '';
         
         const roomSelect = document.getElementById('profile-room');
         const customContainer = document.getElementById('profile-custom-room-container');
@@ -2230,8 +2243,9 @@
         const roomSelect = document.getElementById('profile-room').value;
         const roomCustom = document.getElementById('profile-room-custom').value.trim();
         const nama_ruangan = (roomSelect === 'Lainnya') ? roomCustom : roomSelect;
+        const no_hp = document.getElementById('profile-phone').value.trim();
 
-        if (!nama || !nama_ruangan) {
+        if (!nama || !nama_ruangan || !no_hp) {
           this.showToast('warning', 'Semua kolom wajib diisi.');
           return;
         }
@@ -2245,7 +2259,7 @@
 
         try {
           this.showToast('info', 'Memperbarui profil Anda...');
-          const res = await this.callApiPost('updateSelfProfile', { nama, nama_ruangan });
+          const res = await this.callApiPost('updateSelfProfile', { nama, nama_ruangan, no_hp });
           if (res.success) {
             this.showToast('success', res.message);
             this.closeProfileEditModal();

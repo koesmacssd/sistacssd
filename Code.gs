@@ -324,7 +324,8 @@ function getUserProfile(email) {
         nama: data[i][2],
         peran: data[i][3],
         nama_ruangan: data[i][4],
-        status_aktif: data[i][5]
+        status_aktif: data[i][5],
+        no_hp: data[i][6] || ''
       };
     }
   }
@@ -344,7 +345,8 @@ function getUsersData() {
       nama: data[i][2],
       peran: data[i][3],
       nama_ruangan: data[i][4],
-      status_aktif: data[i][5]
+      status_aktif: data[i][5],
+      no_hp: data[i][6] || ''
     });
   }
   return jsonResponse(true, "Daftar user berhasil dimuat.", users);
@@ -470,19 +472,25 @@ function registerUser(postData, userEmail) {
     return jsonResponse(false, "User sudah terdaftar.", existing);
   }
   
-  var name = postData.nama || cleanEmail.split('@')[0];
-  var room = postData.nama_ruangan || "Umum";
+  var name = postData.nama;
+  var room = postData.nama_ruangan;
+  var hp = postData.no_hp;
+  
+  if (!name || !room || !hp) {
+    return jsonResponse(false, "Nama, Ruangan, dan Nomor HP wajib diisi.");
+  }
+  
   var role = "Ruangan"; // Default role
   var status = "Pending"; // Butuh persetujuan
   
   var lastRow = sheet.getLastRow();
   var id = "USR-" + (lastRow + 1) + "-" + Math.floor(100 + Math.random() * 900);
   
-  sheet.appendRow([id, cleanEmail, name, role, room, status]);
-  writeLog(cleanEmail, "Registrasi user baru. Ruangan: " + room);
+  sheet.appendRow([id, cleanEmail, name, role, room, status, hp]);
+  writeLog(cleanEmail, "Registrasi user baru. Ruangan: " + room + ", No HP: " + hp);
   
   // Kirim notifikasi ke Admin
-  sendTelegramNotification("👤 *Registrasi User Baru*\nNama: " + name + "\nEmail: " + cleanEmail + "\nRuangan: " + room + "\nStatus: Menunggu Persetujuan Admin.");
+  sendTelegramNotification("👤 *Registrasi User Baru*\nNama: " + name + "\nEmail: " + cleanEmail + "\nRuangan: " + room + "\nNo HP: " + hp + "\nStatus: Menunggu Persetujuan Admin.");
   
   return jsonResponse(true, "Registrasi berhasil. Menunggu persetujuan Admin.", { id: id, email: cleanEmail, status: status });
 }
@@ -1082,15 +1090,16 @@ function triggerAuthorization() {
   }
 }
 
-// User memperbarui profil mandiri (Nama dan Ruangan)
+// User memperbarui profil mandiri (Nama, Ruangan, dan Nomor HP)
 function updateSelfProfile(postData, userEmail) {
   var ss = getSpreadsheet();
   var sheet = ss.getSheetByName(USERS_SHEET_NAME);
   var nama = postData.nama;
   var namaRuangan = postData.nama_ruangan;
+  var noHp = postData.no_hp;
   
-  if (!nama || !namaRuangan) {
-    return jsonResponse(false, "Nama dan Ruangan tidak boleh kosong.");
+  if (!nama || !namaRuangan || !noHp) {
+    return jsonResponse(false, "Nama, Ruangan, dan Nomor HP tidak boleh kosong.");
   }
   
   var data = sheet.getDataRange().getValues();
@@ -1100,7 +1109,8 @@ function updateSelfProfile(postData, userEmail) {
       var row = i + 1;
       sheet.getRange(row, 3).setValue(nama.toString().trim());
       sheet.getRange(row, 5).setValue(namaRuangan.toString().trim());
-      writeLog(userEmail, "Memperbarui profil mandiri: Nama=" + nama + ", Ruangan=" + namaRuangan);
+      sheet.getRange(row, 7).setValue(noHp.toString().trim());
+      writeLog(userEmail, "Memperbarui profil mandiri: Nama=" + nama + ", Ruangan=" + namaRuangan + ", No HP=" + noHp);
       return jsonResponse(true, "Profil berhasil diperbarui.");
     }
   }
