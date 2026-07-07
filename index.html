@@ -184,6 +184,12 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex items-center justify-between h-16">
             <div class="flex items-center space-x-3">
+              <!-- Mobile Sidebar Toggle -->
+              <button onclick="app.toggleSidebar()" class="md:hidden text-slate-300 hover:text-white p-1 rounded-lg focus:outline-none mr-1" title="Menu Navigasi">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
               <div class="flex-shrink-0">
                 <img src="https://raw.githubusercontent.com/simpegkoesma/1/refs/heads/main/logo%20rsud%202%20png.png" alt="Logo RSUD dr. R. Koesma" class="h-10 w-auto object-contain bg-white/5 p-1 rounded-xl">
               </div>
@@ -220,10 +226,25 @@
         </div>
       </header>
 
+      <!-- SIDEBAR BACKDROP FOR MOBILE -->
+      <div id="sidebar-backdrop" onclick="app.closeSidebar()" class="fixed inset-0 bg-slate-950/50 z-40 hidden md:hidden transition-opacity duration-200"></div>
+
       <div class="flex-1 flex flex-col md:flex-row">
         <!-- SIDEBAR NAVIGATION -->
-        <aside class="w-full md:w-64 bg-slate-900 border-r border-slate-800 text-slate-300 flex-shrink-0">
-          <div class="px-4 py-6 space-y-1">
+        <aside id="sidebar-nav" class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 text-slate-300 flex flex-col transform -translate-x-full transition-transform duration-200 ease-in-out md:relative md:translate-x-0 flex-shrink-0">
+          <!-- Sidebar Header for Mobile -->
+          <div class="flex items-center justify-between p-4 border-b border-slate-800 md:hidden flex-shrink-0">
+            <div class="flex items-center space-x-2">
+              <img src="https://raw.githubusercontent.com/simpegkoesma/1/refs/heads/main/logo%20rsud%202%20png.png" alt="Logo" class="h-8 w-auto object-contain bg-white/5 p-0.5 rounded-lg">
+              <span class="text-lg font-bold text-white">SISTA-CSSD</span>
+            </div>
+            <button onclick="app.closeSidebar()" class="text-slate-400 hover:text-white p-1 rounded-lg focus:outline-none" title="Tutup Menu">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div class="flex-1 overflow-y-auto px-4 py-6 space-y-1">
             <!-- Navigasi khusus Ruangan -->
             <div id="nav-ruangan-menu" class="hidden space-y-1">
               <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2">Menu Ruangan</p>
@@ -1009,6 +1030,34 @@
         if (tabName === 'admin-inventaris') this.renderInventaris();
         if (tabName === 'admin-user-mgmt') this.renderUserManagement();
         if (tabName === 'admin-logs') this.refreshLogs();
+
+        // Auto-close sidebar on mobile
+        this.closeSidebar();
+      }
+
+      toggleSidebar() {
+        const sidebar = document.getElementById('sidebar-nav');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        if (!sidebar) return;
+
+        const isOpen = !sidebar.classList.contains('-translate-x-full');
+        if (isOpen) {
+          this.closeSidebar();
+        } else {
+          sidebar.classList.remove('-translate-x-full');
+          if (backdrop) backdrop.classList.remove('hidden');
+          document.body.classList.add('overflow-hidden');
+        }
+      }
+
+      closeSidebar() {
+        const sidebar = document.getElementById('sidebar-nav');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        if (!sidebar) return;
+
+        sidebar.classList.add('-translate-x-full');
+        if (backdrop) backdrop.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
       }
 
       // Submit Form Registrasi User Baru
