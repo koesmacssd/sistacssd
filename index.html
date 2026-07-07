@@ -526,7 +526,12 @@
                           <span id="sort-icon-inventaris-status_posisi" class="text-slate-400 group-hover:text-slate-600"></span>
                         </div>
                       </th>
-                      <th class="p-4">Posisi</th>
+                      <th onclick="app.sortInventaris('posisi')" class="p-4 cursor-pointer hover:bg-slate-100 hover:text-slate-700 transition duration-150 group">
+                        <div class="flex items-center space-x-1">
+                          <span>Posisi</span>
+                          <span id="sort-icon-inventaris-posisi" class="text-slate-400 group-hover:text-slate-600"></span>
+                        </div>
+                      </th>
                       <th onclick="app.sortInventaris('tanggal_sterilisasi')" class="p-4 cursor-pointer hover:bg-slate-100 hover:text-slate-700 transition duration-150 group">
                         <div class="flex items-center space-x-1">
                           <span>Tgl Sterilisasi</span>
@@ -1561,6 +1566,13 @@
           let valA = a[this.inventarisSortKey] || '';
           let valB = b[this.inventarisSortKey] || '';
           
+          if (this.inventarisSortKey === 'posisi') {
+            const isBorrowedA = a.status_posisi.startsWith('Dipinjam');
+            valA = isBorrowedA ? a.status_posisi.substring(8).trim() : 'CSSD';
+            const isBorrowedB = b.status_posisi.startsWith('Dipinjam');
+            valB = isBorrowedB ? b.status_posisi.substring(8).trim() : 'CSSD';
+          }
+          
           if (typeof valA === 'string') valA = valA.toLowerCase();
           if (typeof valB === 'string') valB = valB.toLowerCase();
           
@@ -1922,7 +1934,7 @@
 
       updateSortIcons(tableType, activeKey, activeDir) {
         const keys = tableType === 'inventaris' ? 
-          ['id_alat', 'nama_alat', 'status_posisi', 'tanggal_sterilisasi', 'tanggal_kadaluwarsa_steril'] : 
+          ['id_alat', 'nama_alat', 'status_posisi', 'posisi', 'tanggal_sterilisasi', 'tanggal_kadaluwarsa_steril'] : 
           ['timestamp', 'email_aktor', 'aktivitas'];
           
         keys.forEach(key => {
