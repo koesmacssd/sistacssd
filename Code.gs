@@ -789,8 +789,9 @@ function updateItemCycle(postData, actorEmail) {
   }
   
   var data = sheet.getDataRange().getValues();
+  var searchId = itemId.toString().trim().toLowerCase();
   for (var i = 1; i < data.length; i++) {
-    if (data[i][0] === itemId) {
+    if (data[i][0] && data[i][0].toString().trim().toLowerCase() === searchId) {
       var row = i + 1;
       var currentStatus = data[i][4];
       
@@ -854,24 +855,26 @@ function manageItems(postData, actorEmail) {
       return jsonResponse(false, "ID Alat (QR) dan Nama Alat diperlukan.");
     }
     // Cek jika ID sudah ada
+    var searchId = idAlat.toString().trim().toLowerCase();
     for (var i = 1; i < data.length; i++) {
-      if (data[i][0] === idAlat) {
+      if (data[i][0] && data[i][0].toString().trim().toLowerCase() === searchId) {
         return jsonResponse(false, "ID Alat '" + idAlat + "' sudah terdaftar.");
       }
     }
     
-    sheet.appendRow([idAlat, namaAlat, deskripsi, fotoUrl, 'Steril', new Date(), '']);
+    sheet.appendRow([idAlat.toString().trim(), namaAlat.toString().trim(), deskripsi, fotoUrl, 'Steril', new Date(), '']);
     writeLog(actorEmail, "Menambah alat baru: " + namaAlat + " (" + idAlat + ")");
     return jsonResponse(true, "Alat berhasil ditambahkan.");
     
   } else if (operation === 'edit') {
     if (!idAlat) return jsonResponse(false, "ID Alat diperlukan.");
+    var searchId = idAlat.toString().trim().toLowerCase();
     for (var j = 1; j < data.length; j++) {
-      if (data[j][0] === idAlat) {
+      if (data[j][0] && data[j][0].toString().trim().toLowerCase() === searchId) {
         var row = j + 1;
-        if (namaAlat) sheet.getRange(row, 2).setValue(namaAlat);
+        if (namaAlat) sheet.getRange(row, 2).setValue(namaAlat.toString().trim());
         sheet.getRange(row, 3).setValue(deskripsi);
-        if (fotoUrl) sheet.getRange(row, 4).setValue(fotoUrl);
+        sheet.getRange(row, 4).setValue(fotoUrl); // Selalu set agar bisa update/clear
         
         writeLog(actorEmail, "Mengubah info alat: " + idAlat);
         return jsonResponse(true, "Info alat berhasil diperbarui.");
@@ -881,8 +884,9 @@ function manageItems(postData, actorEmail) {
     
   } else if (operation === 'delete') {
     if (!idAlat) return jsonResponse(false, "ID Alat diperlukan.");
+    var searchId = idAlat.toString().trim().toLowerCase();
     for (var k = 1; k < data.length; k++) {
-      if (data[k][0] === idAlat) {
+      if (data[k][0] && data[k][0].toString().trim().toLowerCase() === searchId) {
         var status = data[k][4];
         if (status !== 'Steril' && status !== 'Kotor' && status !== 'Proses Steril') {
           return jsonResponse(false, "Alat sedang dalam status transaksi (" + status + ") sehingga tidak bisa dihapus.");
@@ -1002,6 +1006,33 @@ function uploadImage(postData, actorEmail) {
     var base64Data = postData.file_base64;
     var fileName = postData.file_name || 'alat_foto.jpg';
     var mimeType = postData.mime_type || 'image/jpeg';
+    var oldFileUrl = postData.old_file_url;
+    
+    // Hapus file lama jika ada penggantian foto
+    if (oldFileUrl) {
+      try {
+        var oldFileId = null;
+        if (oldFileUrl.includes('drive.google.com/uc') || oldFileUrl.includes('drive.google.com/open')) {
+          var match = oldFileUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+          if (match && match[1]) oldFileId = match[1];
+        } else if (oldFileUrl.includes('lh3.googleusercontent.com/d/')) {
+          var match = oldFileUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+          if (match && match[1]) oldFileId = match[1];
+        } else if (oldFileUrl.includes('/file/d/')) {
+          var match = oldFileUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+          if (match && match[1]) oldFileId = match[1];
+        }
+        
+        if (oldFileId) {
+          var oldFile = DriveApp.getFileById(oldFileId);
+          oldFile.setTrashed(true); // Masukkan ke tong sampah secara aman
+          console.log("File foto lama berhasil dihapus: " + oldFileId);
+          writeLog(actorEmail, "Menghapus foto lama di Drive: " + oldFileId);
+        }
+      } catch (err) {
+        console.error("Gagal menghapus file lama: " + err.toString());
+      }
+    }
     
     if (base64Data.indexOf(';base64,') !== -1) {
       base64Data = base64Data.split(';base64,')[1];
@@ -1018,7 +1049,7 @@ function uploadImage(postData, actorEmail) {
     
     var directUrl = "https://lh3.googleusercontent.com/d/" + file.getId();
     
-    writeLog(actorEmail, "Upload foto alat medis: " + fileName + " ke Drive Folder. File ID: " + file.getId());
+    writeLog(actorEmail, "Upload foto alat medis baru: " + fileName + " ke Drive Folder. File ID: " + file.getId());
     console.log("Upload sukses. File ID: " + file.getId());
     
     return jsonResponse(true, "Foto berhasil diunggah.", { url: directUrl });

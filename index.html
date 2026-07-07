@@ -1754,7 +1754,8 @@
             const uploadRes = await this.callApiPost('uploadImage', {
               file_base64: base64,
               file_name: `${idAlat}_${file.name}`,
-              mime_type: file.type
+              mime_type: file.type,
+              old_file_url: fotoUrl
             });
 
             if (uploadRes.success) {
