@@ -1086,6 +1086,13 @@
 
       // Refresh Data Inventaris dan Orders secara berkala
       async refreshData() {
+        const refreshButtons = document.querySelectorAll('button[onclick*="refreshData"]');
+        const refreshIcons = document.querySelectorAll('button[onclick*="refreshData"] svg');
+        
+        // Start animation
+        refreshButtons.forEach(btn => btn.disabled = true);
+        refreshIcons.forEach(icon => icon.classList.add('animate-spin'));
+
         try {
           const itemsRes = await this.callApi('getItems');
           if (itemsRes.success) this.items = itemsRes.data;
@@ -1099,6 +1106,10 @@
           this.showToast('success', 'Data berhasil diperbarui.');
         } catch (e) {
           this.showToast('error', 'Gagal memuat data dari server.');
+        } finally {
+          // Stop animation
+          refreshButtons.forEach(btn => btn.disabled = false);
+          refreshIcons.forEach(icon => icon.classList.remove('animate-spin'));
         }
       }
 
@@ -1816,6 +1827,13 @@
         const tbody = document.getElementById('logs-table-body');
         tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center">Memuat logs...</td></tr>';
         
+        const refreshButtons = document.querySelectorAll('button[onclick*="refreshLogs"]');
+        const refreshIcons = document.querySelectorAll('button[onclick*="refreshLogs"] svg');
+        
+        // Start animation
+        refreshButtons.forEach(btn => btn.disabled = true);
+        refreshIcons.forEach(icon => icon.classList.add('animate-spin'));
+
         try {
           const res = await this.callApi('getLogs');
           if (res.success) {
@@ -1829,6 +1847,10 @@
         } catch (e) {
           tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-red-500">Gagal mengambil logs.</td></tr>';
           this.renderPaginationControls('logs-pagination', 0, 1, this.logsPageSize, 'changeLogsPage');
+        } finally {
+          // Stop animation
+          refreshButtons.forEach(btn => btn.disabled = false);
+          refreshIcons.forEach(icon => icon.classList.remove('animate-spin'));
         }
       }
 
