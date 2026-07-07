@@ -487,6 +487,10 @@
               
               <div class="w-full sm:w-auto flex items-center space-x-2">
                 <input type="text" id="inventaris-search" oninput="app.renderInventaris()" class="w-full sm:w-64 border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Cari ID/nama alat...">
+                <button onclick="app.exportInventarisToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-xl text-sm flex items-center space-x-1.5 shadow transition duration-150 flex-shrink-0" title="Ekspor ke Excel (.xlsx)">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                  <span>Ekspor Excel</span>
+                </button>
                 <button onclick="app.refreshData()" class="bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 p-2.5 rounded-xl shadow-sm transition duration-150 flex-shrink-0" title="Refresh Data">
                   <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.25" /></svg>
                 </button>
@@ -1981,6 +1985,58 @@
 
           XLSX.writeFile(workbook, `SISTA_CSSD_Riwayat_Peminjaman_${new Date().toISOString().slice(0,10)}.xlsx`);
           this.showToast('success', 'Berhasil mengunduh berkas Excel!');
+        } catch (e) {
+          this.showToast('error', 'Gagal memproses ekspor Excel.');
+          console.error(e);
+        }
+      }
+
+      exportInventarisToExcel() {
+        if (!this.items || this.items.length === 0) {
+          this.showToast('warning', 'Tidak ada data inventaris untuk diekspor.');
+          return;
+        }
+
+        const rows = this.items.map(item => {
+          const isBorrowed = item.status_posisi.startsWith('Dipinjam');
+          let status = item.status_posisi;
+          let posisi = 'CSSD';
+
+          if (isBorrowed) {
+            status = 'Dipinjam';
+            posisi = item.status_posisi.substring(8).trim();
+          }
+
+          return {
+            'ID / QR Code': item.id_alat,
+            'Nama Alat': item.nama_alat,
+            'Deskripsi': item.deskripsi || '-',
+            'Status': status,
+            'Posisi': posisi,
+            'Tanggal Sterilisasi': item.tanggal_sterilisasi || '-',
+            'Tanggal Kadaluwarsa': item.tanggal_kadaluwarsa_steril || '-'
+          };
+        });
+
+        try {
+          const worksheet = XLSX.utils.json_to_sheet(rows);
+          const workbook = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(workbook, worksheet, "Inventaris Alat");
+          
+          // Auto-fit column widths
+          const max_len = {};
+          rows.forEach(row => {
+            Object.keys(row).forEach(key => {
+              const val = String(row[key] || '');
+              max_len[key] = Math.max(max_len[key] || key.length, val.length);
+            });
+          });
+          worksheet['!cols'] = Object.keys(max_len).map(key => ({
+            wch: max_len[key] + 3
+          }));
+
+          XLSX.writeFile(workbook, `SISTA_CSSD_Inventaris_Alat_${new Date().toISOString().slice(0,10)}.xlsx`);
+          this.showToast('success', 'Berhasil mengunduh inventaris Excel!');
         } catch (e) {
           this.showToast('error', 'Gagal memproses ekspor Excel.');
           console.error(e);
