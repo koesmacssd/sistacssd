@@ -95,14 +95,7 @@
           <div class="flex flex-col items-center justify-center space-y-4">
             <div id="google-signin-btn" class="w-full flex justify-center"></div>
             
-            <span class="text-xs text-slate-400 uppercase tracking-widest">— ATAU MODE DEV —</span>
-            
-            <!-- Bypass Mode Dev -->
-            <div class="w-full flex space-x-2">
-              <input type="email" id="dev-email-input" class="flex-1 bg-slate-900/60 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="nama@email.com (Test)">
-              <button onclick="app.loginDev()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-4 rounded-xl transition duration-150">Login Dev</button>
-            </div>
-            <p class="text-[10px] text-slate-400 text-center">Gunakan mode dev jika Anda ingin menguji login tanpa kredensial Google SSO asli. Email syamsul18782@gmail.com akan otomatis menjadi Super Admin.</p>
+
           </div>
 
         </div>
@@ -596,7 +589,6 @@
       constructor() {
         this.apiUrl = localStorage.getItem('sista_api_url') || 'https://script.google.com/macros/s/AKfycby23AW6m3Hm2EVApBLKkH3gRVpb7TZnd5snn2y2STUAwhyqsOp7r1tMT1ebuyZFb0Rq/exec';
         this.credential = localStorage.getItem('sista_credential') || '';
-        this.devEmail = localStorage.getItem('sista_dev_email') || '';
         
         this.user = null; // Profil user aktif
         this.items = [];  // Inventaris alat
@@ -626,8 +618,8 @@
           }
         };
 
-        // Auto login jika credential atau dev email sudah ada
-        if (this.credential || this.devEmail) {
+        // Auto login jika credential sudah ada
+        if (this.credential) {
           this.checkUserStatus();
         } else {
           this.showView('login');
@@ -638,35 +630,17 @@
       handleCredentialResponse(response) {
         this.credential = response.credential;
         localStorage.setItem('sista_credential', this.credential);
-        localStorage.removeItem('sista_dev_email');
-        this.devEmail = '';
         this.showToast('success', 'Autentikasi Google SSO berhasil!');
         this.checkUserStatus();
       }
 
-      // Login Mode Developer (Bypass SSO)
-      loginDev() {
-        const emailInput = document.getElementById('dev-email-input').value.trim();
-        if (!emailInput) {
-          this.showToast('warning', 'Masukkan email testing terlebih dahulu.');
-          return;
-        }
-        this.devEmail = emailInput;
-        localStorage.setItem('sista_dev_email', this.devEmail);
-        localStorage.removeItem('sista_credential');
-        this.credential = '';
-        
-        this.showToast('success', 'Masuk dengan Mode Pengembang.');
-        this.checkUserStatus();
-      }
+
 
       // Logout dari aplikasi
       logout() {
         this.credential = '';
-        this.devEmail = '';
         this.user = null;
         localStorage.removeItem('sista_credential');
-        localStorage.removeItem('sista_dev_email');
         this.showView('login');
         this.showToast('info', 'Anda telah keluar.');
       }
@@ -820,8 +794,6 @@
         let url = `${this.apiUrl}?action=${action}`;
         if (this.credential) {
           url += `&credential=${encodeURIComponent(this.credential)}`;
-        } else if (this.devEmail) {
-          url += `&dev_email=${encodeURIComponent(this.devEmail)}`;
         }
         
         for (const [key, value] of Object.entries(params)) {
@@ -840,8 +812,6 @@
         
         if (this.credential) {
           body.credential = this.credential;
-        } else if (this.devEmail) {
-          body.dev_email = this.devEmail;
         }
 
         const response = await fetch(this.apiUrl, {
