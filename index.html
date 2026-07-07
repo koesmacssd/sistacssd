@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SISTA-CSSD - RSUD dr. R. Koesma</title>
+  
+  <!-- Google Fonts & Tailwind CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Sign-In Library -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#025a87',
+              700: '#0369a1',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    [v-cloak] { display: none !important; }
+    .glassmorphism {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="h-full text-slate-800 antialiased custom-scrollbar">
+
+  <div id="app" class="min-h-screen flex flex-col">
+    <!-- NOTIFIKASI TOAST (GLOBAL) -->
+    <div id="toast" class="fixed top-4 right-4 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 pointer-events-none">
+      <div id="toast-content" class="flex items-center space-x-3 p-4 rounded-xl shadow-lg border text-sm font-medium glassmorphism">
+        <span id="toast-icon"></span>
+        <span id="toast-text"></span>
+      </div>
+    </div>
+
+    <!-- 1. HALAMAN LOGIN -->
+    <div id="view-login" class="flex-1 flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gradient-to-tr from-brand-900 via-slate-900 to-slate-800">
+      <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
+        <div class="inline-flex items-center justify-center p-3 bg-brand-500/10 rounded-2xl border border-brand-500/30 mb-4 animate-bounce">
+          <svg class="h-12 w-12 text-brand-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+          </svg>
+        </div>
+        <h2 class="text-3xl font-extrabold text-white tracking-tight">SISTA-CSSD</h2>
+        <p class="mt-2 text-sm text-slate-300">
+          Sistem Informasi Serah Terima Alat Steril<br>
+          <span class="font-semibold text-brand-100">RSUD dr. R. Koesma Tuban</span>
+        </p>
+      </div>
+
+      <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
+        <div class="bg-white/10 backdrop-blur-md py-8 px-6 shadow-2xl rounded-2xl border border-white/10 sm:px-10 text-white">
+          
+          <!-- Konfigurasi URL API -->
+          <div class="mb-6">
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Google Apps Script Web App URL</label>
+            <input type="text" id="api-url-input" class="w-full bg-slate-900/60 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="https://script.google.com/macros/s/.../exec">
+            <p class="mt-1 text-[11px] text-slate-400">Masukkan URL Web App hasil deployment Google Apps Script Anda.</p>
+          </div>
+
+          <div class="border-t border-slate-700/60 my-6"></div>
+
+          <!-- Tombol Google Sign In -->
+          <div class="flex flex-col items-center justify-center space-y-4">
+            <div id="google-signin-btn" class="w-full flex justify-center"></div>
+            
+            <span class="text-xs text-slate-400 uppercase tracking-widest">— ATAU MODE DEV —</span>
+            
+            <!-- Bypass Mode Dev -->
+            <div class="w-full flex space-x-2">
+              <input type="email" id="dev-email-input" class="flex-1 bg-slate-900/60 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="nama@email.com (Test)">
+              <button onclick="app.loginDev()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-4 rounded-xl transition duration-150">Login Dev</button>
+            </div>
+            <p class="text-[10px] text-slate-400 text-center">Gunakan mode dev jika Anda ingin menguji login tanpa kredensial Google SSO asli. Email syamsul18782@gmail.com akan otomatis menjadi Super Admin.</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. HALAMAN REGISTRASI USER BARU -->
+    <div id="view-register" class="hidden flex-1 flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gradient-to-tr from-brand-900 via-slate-900 to-slate-800">
+      <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
+        <h2 class="text-3xl font-extrabold text-white">Lengkapi Registrasi</h2>
+        <p class="mt-2 text-sm text-slate-300">
+          Email <span id="register-email-text" class="font-bold text-brand-100"></span> belum terdaftar di sistem.
+        </p>
+      </div>
+
+      <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
+        <div class="bg-white/10 backdrop-blur-md py-8 px-6 shadow-2xl rounded-2xl border border-white/10 sm:px-10 text-white">
+          <form onsubmit="app.submitRegister(event)" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-200">Nama Lengkap</label>
+              <input type="text" id="reg-name" required class="mt-1 w-full bg-slate-900/60 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-slate-200">Nama Ruangan / Unit Kerja</label>
+              <select id="reg-room" onchange="app.checkCustomRoom()" class="mt-1 w-full bg-slate-950/80 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <option value="Mawar">Ruang Mawar (Rawat Inap)</option>
+                <option value="Dahlia">Ruang Dahlia (Rawat Inap)</option>
+                <option value="ICU">Intensive Care Unit (ICU)</option>
+                <option value="OK / Bedah">Kamar Operasi (OK / Bedah)</option>
+                <option value="IGD">Instalasi Gawat Darurat (IGD)</option>
+                <option value="Poli">Poli Rawat Jalan</option>
+                <option value="Kebidanan">Kebidanan & Kandungan</option>
+                <option value="CSSD">CSSD (Admin)</option>
+                <option value="Lainnya">Lainnya (Tulis Sendiri)</option>
+              </select>
+            </div>
+
+            <div id="custom-room-container" class="hidden">
+              <label class="block text-sm font-medium text-slate-200">Nama Ruangan Kustom</label>
+              <input type="text" id="reg-room-custom" class="mt-1 w-full bg-slate-900/60 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Tulis nama ruangan...">
+            </div>
+
+            <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-2.5 px-4 rounded-xl shadow-lg transition duration-150">
+              Kirim Registrasi
+            </button>
+          </form>
+          <div class="mt-4 text-center">
+            <button onclick="app.logout()" class="text-xs text-slate-400 hover:text-slate-200 underline">Batal & Keluar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. HALAMAN MENUNGGU PERSETUJUAN -->
+    <div id="view-pending" class="hidden flex-1 flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gradient-to-tr from-brand-900 via-slate-900 to-slate-800">
+      <div class="sm:mx-auto sm:w-full sm:max-w-md text-center px-4">
+        <div class="inline-flex items-center justify-center p-4 bg-yellow-500/10 rounded-full border border-yellow-500/30 mb-6 text-yellow-400 animate-pulse">
+          <svg class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+        </div>
+        <h2 class="text-3xl font-extrabold text-white">Menunggu Persetujuan</h2>
+        <p class="mt-3 text-slate-300">
+          Akun Anda (<span id="pending-email-text" class="font-bold text-brand-100"></span>) sudah terdaftar tetapi belum diaktifkan oleh Admin CSSD.
+        </p>
+        <p class="mt-1 text-sm text-slate-400">Silakan hubungi Kepala Unit CSSD RSUD dr. R. Koesma untuk aktivasi cepat.</p>
+        
+        <div class="mt-8 flex justify-center space-x-4">
+          <button onclick="app.checkUserStatus()" class="bg-brand-500 hover:bg-brand-600 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg transition duration-150">
+            Refresh Status
+          </button>
+          <button onclick="app.logout()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold px-6 py-2.5 rounded-xl shadow-lg transition duration-150">
+            Keluar / Logout
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. DASHBOARD UTAMA (TEROTENTIKASI) -->
+    <div id="view-dashboard" class="hidden flex-1 flex flex-col">
+      <!-- TOP NAVIGATION BAR -->
+      <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex items-center justify-between h-16">
+            <div class="flex items-center space-x-3">
+              <div class="bg-brand-500 p-2 rounded-xl text-white">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                </svg>
+              </div>
+              <div>
+                <span class="text-xl font-extrabold tracking-tight">SISTA-CSSD</span>
+                <span class="hidden md:inline-block text-[10px] bg-brand-500/20 text-brand-300 font-semibold px-2 py-0.5 rounded-md ml-2 border border-brand-500/30">RSUD dr. R. Koesma</span>
+              </div>
+            </div>
+
+            <!-- Profile Info & Logout -->
+            <div class="flex items-center space-x-4">
+              <div class="text-right hidden sm:block">
+                <p id="nav-user-name" class="text-sm font-semibold text-white"></p>
+                <p id="nav-user-role" class="text-xs text-brand-300"></p>
+              </div>
+              <div class="h-8 w-px bg-slate-700 hidden sm:block"></div>
+              <button onclick="app.logout()" class="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-2 rounded-xl text-xs font-semibold transition duration-150">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>Keluar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="flex-1 flex flex-col md:flex-row">
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="w-full md:w-64 bg-slate-900 border-r border-slate-800 text-slate-300 flex-shrink-0">
+          <div class="px-4 py-6 space-y-1">
+            <!-- Navigasi khusus Ruangan -->
+            <div id="nav-ruangan-menu" class="hidden space-y-1">
+              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2">Menu Ruangan</p>
+              <button onclick="app.setTab('katalog')" id="btn-tab-katalog" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition duration-150 hover:bg-slate-800 hover:text-white">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" /></svg>
+                <span>Katalog Alat</span>
+              </button>
+              <button onclick="app.setTab('keranjang')" id="btn-tab-keranjang" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition duration-150 hover:bg-slate-800 hover:text-white">
+                <div class="flex items-center space-x-3">
+                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                  <span>Keranjang Request</span>
+                </div>
+                <span id="cart-count-badge" class="bg-brand-500 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden">0</span>
+              </button>
+              <button onclick="app.setTab('riwayat')" id="btn-tab-riwayat" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition duration-150 hover:bg-slate-800 hover:text-white">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span>Riwayat & Status</span>
+              </button>
+            </div>
+
+            <!-- Navigasi khusus Admin / Super Admin -->
+            <div id="nav-admin-menu" class="hidden space-y-1">
+              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2">Menu Admin CSSD</p>
+              <button onclick="app.setTab('admin-dashboard')" id="btn-tab-admin-dashboard" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition duration-150 hover:bg-slate-800 hover:text-white">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2" /></svg>
+                <span>Dashboard Admin</span>
+              </button>
+              <button onclick="app.setTab('admin-peminjaman')" id="btn-tab-admin-peminjaman" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition duration-150 hover:bg-slate-800 hover:text-white">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+                <span>Monitor Peminjaman</span>
+              </button>
+              <button onclick="app.setTab('admin-inventaris')" id="btn-tab-admin-inventaris" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition duration-150 hover:bg-slate-800 hover:text-white">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                <span>Inventaris Alat</span>
+              </button>
+              <button onclick="app.setTab('admin-user-mgmt')" id="btn-tab-admin-user-mgmt" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition duration-150 hover:bg-slate-800 hover:text-white">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                <span>Manajemen User</span>
+              </button>
+              <button onclick="app.setTab('admin-logs')" id="btn-tab-admin-logs" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition duration-150 hover:bg-slate-800 hover:text-white">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                <span>Log Audit</span>
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        <!-- MAIN CONTENT CONTAINER -->
+        <main class="flex-1 bg-slate-50 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+          
+          <!-- TAB 1: KATALOG ALAT (RUANGAN) -->
+          <div id="tab-katalog" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Katalog Alat Steril</h1>
+                <p class="text-sm text-slate-500">Pilih alat medis steril yang tersedia untuk diajukan pinjam-pakai.</p>
+              </div>
+              
+              <!-- Search & Filter -->
+              <div class="w-full sm:w-auto flex items-center space-x-2">
+                <input type="text" id="katalog-search" oninput="app.renderKatalog()" class="w-full sm:w-64 border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Cari nama alat...">
+              </div>
+            </div>
+
+            <!-- Grid Katalog -->
+            <div id="katalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <!-- Render via JS -->
+            </div>
+          </div>
+
+          <!-- TAB 2: KERANJANG REQUEST (RUANGAN) -->
+          <div id="tab-keranjang" class="tab-content hidden space-y-6">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Keranjang Permintaan</h1>
+              <p class="text-sm text-slate-500">Tinjau item peminjaman Anda dan tambahkan catatan kondisi jika diperlukan.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <!-- Item List -->
+              <div class="lg:col-span-2 space-y-4">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                  <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-slate-600">Daftar Alat Pilihan</h3>
+                    <button onclick="app.clearCart()" class="text-xs text-red-500 hover:text-red-700 font-semibold underline">Kosongkan</button>
+                  </div>
+                  <div id="cart-items-list" class="divide-y divide-slate-100">
+                    <!-- Rendered via JS -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Summary Card & Submission -->
+              <div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sticky top-24 space-y-4">
+                  <h3 class="text-lg font-bold text-slate-900">Ringkasan Request</h3>
+                  
+                  <div class="divide-y divide-slate-100 text-sm">
+                    <div class="py-3 flex justify-between">
+                      <span class="text-slate-500">Tujuan Ruangan</span>
+                      <span id="cart-summary-room" class="font-semibold text-slate-900">-</span>
+                    </div>
+                    <div class="py-3 flex justify-between">
+                      <span class="text-slate-500">Pengaju (Email)</span>
+                      <span id="cart-summary-email" class="font-semibold text-slate-800 truncate max-w-[180px]">-</span>
+                    </div>
+                    <div class="py-3 flex justify-between">
+                      <span class="text-slate-500">Total Alat</span>
+                      <span id="cart-summary-count" class="font-bold text-brand-600">0 Item</span>
+                    </div>
+                  </div>
+
+                  <button id="btn-submit-order" onclick="app.submitOrder()" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition duration-150 flex items-center justify-center space-x-2">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                    <span>Kirim Request Peminjaman</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 3: RIWAYAT PEMINJAMAN (RUANGAN) -->
+          <div id="tab-riwayat" class="tab-content hidden space-y-6">
+            <div class="flex justify-between items-center">
+              <div>
+                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Riwayat Peminjaman</h1>
+                <p class="text-sm text-slate-500">Lacak status serah terima alat medis steril ruangan Anda.</p>
+              </div>
+              <button onclick="app.refreshData()" class="bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 p-2.5 rounded-xl shadow-sm transition duration-150">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.25" /></svg>
+              </button>
+            </div>
+
+            <!-- List Peminjaman -->
+            <div id="riwayat-list" class="space-y-4">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- TAB 4: DASHBOARD ADMIN (ADMIN) -->
+          <div id="tab-admin-dashboard" class="tab-content hidden space-y-6">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Dashboard Pemantauan</h1>
+              <p class="text-sm text-slate-500">Statistik real-time logistik alat steril CSSD.</p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <!-- Total Order Pending -->
+              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center space-x-4">
+                <div class="p-3 bg-yellow-100 rounded-xl text-yellow-600">
+                  <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-slate-500">Pending Request</p>
+                  <p id="stat-pending" class="text-2xl font-extrabold text-slate-900">0</p>
+                </div>
+              </div>
+              <!-- Ready for Pickup -->
+              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center space-x-4">
+                <div class="p-3 bg-blue-100 rounded-xl text-blue-600">
+                  <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-slate-500">Siap Ambil (Ready)</p>
+                  <p id="stat-ready" class="text-2xl font-extrabold text-slate-900">0</p>
+                </div>
+              </div>
+              <!-- Aktif Dipinjam -->
+              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center space-x-4">
+                <div class="p-3 bg-green-100 rounded-xl text-green-600">
+                  <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-slate-500">Aktif Dipinjam</p>
+                  <p id="stat-aktif" class="text-2xl font-extrabold text-slate-900">0</p>
+                </div>
+              </div>
+              <!-- Total Alat Kotor -->
+              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center space-x-4">
+                <div class="p-3 bg-red-100 rounded-xl text-red-600">
+                  <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-slate-500">Alat Kotor</p>
+                  <p id="stat-kotor" class="text-2xl font-extrabold text-slate-900">0</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Shortcuts & Quick Actions -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+              <h3 class="text-lg font-bold text-slate-900">Shortcut Cepat CSSD</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <button onclick="app.setTab('admin-peminjaman')" class="p-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition duration-150 text-left space-y-2">
+                  <span class="block text-sm font-bold text-slate-700">Proses Peminjaman Baru</span>
+                  <span class="block text-xs text-slate-500">Siapkan alat di rak dan set status pesanan menjadi Siap Ambil.</span>
+                </button>
+                <button onclick="app.setTab('admin-inventaris')" class="p-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition duration-150 text-left space-y-2">
+                  <span class="block text-sm font-bold text-slate-700">Mulai Siklus Sterilisasi</span>
+                  <span class="block text-xs text-slate-500">Ubah status alat kotor menjadi Proses Steril atau Steril.</span>
+                </button>
+                <button onclick="app.setTab('admin-user-mgmt')" class="p-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition duration-150 text-left space-y-2">
+                  <span class="block text-sm font-bold text-slate-700">Aktivasi User Baru</span>
+                  <span class="block text-xs text-slate-500">Setujui permohonan pendaftaran user baru dari unit RSUD.</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 5: MONITOR PEMINJAMAN (ADMIN) -->
+          <div id="tab-admin-peminjaman" class="tab-content hidden space-y-6">
+            <div class="flex justify-between items-center">
+              <div>
+                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Monitor Serah Terima</h1>
+                <p class="text-sm text-slate-500">Kelola siklus transaksional peminjaman alat medis steril.</p>
+              </div>
+              <button onclick="app.refreshData()" class="bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 p-2.5 rounded-xl shadow-sm transition duration-150">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.25" /></svg>
+              </button>
+            </div>
+
+            <!-- List Transaksi Admin -->
+            <div id="admin-orders-list" class="space-y-6">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- TAB 6: INVENTARIS ALAT (ADMIN) -->
+          <div id="tab-admin-inventaris" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Inventaris Alat Medis</h1>
+                <p class="text-sm text-slate-500">Kelola status dan daftarkan alat baru ke sistem.</p>
+              </div>
+              
+              <div class="w-full sm:w-auto flex items-center space-x-2">
+                <input type="text" id="inventaris-search" oninput="app.renderInventaris()" class="w-full sm:w-64 border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Cari ID/nama alat...">
+                <button onclick="app.openAddToolModal()" class="bg-brand-500 hover:bg-brand-600 text-white font-semibold px-4 py-2 rounded-xl text-sm flex items-center space-x-1 flex-shrink-0 transition duration-150">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                  <span>Tambah Alat</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Table Inventaris -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                  <thead>
+                    <tr class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
+                      <th class="p-4">ID / QR Code</th>
+                      <th class="p-4">Nama Alat</th>
+                      <th class="p-4">Deskripsi</th>
+                      <th class="p-4">Status Posisi</th>
+                      <th class="p-4">Tgl Sterilisasi</th>
+                      <th class="p-4">Tgl Kadaluwarsa</th>
+                      <th class="p-4 text-right">Aksi Siklus & Kelola</th>
+                    </tr>
+                  </thead>
+                  <tbody id="inventaris-table-body" class="divide-y divide-slate-100">
+                    <!-- Rendered via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 7: MANAJEMEN USER (ADMIN) -->
+          <div id="tab-admin-user-mgmt" class="tab-content hidden space-y-6">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Manajemen Akun Pengguna</h1>
+              <p class="text-sm text-slate-500">Approve user baru dan kelola wewenang akses peran.</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                  <thead>
+                    <tr class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
+                      <th class="p-4">ID</th>
+                      <th class="p-4">Nama Pengguna</th>
+                      <th class="p-4">Email</th>
+                      <th class="p-4">Ruangan</th>
+                      <th class="p-4">Peran Wewenang</th>
+                      <th class="p-4">Status Akun</th>
+                      <th class="p-4 text-right">Aksi Kelola</th>
+                    </tr>
+                  </thead>
+                  <tbody id="user-mgmt-table-body" class="divide-y divide-slate-100">
+                    <!-- Rendered via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 8: LOG AUDIT (ADMIN) -->
+          <div id="tab-admin-logs" class="tab-content hidden space-y-6">
+            <div class="flex justify-between items-center">
+              <div>
+                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Log Audit Sistem</h1>
+                <p class="text-sm text-slate-500">Histori aktivitas audit transaksi dan siklus barang secara sistemik.</p>
+              </div>
+              <button onclick="app.refreshLogs()" class="bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 p-2.5 rounded-xl shadow-sm transition duration-150">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.25" /></svg>
+              </button>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+              <div class="max-h-[500px] overflow-y-auto custom-scrollbar">
+                <table class="w-full text-left text-xs">
+                  <thead>
+                    <tr class="text-slate-500 font-bold border-b border-slate-200 pb-2">
+                      <th class="pb-2 w-48">Timestamp</th>
+                      <th class="pb-2 w-64">Aktor (Email)</th>
+                      <th class="pb-2">Aktivitas</th>
+                    </tr>
+                  </thead>
+                  <tbody id="logs-table-body" class="divide-y divide-slate-100">
+                    <!-- Rendered via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </main>
+      </div>
+    </div>
+
+    <!-- MODAL: ADD / EDIT ALAT -->
+    <div id="tool-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+      <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity bg-slate-950/60" onclick="app.closeToolModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-100">
+          <div class="p-6">
+            <h3 id="modal-title" class="text-lg font-bold text-slate-900 mb-4">Tambah Alat Baru</h3>
+            <form onsubmit="app.submitToolForm(event)" class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700">ID Alat / QR Code (Unique)</label>
+                <input type="text" id="modal-id-alat" required class="mt-1 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Contoh: ALAT-099">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700">Nama Alat Medis</label>
+                <input type="text" id="modal-nama-alat" required class="mt-1 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Contoh: Hecting Set D">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700">Deskripsi Alat</label>
+                <textarea id="modal-deskripsi" rows="3" class="mt-1 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Berikan deskripsi detail tentang alat..."></textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700">URL Gambar (Google Drive)</label>
+                <input type="url" id="modal-foto" class="mt-1 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="https://drive.google.com/...">
+              </div>
+
+              <div class="flex justify-end space-x-2 pt-4">
+                <button type="button" onclick="app.closeToolModal()" class="border border-slate-300 text-slate-700 px-4 py-2 rounded-xl text-sm transition duration-150">Batal</button>
+                <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition duration-150">Simpan</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SCRIPT LOGIKA SPA SISTA-CSSD -->
+  <script>
+    class SistaCSSD {
+      constructor() {
+        this.apiUrl = localStorage.getItem('sista_api_url') || '';
+        this.credential = localStorage.getItem('sista_credential') || '';
+        this.devEmail = localStorage.getItem('sista_dev_email') || '';
+        
+        this.user = null; // Profil user aktif
+        this.items = [];  // Inventaris alat
+        this.orders = []; // Riwayat order
+        this.users = [];  // Daftar user (jika admin)
+        this.logs = [];   // Log audit (jika admin)
+        this.cart = JSON.parse(localStorage.getItem('sista_cart') || '[]');
+        this.cartNotes = JSON.parse(localStorage.getItem('sista_cart_notes') || '{}');
+        
+        this.currentTab = '';
+        this.modalOperation = 'add'; // 'add' | 'edit'
+      }
+
+      init() {
+        // Tampilkan value API URL yang tersimpan ke input field
+        const apiInput = document.getElementById('api-url-input');
+        if (apiInput) apiInput.value = this.apiUrl;
+
+        // Inisialisasi Google SSO
+        window.onload = () => {
+          if (typeof google !== 'undefined') {
+            google.accounts.id.initialize({
+              client_id: '965383505809-5a6b0c2pujh4aedjndvdt486e9270n5u.apps.googleusercontent.com', // Placeholder Client ID Google SSO Anda
+              callback: this.handleCredentialResponse.bind(this)
+            });
+            google.accounts.id.renderButton(
+              document.getElementById("google-signin-btn"),
+              { theme: "outline", size: "large", width: "320" }
+            );
+          }
+        };
+
+        // Auto login jika credential atau dev email sudah ada
+        if (this.credential || this.devEmail) {
+          this.checkUserStatus();
+        } else {
+          this.showView('login');
+        }
+      }
+
+      // Handle hasil Sign-In Google SSO
+      handleCredentialResponse(response) {
+        this.credential = response.credential;
+        localStorage.setItem('sista_credential', this.credential);
+        localStorage.removeItem('sista_dev_email');
+        this.devEmail = '';
+        this.showToast('success', 'Autentikasi Google SSO berhasil!');
+        this.checkUserStatus();
+      }
+
+      // Login Mode Developer (Bypass SSO)
+      loginDev() {
+        const emailInput = document.getElementById('dev-email-input').value.trim();
+        if (!emailInput) {
+          this.showToast('warning', 'Masukkan email testing terlebih dahulu.');
+          return;
+        }
+        this.devEmail = emailInput;
+        localStorage.setItem('sista_dev_email', this.devEmail);
+        localStorage.removeItem('sista_credential');
+        this.credential = '';
+        
+        // Simpan API URL
+        const apiInput = document.getElementById('api-url-input').value.trim();
+        if (apiInput) {
+          this.apiUrl = apiInput;
+          localStorage.setItem('sista_api_url', this.apiUrl);
+        }
+        
+        this.showToast('success', 'Masuk dengan Mode Pengembang.');
+        this.checkUserStatus();
+      }
+
+      // Logout dari aplikasi
+      logout() {
+        this.credential = '';
+        this.devEmail = '';
+        this.user = null;
+        localStorage.removeItem('sista_credential');
+        localStorage.removeItem('sista_dev_email');
+        this.showView('login');
+        this.showToast('info', 'Anda telah keluar.');
+      }
+
+      // Routing Tampilan Utama
+      showView(viewName) {
+        document.getElementById('view-login').classList.add('hidden');
+        document.getElementById('view-register').classList.add('hidden');
+        document.getElementById('view-pending').classList.add('hidden');
+        document.getElementById('view-dashboard').classList.add('hidden');
+
+        document.getElementById(`view-${viewName}`).classList.remove('hidden');
+      }
+
+      // Memeriksa Status Registrasi User di Backend
+      async checkUserStatus() {
+        this.updateApiUrlFromInput();
+        if (!this.apiUrl) {
+          this.showView('login');
+          this.showToast('error', 'Masukkan URL Apps Script Web App API terlebih dahulu.');
+          return;
+        }
+
+        try {
+          this.showToast('info', 'Menghubungkan ke server...');
+          const res = await this.callApi('getUserProfile');
+          
+          if (res.success) {
+            this.user = res.data;
+            document.getElementById('nav-user-name').innerText = this.user.nama;
+            document.getElementById('nav-user-role').innerText = `${this.user.peran} (${this.user.nama_ruangan})`;
+            
+            this.setupNavigation();
+            this.showView('dashboard');
+            
+            // Set tab default berdasarkan role
+            if (this.user.peran === 'Ruangan') {
+              this.setTab('katalog');
+            } else {
+              this.setTab('admin-dashboard');
+            }
+            this.refreshData();
+          } else {
+            if (res.data && res.data.code === 'NOT_REGISTERED') {
+              document.getElementById('register-email-text').innerText = res.data.email;
+              this.showView('register');
+            } else if (res.data && res.data.code === 'PENDING_APPROVAL') {
+              document.getElementById('pending-email-text').innerText = res.data.email;
+              this.showView('pending');
+            } else {
+              this.showToast('error', res.message || 'Terjadi kesalahan sistem.');
+              this.showView('login');
+            }
+          }
+        } catch (e) {
+          this.showToast('error', 'Koneksi gagal. Periksa kembali URL API Apps Script Anda.');
+          this.showView('login');
+        }
+      }
+
+      // Update API URL dari input UI
+      updateApiUrlFromInput() {
+        const apiInput = document.getElementById('api-url-input');
+        if (apiInput && apiInput.value.trim()) {
+          this.apiUrl = apiInput.value.trim();
+          localStorage.setItem('sista_api_url', this.apiUrl);
+        }
+      }
+
+      // Setup Menu Berdasarkan Peran User
+      setupNavigation() {
+        document.getElementById('nav-ruangan-menu').classList.add('hidden');
+        document.getElementById('nav-admin-menu').classList.add('hidden');
+
+        if (this.user.peran === 'Ruangan') {
+          document.getElementById('nav-ruangan-menu').classList.remove('hidden');
+        } else {
+          document.getElementById('nav-admin-menu').classList.remove('hidden');
+        }
+      }
+
+      // Set Active Tab di Dashboard
+      setTab(tabName) {
+        this.currentTab = tabName;
+        
+        // Sembunyikan semua tab
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        
+        // Tampilkan tab target
+        const targetTab = document.getElementById(`tab-${tabName}`);
+        if (targetTab) targetTab.classList.remove('hidden');
+        
+        // Update highlight tombol navigasi
+        document.querySelectorAll('aside button').forEach(btn => {
+          btn.classList.remove('bg-brand-500', 'text-white');
+          btn.classList.add('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
+        });
+        
+        const activeBtn = document.getElementById(`btn-tab-${tabName}`);
+        if (activeBtn) {
+          activeBtn.classList.remove('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
+          activeBtn.classList.add('bg-brand-500', 'text-white');
+        }
+
+        // Trigger reload per tab jika diperlukan
+        if (tabName === 'katalog') this.renderKatalog();
+        if (tabName === 'keranjang') this.renderCart();
+        if (tabName === 'riwayat') this.renderRiwayat();
+        if (tabName === 'admin-dashboard') this.updateAdminDashboardStats();
+        if (tabName === 'admin-peminjaman') this.renderAdminOrders();
+        if (tabName === 'admin-inventaris') this.renderInventaris();
+        if (tabName === 'admin-user-mgmt') this.renderUserManagement();
+        if (tabName === 'admin-logs') this.refreshLogs();
+      }
+
+      // Submit Form Registrasi User Baru
+      async submitRegister(e) {
+        e.preventDefault();
+        const nama = document.getElementById('reg-name').value.trim();
+        const roomSelect = document.getElementById('reg-room').value;
+        const roomCustom = document.getElementById('reg-room-custom').value.trim();
+        const nama_ruangan = (roomSelect === 'Lainnya') ? roomCustom : roomSelect;
+
+        if (!nama || !nama_ruangan) {
+          this.showToast('warning', 'Semua kolom wajib diisi.');
+          return;
+        }
+
+        try {
+          const res = await this.callApiPost('registerUser', { nama, nama_ruangan });
+          if (res.success) {
+            this.showToast('success', res.message);
+            document.getElementById('pending-email-text').innerText = this.credential ? 'Google User' : this.devEmail;
+            this.showView('pending');
+          } else {
+            this.showToast('error', res.message);
+          }
+        } catch (err) {
+          this.showToast('error', 'Registrasi gagal.');
+        }
+      }
+
+      checkCustomRoom() {
+        const roomSelect = document.getElementById('reg-room').value;
+        const customContainer = document.getElementById('custom-room-container');
+        if (roomSelect === 'Lainnya') {
+          customContainer.classList.remove('hidden');
+        } else {
+          customContainer.classList.add('hidden');
+        }
+      }
+
+      // --- FETCH API UTILS (GET/POST) ---
+      async callApi(action, params = {}) {
+        let url = `${this.apiUrl}?action=${action}`;
+        if (this.credential) {
+          url += `&credential=${encodeURIComponent(this.credential)}`;
+        } else if (this.devEmail) {
+          url += `&dev_email=${encodeURIComponent(this.devEmail)}`;
+        }
+        
+        for (const [key, value] of Object.entries(params)) {
+          url += `&${key}=${encodeURIComponent(value)}`;
+        }
+        
+        const response = await fetch(url);
+        return await response.json();
+      }
+
+      async callApiPost(action, payload = {}) {
+        const body = {
+          action: action,
+          ...payload
+        };
+        
+        if (this.credential) {
+          body.credential = this.credential;
+        } else if (this.devEmail) {
+          body.dev_email = this.devEmail;
+        }
+
+        const response = await fetch(this.apiUrl, {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+          },
+          body: JSON.stringify(body)
+        });
+        return await response.json();
+      }
+
+      // Refresh Data Inventaris dan Orders secara berkala
+      async refreshData() {
+        try {
+          const itemsRes = await this.callApi('getItems');
+          if (itemsRes.success) this.items = itemsRes.data;
+
+          const ordersRes = await this.callApi('getOrders');
+          if (ordersRes.success) this.orders = ordersRes.data;
+
+          this.updateCartBadge();
+          this.setTab(this.currentTab);
+          
+          this.showToast('success', 'Data berhasil diperbarui.');
+        } catch (e) {
+          this.showToast('error', 'Gagal memuat data dari server.');
+        }
+      }
+
+      // --- LOGIKA KERANJANG (CART) ---
+      addToCart(itemId) {
+        if (!this.cart.includes(itemId)) {
+          this.cart.push(itemId);
+          this.cartNotes[itemId] = '';
+          this.saveCart();
+          this.updateCartBadge();
+          this.showToast('success', 'Alat berhasil ditambahkan ke keranjang.');
+          this.renderKatalog();
+        }
+      }
+
+      removeFromCart(itemId) {
+        this.cart = this.cart.filter(id => id !== itemId);
+        delete this.cartNotes[itemId];
+        this.saveCart();
+        this.updateCartBadge();
+        this.renderCart();
+        this.showToast('info', 'Alat dihapus dari keranjang.');
+      }
+
+      updateCartNote(itemId, note) {
+        this.cartNotes[itemId] = note;
+        this.saveCart();
+      }
+
+      clearCart() {
+        this.cart = [];
+        this.cartNotes = {};
+        this.saveCart();
+        this.updateCartBadge();
+        this.renderCart();
+        this.showToast('info', 'Keranjang dikosongkan.');
+      }
+
+      saveCart() {
+        localStorage.setItem('sista_cart', JSON.stringify(this.cart));
+        localStorage.setItem('sista_cart_notes', JSON.stringify(this.cartNotes));
+      }
+
+      updateCartBadge() {
+        const badge = document.getElementById('cart-count-badge');
+        if (badge) {
+          if (this.cart.length > 0) {
+            badge.innerText = this.cart.length;
+            badge.classList.remove('hidden');
+          } else {
+            badge.classList.add('hidden');
+          }
+        }
+        
+        const countSummary = document.getElementById('cart-summary-count');
+        if (countSummary) countSummary.innerText = `${this.cart.length} Item`;
+      }
+
+      async submitOrder() {
+        if (this.cart.length === 0) {
+          this.showToast('warning', 'Keranjang belanja Anda kosong.');
+          return;
+        }
+
+        const btn = document.getElementById('btn-submit-order');
+        btn.disabled = true;
+        btn.innerHTML = `<svg class="animate-spin h-5 w-5 mr-3 text-white inline-block" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Mengirim Request...`;
+
+        try {
+          const res = await this.callApiPost('createOrder', {
+            item_ids: this.cart,
+            item_notes: this.cartNotes
+          });
+
+          if (res.success) {
+            this.showToast('success', 'Permintaan peminjaman berhasil dikirim!');
+            this.clearCart();
+            this.refreshData();
+            this.setTab('riwayat');
+          } else {
+            this.showToast('error', res.message || 'Gagal mengirim permintaan.');
+          }
+        } catch (e) {
+          this.showToast('error', 'Koneksi ke server terputus.');
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg> <span>Kirim Request Peminjaman</span>`;
+        }
+      }
+
+      // --- RENDERING VIEWS ---
+
+      // A. Katalog Alat (Ruangan)
+      renderKatalog() {
+        const grid = document.getElementById('katalog-grid');
+        const query = document.getElementById('katalog-search').value.toLowerCase();
+        grid.innerHTML = '';
+
+        // Filter alat berstatus steril saja
+        const availableItems = this.items.filter(item => {
+          return item.nama_alat.toLowerCase().includes(query) || item.id_alat.toLowerCase().includes(query);
+        });
+
+        if (availableItems.length === 0) {
+          grid.innerHTML = `
+            <div class="col-span-full py-12 text-center bg-white rounded-2xl border border-slate-200">
+              <p class="text-slate-500 text-sm font-medium">Tidak ada alat medis steril yang ditemukan.</p>
+            </div>
+          `;
+          return;
+        }
+
+        availableItems.forEach(item => {
+          const inCart = this.cart.includes(item.id_alat);
+          const isSteril = item.status_posisi === 'Steril';
+          
+          let actionBtnHtml = '';
+          if (isSteril) {
+            if (inCart) {
+              actionBtnHtml = `
+                <button onclick="app.removeFromCart('${item.id_alat}')" class="w-full bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-2 px-4 rounded-xl text-xs flex items-center justify-center space-x-1 transition duration-150">
+                  <span>Hapus dari Keranjang</span>
+                </button>
+              `;
+            } else {
+              actionBtnHtml = `
+                <button onclick="app.addToCart('${item.id_alat}')" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-2 px-4 rounded-xl text-xs flex items-center justify-center space-x-1 transition duration-150 shadow-md">
+                  <span>Tambah ke Request</span>
+                </button>
+              `;
+            }
+          } else {
+            actionBtnHtml = `
+              <button disabled class="w-full bg-slate-100 text-slate-400 py-2 px-4 rounded-xl text-xs font-semibold cursor-not-allowed">
+                Tidak Tersedia (${item.status_posisi})
+              </button>
+            `;
+          }
+
+          const card = document.createElement('div');
+          card.className = 'bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col justify-between p-5 hover:shadow-md transition duration-200';
+          card.innerHTML = `
+            <div class="space-y-3">
+              <div class="flex justify-between items-start">
+                <span class="inline-block text-[10px] bg-slate-100 text-slate-600 font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">${item.id_alat}</span>
+                <span class="inline-block text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider ${isSteril ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+                  ${item.status_posisi}
+                </span>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-slate-900 line-clamp-1">${item.nama_alat}</h3>
+                <p class="text-xs text-slate-500 line-clamp-2 mt-1 min-h-[32px]">${item.deskripsi || 'Tidak ada deskripsi.'}</p>
+              </div>
+              <div class="border-t border-slate-100 pt-3 text-[11px] text-slate-400">
+                <p>Kadaluwarsa Steril: <span class="font-medium text-slate-600">${item.tanggal_kadaluwarsa_steril || '-'}</span></p>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100">
+              ${actionBtnHtml}
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+      }
+
+      // B. Keranjang (Ruangan)
+      renderCart() {
+        const list = document.getElementById('cart-items-list');
+        list.innerHTML = '';
+
+        document.getElementById('cart-summary-room').innerText = this.user ? this.user.nama_ruangan : '-';
+        document.getElementById('cart-summary-email').innerText = this.user ? this.user.email : '-';
+
+        if (this.cart.length === 0) {
+          list.innerHTML = `
+            <div class="p-8 text-center text-slate-500 text-sm font-medium">
+              Keranjang request kosong. Silakan pilih alat medis di menu Katalog.
+            </div>
+          `;
+          return;
+        }
+
+        this.cart.forEach(itemId => {
+          const item = this.items.find(i => i.id_alat === itemId);
+          if (!item) return;
+
+          const row = document.createElement('div');
+          row.className = 'p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4';
+          row.innerHTML = `
+            <div class="flex-1 space-y-1">
+              <div class="flex items-center space-x-2">
+                <span class="text-xs font-bold text-slate-400 uppercase">${item.id_alat}</span>
+                <h4 class="text-sm font-bold text-slate-900">${item.nama_alat}</h4>
+              </div>
+              <input type="text" value="${this.cartNotes[itemId] || ''}" oninput="app.updateCartNote('${itemId}', this.value)" class="w-full sm:w-80 border border-slate-300 rounded-lg px-3 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Tulis catatan kondisi alat (opsional)...">
+            </div>
+            <div>
+              <button onclick="app.removeFromCart('${itemId}')" class="text-red-500 hover:text-red-700 text-xs font-bold flex items-center space-x-1">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                <span>Hapus</span>
+              </button>
+            </div>
+          `;
+          list.appendChild(row);
+        });
+      }
+
+      // C. Riwayat & Status Request (Ruangan)
+      renderRiwayat() {
+        const list = document.getElementById('riwayat-list');
+        list.innerHTML = '';
+
+        if (this.orders.length === 0) {
+          list.innerHTML = `
+            <div class="p-8 text-center bg-white rounded-2xl border border-slate-200 text-slate-500 text-sm font-medium">
+              Belum ada riwayat permintaan peminjaman dari Ruangan Anda.
+            </div>
+          `;
+          return;
+        }
+
+        this.orders.forEach(order => {
+          let statusBadgeClass = 'bg-yellow-100 text-yellow-700 border-yellow-200';
+          if (order.status_order === 'Ready for Pickup') statusBadgeClass = 'bg-blue-100 text-blue-700 border-blue-200';
+          if (order.status_order === 'Aktif') statusBadgeClass = 'bg-green-100 text-green-700 border-green-200';
+          if (order.status_order === 'Selesai') statusBadgeClass = 'bg-slate-100 text-slate-600 border-slate-200';
+
+          let timelineHtml = `
+            <span class="block">Diajukan: <span class="font-medium text-slate-700">${order.tanggal_request || '-'}</span></span>
+          `;
+          if (order.tanggal_diambil) {
+            timelineHtml += `<span class="block">Diambil: <span class="font-medium text-slate-700">${order.tanggal_diambil}</span></span>`;
+          }
+          if (order.tanggal_kembali) {
+            timelineHtml += `<span class="block">Kembali: <span class="font-medium text-slate-700">${order.tanggal_kembali}</span></span>`;
+          }
+
+          // Build list items
+          let itemsListHtml = '';
+          order.items.forEach(it => {
+            itemsListHtml += `
+              <div class="flex items-center justify-between text-xs py-1 border-b border-slate-100 last:border-0">
+                <span class="font-semibold text-slate-800">${it.nama_alat} <span class="text-slate-400 font-bold ml-1 uppercase">(${it.id_alat})</span></span>
+                <span class="text-slate-500 italic">${it.catatan_kondisi ? `Catatan: ${it.catatan_kondisi}` : ''}</span>
+              </div>
+            `;
+          });
+
+          const item = document.createElement('div');
+          item.className = 'bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4 hover:shadow-md transition duration-150';
+          item.innerHTML = `
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-4 border-b border-slate-100">
+              <div>
+                <span class="text-xs font-bold text-slate-400 uppercase">ID Transaksi</span>
+                <h4 class="text-base font-extrabold text-slate-900">${order.id_order}</h4>
+              </div>
+              <span class="inline-block text-xs font-bold px-3 py-1 rounded-full border ${statusBadgeClass}">
+                ${order.status_order}
+              </span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+              <div class="space-y-1">
+                <span class="text-slate-400 font-bold uppercase tracking-wider block">Timestamps Transaksi</span>
+                ${timelineHtml}
+              </div>
+              <div>
+                <span class="text-slate-400 font-bold uppercase tracking-wider block mb-2">Daftar Alat Peminjaman</span>
+                <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 max-h-36 overflow-y-auto custom-scrollbar">
+                  ${itemsListHtml}
+                </div>
+              </div>
+            </div>
+          `;
+          list.appendChild(item);
+        });
+      }
+
+      // D. Admin Dashboard Stats
+      updateAdminDashboardStats() {
+        let countPending = 0;
+        let countReady = 0;
+        let countActive = 0;
+        let countKotor = 0;
+
+        this.orders.forEach(o => {
+          if (o.status_order === 'Pending') countPending++;
+          if (o.status_order === 'Ready for Pickup') countReady++;
+          if (o.status_order === 'Aktif') countActive++;
+        });
+
+        this.items.forEach(i => {
+          if (i.status_posisi === 'Kotor') countKotor++;
+        });
+
+        document.getElementById('stat-pending').innerText = countPending;
+        document.getElementById('stat-ready').innerText = countReady;
+        document.getElementById('stat-aktif').innerText = countActive;
+        document.getElementById('stat-kotor').innerText = countKotor;
+      }
+
+      // E. Monitor Peminjaman (Admin)
+      renderAdminOrders() {
+        const list = document.getElementById('admin-orders-list');
+        list.innerHTML = '';
+
+        if (this.orders.length === 0) {
+          list.innerHTML = `
+            <div class="p-8 text-center bg-white rounded-2xl border border-slate-200 text-slate-500 text-sm font-medium">
+              Belum ada data permintaan peminjaman alat masuk.
+            </div>
+          `;
+          return;
+        }
+
+        this.orders.forEach(order => {
+          let statusBadgeClass = 'bg-yellow-100 text-yellow-700 border-yellow-200';
+          let actionBtnHtml = '';
+
+          if (order.status_order === 'Pending') {
+            statusBadgeClass = 'bg-yellow-100 text-yellow-700 border-yellow-200';
+            actionBtnHtml = `
+              <button onclick="app.updateOrderStatus('${order.id_order}', 'Ready for Pickup')" class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow transition duration-150 flex items-center space-x-1">
+                <span>Siap Ambil (Ready)</span>
+              </button>
+            `;
+          } else if (order.status_order === 'Ready for Pickup') {
+            statusBadgeClass = 'bg-blue-100 text-blue-700 border-blue-200';
+            actionBtnHtml = `
+              <button onclick="app.updateOrderStatus('${order.id_order}', 'Aktif')" class="bg-green-500 hover:bg-green-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow transition duration-150 flex items-center space-x-1">
+                <span>Konfirmasi Serah Terima</span>
+              </button>
+            `;
+          } else if (order.status_order === 'Aktif') {
+            statusBadgeClass = 'bg-green-100 text-green-700 border-green-200';
+            actionBtnHtml = `
+              <button onclick="app.updateOrderStatus('${order.id_order}', 'Selesai')" class="bg-slate-600 hover:bg-slate-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow transition duration-150 flex items-center space-x-1">
+                <span>Konfirmasi Kembali (Selesai)</span>
+              </button>
+            `;
+          } else if (order.status_order === 'Selesai') {
+            statusBadgeClass = 'bg-slate-100 text-slate-600 border-slate-200';
+          }
+
+          let itemsListHtml = '';
+          order.items.forEach(it => {
+            itemsListHtml += `
+              <div class="flex items-center justify-between text-xs py-1 border-b border-slate-100 last:border-0">
+                <span class="font-bold text-slate-800">${it.nama_alat} <span class="text-slate-400 font-bold uppercase ml-1">(${it.id_alat})</span></span>
+                <span class="text-slate-500 italic">${it.catatan_kondisi ? `Catatan: ${it.catatan_kondisi}` : ''}</span>
+              </div>
+            `;
+          });
+
+          const item = document.createElement('div');
+          item.className = 'bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4 hover:shadow-md transition duration-150';
+          item.innerHTML = `
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-100">
+              <div>
+                <span class="inline-block text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded-md uppercase tracking-wider mb-1">${order.id_order}</span>
+                <h4 class="text-base font-extrabold text-slate-900">${order.ruangan_peminjam} <span class="text-xs font-medium text-slate-500">(${order.email_peminjam})</span></h4>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="inline-block text-xs font-bold px-3 py-1 rounded-full border ${statusBadgeClass}">
+                  ${order.status_order}
+                </span>
+                ${actionBtnHtml}
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+              <div class="space-y-1">
+                <span class="text-slate-400 font-bold uppercase tracking-wider block">Timeline Logs</span>
+                <p>Diajukan: <span class="font-medium text-slate-700">${order.tanggal_request || '-'}</span></p>
+                <p>Serah Terima: <span class="font-medium text-slate-700">${order.tanggal_diambil || '-'}</span></p>
+                <p>Kembali CSSD: <span class="font-medium text-slate-700">${order.tanggal_kembali || '-'}</span></p>
+              </div>
+              <div>
+                <span class="text-slate-400 font-bold uppercase tracking-wider block mb-2">Item yang Dipinjam</span>
+                <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 max-h-36 overflow-y-auto custom-scrollbar">
+                  ${itemsListHtml}
+                </div>
+              </div>
+            </div>
+          `;
+          list.appendChild(item);
+        });
+      }
+
+      // Update Order Status (Action Button)
+      async updateOrderStatus(orderId, nextStatus) {
+        try {
+          this.showToast('info', 'Memperbarui status transaksi...');
+          const res = await this.callApiPost('updateOrderStatus', {
+            id_order: orderId,
+            status_order: nextStatus
+          });
+
+          if (res.success) {
+            this.showToast('success', res.message);
+            this.refreshData();
+          } else {
+            this.showToast('error', res.message);
+          }
+        } catch (e) {
+          this.showToast('error', 'Gagal memproses request status.');
+        }
+      }
+
+      // F. Inventaris Alat (Admin)
+      renderInventaris() {
+        const tbody = document.getElementById('inventaris-table-body');
+        const query = document.getElementById('inventaris-search').value.toLowerCase();
+        tbody.innerHTML = '';
+
+        const filtered = this.items.filter(item => {
+          return item.nama_alat.toLowerCase().includes(query) || item.id_alat.toLowerCase().includes(query);
+        });
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" class="p-8 text-center text-slate-500">Tidak ada alat yang cocok dengan pencarian Anda.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        filtered.forEach(item => {
+          let statusColor = 'bg-slate-100 text-slate-700';
+          let cycleBtnHtml = '';
+
+          if (item.status_posisi === 'Steril') {
+            statusColor = 'bg-green-100 text-green-700';
+            cycleBtnHtml = `
+              <button onclick="app.updateItemCycle('${item.id_alat}', 'Proses Steril')" class="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 text-xs font-bold px-3 py-1 rounded-lg border border-yellow-200 transition duration-150">
+                Siklus Steril
+              </button>
+            `;
+          } else if (item.status_posisi === 'Kotor') {
+            statusColor = 'bg-red-100 text-red-700';
+            cycleBtnHtml = `
+              <button onclick="app.updateItemCycle('${item.id_alat}', 'Proses Steril')" class="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 text-xs font-bold px-3 py-1 rounded-lg border border-yellow-200 transition duration-150">
+                Sterilisasi
+              </button>
+            `;
+          } else if (item.status_posisi === 'Proses Steril') {
+            statusColor = 'bg-yellow-100 text-yellow-700';
+            cycleBtnHtml = `
+              <button onclick="app.updateItemCycle('${item.id_alat}', 'Steril')" class="bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-green-600 shadow-sm transition duration-150">
+                Set Steril (Selesai)
+              </button>
+            `;
+          } else if (item.status_posisi.startsWith('Dipinjam')) {
+            statusColor = 'bg-blue-100 text-blue-700';
+          }
+
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-50/50';
+          tr.innerHTML = `
+            <td class="p-4 font-bold text-slate-900">${item.id_alat}</td>
+            <td class="p-4 font-semibold text-slate-800">${item.nama_alat}</td>
+            <td class="p-4 text-slate-500 text-xs truncate max-w-xs">${item.deskripsi || '-'}</td>
+            <td class="p-4">
+              <span class="inline-block text-[11px] font-bold px-2 py-0.5 rounded-md ${statusColor}">
+                ${item.status_posisi}
+              </span>
+            </td>
+            <td class="p-4 text-xs text-slate-500">${item.tanggal_sterilisasi || '-'}</td>
+            <td class="p-4 text-xs text-slate-500">${item.tanggal_kadaluwarsa_steril || '-'}</td>
+            <td class="p-4 text-right space-x-1.5">
+              ${cycleBtnHtml}
+              <button onclick="app.openEditToolModal('${item.id_alat}')" class="text-slate-400 hover:text-slate-600">
+                <svg class="h-4.5 w-4.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+              </button>
+              <button onclick="app.deleteItem('${item.id_alat}')" class="text-slate-400 hover:text-red-600">
+                <svg class="h-4.5 w-4.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Update Siklus Status Alat Medis
+      async updateItemCycle(itemId, nextCycle) {
+        try {
+          this.showToast('info', 'Mengubah status siklus...');
+          const res = await this.callApiPost('updateItemCycle', {
+            id_alat: itemId,
+            status_posisi: nextCycle
+          });
+
+          if (res.success) {
+            this.showToast('success', res.message);
+            this.refreshData();
+          } else {
+            this.showToast('error', res.message);
+          }
+        } catch (e) {
+          this.showToast('error', 'Gagal memproses siklus alat.');
+        }
+      }
+
+      // G. Manajemen User (Admin)
+      async renderUserManagement() {
+        const tbody = document.getElementById('user-mgmt-table-body');
+        tbody.innerHTML = '';
+
+        try {
+          const res = await this.callApi('getUsers');
+          if (res.success) {
+            this.users = res.data;
+            
+            this.users.forEach(u => {
+              let statusBadge = 'bg-yellow-100 text-yellow-700 border-yellow-200';
+              if (u.status_aktif === 'Aktif') statusBadge = 'bg-green-100 text-green-700 border-green-200';
+              if (u.status_aktif === 'Nonaktif') statusBadge = 'bg-red-100 text-red-700 border-red-200';
+
+              let actionBtns = '';
+              if (u.status_aktif === 'Pending') {
+                actionBtns = `
+                  <button onclick="app.updateUser('${u.email}', 'Aktif', 'Ruangan')" class="bg-green-500 hover:bg-green-600 text-white text-xs font-semibold px-2.5 py-1 rounded-lg shadow-sm transition duration-150">
+                    Setujui (Ruangan)
+                  </button>
+                  <button onclick="app.updateUser('${u.email}', 'Aktif', 'Admin')" class="bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold px-2.5 py-1 rounded-lg shadow-sm transition duration-150 ml-1">
+                    Setujui (Admin)
+                  </button>
+                `;
+              } else {
+                const nextStatus = u.status_aktif === 'Aktif' ? 'Nonaktif' : 'Aktif';
+                actionBtns = `
+                  <button onclick="app.updateUser('${u.email}', '${nextStatus}')" class="text-xs font-bold px-3 py-1 rounded-lg border border-slate-300 hover:bg-slate-50 transition duration-150">
+                    ${u.status_aktif === 'Aktif' ? 'Deaktivasi' : 'Aktivasi'}
+                  </button>
+                  <select onchange="app.updateUserRole('${u.email}', this.value)" class="text-xs border border-slate-300 rounded-lg px-2 py-1 ml-1 focus:outline-none">
+                    <option value="" disabled selected>Ubah Peran</option>
+                    <option value="Ruangan">Ruangan</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Super Admin">Super Admin</option>
+                  </select>
+                `;
+              }
+
+              const tr = document.createElement('tr');
+              tr.className = 'hover:bg-slate-50/50';
+              tr.innerHTML = `
+                <td class="p-4 font-bold text-slate-500 text-xs">${u.id}</td>
+                <td class="p-4 font-semibold text-slate-800">${u.nama}</td>
+                <td class="p-4 text-slate-600">${u.email}</td>
+                <td class="p-4 font-medium text-slate-700">${u.nama_ruangan}</td>
+                <td class="p-4"><span class="text-xs font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md border border-brand-100">${u.peran}</span></td>
+                <td class="p-4">
+                  <span class="inline-block text-xs font-bold px-2 py-0.5 rounded-full border ${statusBadge}">
+                    ${u.status_aktif}
+                  </span>
+                </td>
+                <td class="p-4 text-right">${actionBtns}</td>
+              `;
+              tbody.appendChild(tr);
+            });
+          }
+        } catch (e) {
+          this.showToast('error', 'Gagal memuat manajemen user.');
+        }
+      }
+
+      async updateUser(email, status, role = null) {
+        try {
+          this.showToast('info', 'Memperbarui akun user...');
+          const payload = {
+            target_email: email,
+            status_aktif: status
+          };
+          if (role) payload.peran = role;
+
+          const res = await this.callApiPost('updateUserStatus', payload);
+          if (res.success) {
+            this.showToast('success', res.message);
+            this.renderUserManagement();
+          } else {
+            this.showToast('error', res.message);
+          }
+        } catch (e) {
+          this.showToast('error', 'Koneksi gagal.');
+        }
+      }
+
+      async updateUserRole(email, role) {
+        if (!role) return;
+        try {
+          this.showToast('info', 'Memperbarui peran user...');
+          const res = await this.callApiPost('updateUserStatus', {
+            target_email: email,
+            peran: role
+          });
+
+          if (res.success) {
+            this.showToast('success', res.message);
+            this.renderUserManagement();
+          } else {
+            this.showToast('error', res.message);
+          }
+        } catch (e) {
+          this.showToast('error', 'Koneksi gagal.');
+        }
+      }
+
+      // H. Log Audit View
+      async refreshLogs() {
+        const tbody = document.getElementById('logs-table-body');
+        tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center">Memuat logs...</td></tr>';
+        
+        try {
+          const res = await this.callApi('getLogs');
+          if (res.success) {
+            this.logs = res.data;
+            tbody.innerHTML = '';
+            
+            if (this.logs.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-500">Tidak ada log aktivitas.</td></tr>';
+              return;
+            }
+            
+            this.logs.forEach(log => {
+              const tr = document.createElement('tr');
+              tr.className = 'hover:bg-slate-50/50';
+              tr.innerHTML = `
+                <td class="py-2.5 text-slate-400">${log.timestamp}</td>
+                <td class="py-2.5 font-semibold text-slate-600">${log.email_aktor}</td>
+                <td class="py-2.5 text-slate-700">${log.aktivitas}</td>
+              `;
+              tbody.appendChild(tr);
+            });
+          } else {
+            tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-red-500">${res.message}</td></tr>`;
+          }
+        } catch (e) {
+          tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-red-500">Gagal mengambil logs.</td></tr>';
+        }
+      }
+
+      // --- MANAGE ITEMS MODALS (CRUD) ---
+      openAddToolModal() {
+        this.modalOperation = 'add';
+        document.getElementById('modal-title').innerText = 'Tambah Alat Baru';
+        document.getElementById('modal-id-alat').disabled = false;
+        
+        // Reset fields
+        document.getElementById('modal-id-alat').value = '';
+        document.getElementById('modal-nama-alat').value = '';
+        document.getElementById('modal-deskripsi').value = '';
+        document.getElementById('modal-foto').value = '';
+
+        document.getElementById('tool-modal').classList.remove('hidden');
+      }
+
+      openEditToolModal(id) {
+        this.modalOperation = 'edit';
+        document.getElementById('modal-title').innerText = 'Ubah Info Alat';
+        document.getElementById('modal-id-alat').disabled = true;
+
+        const item = this.items.find(i => i.id_alat === id);
+        if (!item) return;
+
+        document.getElementById('modal-id-alat').value = item.id_alat;
+        document.getElementById('modal-nama-alat').value = item.nama_alat;
+        document.getElementById('modal-deskripsi').value = item.deskripsi || '';
+        document.getElementById('modal-foto').value = item.foto_drive_url || '';
+
+        document.getElementById('tool-modal').classList.remove('hidden');
+      }
+
+      closeToolModal() {
+        document.getElementById('tool-modal').classList.add('hidden');
+      }
+
+      async submitToolForm(e) {
+        e.preventDefault();
+        
+        const idAlat = document.getElementById('modal-id-alat').value.trim();
+        const namaAlat = document.getElementById('modal-nama-alat').value.trim();
+        const deskripsi = document.getElementById('modal-deskripsi').value.trim();
+        const fotoUrl = document.getElementById('modal-foto').value.trim();
+
+        try {
+          this.showToast('info', 'Menyimpan data alat...');
+          const res = await this.callApiPost('manageItems', {
+            operation: this.modalOperation,
+            id_alat: idAlat,
+            nama_alat: namaAlat,
+            deskripsi: deskripsi,
+            foto_drive_url: fotoUrl
+          });
+
+          if (res.success) {
+            this.showToast('success', res.message);
+            this.closeToolModal();
+            this.refreshData();
+          } else {
+            this.showToast('error', res.message);
+          }
+        } catch (e) {
+          this.showToast('error', 'Gagal memproses perubahan alat.');
+        }
+      }
+
+      async deleteItem(id) {
+        if (!confirm(`Apakah Anda yakin ingin menghapus alat ${id} dari inventaris?`)) return;
+
+        try {
+          this.showToast('info', 'Menghapus alat...');
+          const res = await this.callApiPost('manageItems', {
+            operation: 'delete',
+            id_alat: id
+          });
+
+          if (res.success) {
+            this.showToast('success', res.message);
+            this.refreshData();
+          } else {
+            this.showToast('error', res.message);
+          }
+        } catch (e) {
+          this.showToast('error', 'Koneksi gagal.');
+        }
+      }
+
+      // --- TOAST NOTIFICATIONS UTILS ---
+      showToast(type, message) {
+        const toast = document.getElementById('toast');
+        const content = document.getElementById('toast-content');
+        const icon = document.getElementById('toast-icon');
+        const text = document.getElementById('toast-text');
+
+        text.innerText = message;
+        
+        // Style setup
+        content.className = 'flex items-center space-x-3 p-4 rounded-xl shadow-lg border text-sm font-medium glassmorphism ';
+        if (type === 'success') {
+          content.classList.add('border-green-200/50', 'text-green-800');
+          icon.innerHTML = `<svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+        } else if (type === 'error') {
+          content.classList.add('border-red-200/50', 'text-red-800');
+          icon.innerHTML = `<svg class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+        } else if (type === 'warning') {
+          content.classList.add('border-yellow-200/50', 'text-yellow-800');
+          icon.innerHTML = `<svg class="h-5 w-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>`;
+        } else {
+          content.classList.add('border-blue-200/50', 'text-blue-800');
+          icon.innerHTML = `<svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+        }
+
+        toast.classList.remove('translate-y-[-100px]', 'opacity-0');
+        
+        // Hide after 3 seconds
+        setTimeout(() => {
+          toast.classList.add('translate-y-[-100px]', 'opacity-0');
+        }, 3000);
+      }
+    }
+
+    // Inisialisasi Aplikasi
+    const app = new SistaCSSD();
+    app.init();
+  </script>
+</body>
+</html>
