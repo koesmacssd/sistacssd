@@ -997,7 +997,7 @@ function uploadImage(postData, actorEmail) {
     // Set view permission for anyone with link
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     
-    var directUrl = "https://drive.google.com/uc?export=view&id=" + file.getId();
+    var directUrl = "https://lh3.googleusercontent.com/d/" + file.getId();
     
     writeLog(actorEmail, "Upload foto alat medis: " + fileName + " ke Drive Folder. File ID: " + file.getId());
     console.log("Upload sukses. File ID: " + file.getId());

@@ -1048,7 +1048,8 @@
 
           let imgHtml = '';
           if (item.foto_drive_url) {
-            imgHtml = `<img onclick="app.openDetailModal('${item.id_alat}')" src="${item.foto_drive_url}" alt="${item.nama_alat}" class="w-full h-40 object-cover rounded-xl mb-3 bg-slate-50 border border-slate-100 cursor-pointer hover:opacity-90 transition duration-150" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z\' /></svg>';">`;
+            const cdnUrl = this.getDirectImageUrl(item.foto_drive_url);
+            imgHtml = `<img onclick="app.openDetailModal('${item.id_alat}')" src="${cdnUrl}" alt="${item.nama_alat}" class="w-full h-40 object-cover rounded-xl mb-3 bg-slate-50 border border-slate-100 cursor-pointer hover:opacity-90 transition duration-150" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z\' /></svg>';">`;
           } else {
             imgHtml = `<div onclick="app.openDetailModal('${item.id_alat}')" class="w-full h-40 bg-slate-50 border border-slate-100 rounded-xl mb-3 flex items-center justify-center text-slate-400 cursor-pointer hover:bg-slate-100 transition duration-150">
               <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -1376,7 +1377,8 @@
 
           let imgHtml = '';
           if (item.foto_drive_url) {
-            imgHtml = `<img onclick="app.openDetailModal('${item.id_alat}')" src="${item.foto_drive_url}" class="h-10 w-10 object-cover rounded-lg border border-slate-200 mr-3 bg-slate-50 flex-shrink-0 cursor-pointer hover:opacity-80 transition duration-150" onerror="this.style.display='none';">`;
+            const cdnUrl = this.getDirectImageUrl(item.foto_drive_url);
+            imgHtml = `<img onclick="app.openDetailModal('${item.id_alat}')" src="${cdnUrl}" class="h-10 w-10 object-cover rounded-lg border border-slate-200 mr-3 bg-slate-50 flex-shrink-0 cursor-pointer hover:opacity-80 transition duration-150" onerror="this.style.display='none';">`;
           } else {
             imgHtml = `<div onclick="app.openDetailModal('${item.id_alat}')" class="h-10 w-10 bg-slate-50 rounded-lg border border-slate-200 mr-3 flex items-center justify-center text-slate-400 flex-shrink-0 cursor-pointer hover:bg-slate-100 transition duration-150">
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -1647,7 +1649,7 @@
         // Foto preview
         const fotoImg = document.getElementById('detail-foto');
         if (item.foto_drive_url) {
-          fotoImg.src = item.foto_drive_url;
+          fotoImg.src = this.getDirectImageUrl(item.foto_drive_url);
           fotoImg.style.display = 'block';
         } else {
           fotoImg.src = '';
@@ -1681,6 +1683,30 @@
           reader.onload = () => resolve(reader.result);
           reader.onerror = error => reject(error);
         });
+      }
+
+      getDirectImageUrl(url) {
+        if (!url) return '';
+        
+        // Match standard drive link: https://drive.google.com/file/d/FILE_ID/view...
+        const fileDMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (fileDMatch && fileDMatch[1]) {
+          return `https://lh3.googleusercontent.com/d/${fileDMatch[1]}`;
+        }
+        
+        // Match uc link: https://drive.google.com/uc?export=view&id=FILE_ID
+        const ucMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (ucMatch && ucMatch[1] && url.includes('drive.google.com')) {
+          return `https://lh3.googleusercontent.com/d/${ucMatch[1]}`;
+        }
+        
+        // Match open link: https://drive.google.com/open?id=FILE_ID
+        if (url.includes('drive.google.com/open') && ucMatch && ucMatch[1]) {
+          return `https://lh3.googleusercontent.com/d/${ucMatch[1]}`;
+        }
+
+        // Return original if it doesn't match or is already CDN
+        return url;
       }
 
       async submitToolForm(e) {
