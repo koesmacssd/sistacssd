@@ -567,8 +567,12 @@
                 <textarea id="modal-deskripsi" rows="3" class="mt-1 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Berikan deskripsi detail tentang alat..."></textarea>
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700">URL Gambar (Google Drive)</label>
-                <input type="url" id="modal-foto" class="mt-1 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="https://drive.google.com/...">
+                <label class="block text-sm font-medium text-slate-700">Foto Alat Medis (Upload)</label>
+                <input type="file" id="modal-foto-file" accept="image/*" onchange="app.previewImage(event)" class="mt-1 w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100">
+                <div class="mt-2">
+                  <img id="modal-foto-preview" class="hidden h-28 object-cover rounded-xl border border-slate-200 bg-slate-50">
+                  <input type="hidden" id="modal-foto-url">
+                </div>
               </div>
 
               <div class="flex justify-end space-x-2 pt-4">
@@ -979,10 +983,20 @@
             `;
           }
 
+          let imgHtml = '';
+          if (item.foto_drive_url) {
+            imgHtml = `<img src="${item.foto_drive_url}" alt="${item.nama_alat}" class="w-full h-40 object-cover rounded-xl mb-3 bg-slate-50 border border-slate-100" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z\' /></svg>';">`;
+          } else {
+            imgHtml = `<div class="w-full h-40 bg-slate-50 border border-slate-100 rounded-xl mb-3 flex items-center justify-center text-slate-400">
+              <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            </div>`;
+          }
+
           const card = document.createElement('div');
           card.className = 'bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col justify-between p-5 hover:shadow-md transition duration-200';
           card.innerHTML = `
             <div class="space-y-3">
+              ${imgHtml}
               <div class="flex justify-between items-start">
                 <span class="inline-block text-[10px] bg-slate-100 text-slate-600 font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">${item.id_alat}</span>
                 <span class="inline-block text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider ${isSteril ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
@@ -1297,11 +1311,20 @@
             statusColor = 'bg-blue-100 text-blue-700';
           }
 
+          let imgHtml = '';
+          if (item.foto_drive_url) {
+            imgHtml = `<img src="${item.foto_drive_url}" class="h-10 w-10 object-cover rounded-lg border border-slate-200 mr-3 bg-slate-50 flex-shrink-0" onerror="this.style.display='none';">`;
+          } else {
+            imgHtml = `<div class="h-10 w-10 bg-slate-50 rounded-lg border border-slate-200 mr-3 flex items-center justify-center text-slate-400 flex-shrink-0">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            </div>`;
+          }
+
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-slate-50/50';
           tr.innerHTML = `
             <td class="p-4 font-bold text-slate-900">${item.id_alat}</td>
-            <td class="p-4 font-semibold text-slate-800">${item.nama_alat}</td>
+            <td class="p-4 flex items-center font-semibold text-slate-800">${imgHtml} <span>${item.nama_alat}</span></td>
             <td class="p-4 text-slate-500 text-xs truncate max-w-xs">${item.deskripsi || '-'}</td>
             <td class="p-4">
               <span class="inline-block text-[11px] font-bold px-2 py-0.5 rounded-md ${statusColor}">
@@ -1492,7 +1515,12 @@
         document.getElementById('modal-id-alat').value = '';
         document.getElementById('modal-nama-alat').value = '';
         document.getElementById('modal-deskripsi').value = '';
-        document.getElementById('modal-foto').value = '';
+        document.getElementById('modal-foto-url').value = '';
+        document.getElementById('modal-foto-file').value = '';
+        
+        const preview = document.getElementById('modal-foto-preview');
+        preview.src = '';
+        preview.classList.add('hidden');
 
         document.getElementById('tool-modal').classList.remove('hidden');
       }
@@ -1508,7 +1536,17 @@
         document.getElementById('modal-id-alat').value = item.id_alat;
         document.getElementById('modal-nama-alat').value = item.nama_alat;
         document.getElementById('modal-deskripsi').value = item.deskripsi || '';
-        document.getElementById('modal-foto').value = item.foto_drive_url || '';
+        document.getElementById('modal-foto-url').value = item.foto_drive_url || '';
+        document.getElementById('modal-foto-file').value = '';
+        
+        const preview = document.getElementById('modal-foto-preview');
+        if (item.foto_drive_url) {
+          preview.src = item.foto_drive_url;
+          preview.classList.remove('hidden');
+        } else {
+          preview.src = '';
+          preview.classList.add('hidden');
+        }
 
         document.getElementById('tool-modal').classList.remove('hidden');
       }
@@ -1517,15 +1555,68 @@
         document.getElementById('tool-modal').classList.add('hidden');
       }
 
+      previewImage(event) {
+        const file = event.target.files[0];
+        const preview = document.getElementById('modal-foto-preview');
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            preview.src = e.target.result;
+            preview.classList.remove('hidden');
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+
+      fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = error => reject(error);
+        });
+      }
+
       async submitToolForm(e) {
         e.preventDefault();
         
         const idAlat = document.getElementById('modal-id-alat').value.trim();
         const namaAlat = document.getElementById('modal-nama-alat').value.trim();
         const deskripsi = document.getElementById('modal-deskripsi').value.trim();
-        const fotoUrl = document.getElementById('modal-foto').value.trim();
+        const fileInput = document.getElementById('modal-foto-file');
+        let fotoUrl = document.getElementById('modal-foto-url').value;
+
+        // Show loading state
+        const saveBtn = e.submitter;
+        const originalBtnText = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2 inline-block text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Menyimpan...`;
 
         try {
+          // 1. Jika ada file baru yang diunggah
+          if (fileInput.files && fileInput.files[0]) {
+            this.showToast('info', 'Mengunggah foto ke Google Drive...');
+            const file = fileInput.files[0];
+            const base64 = await this.fileToBase64(file);
+            
+            const uploadRes = await this.callApiPost('uploadImage', {
+              file_base64: base64,
+              file_name: `${idAlat}_${file.name}`,
+              mime_type: file.type
+            });
+
+            if (uploadRes.success) {
+              fotoUrl = uploadRes.data.url;
+              this.showToast('success', 'Foto berhasil diunggah.');
+            } else {
+              this.showToast('error', 'Gagal mengunggah foto: ' + uploadRes.message);
+              saveBtn.disabled = false;
+              saveBtn.innerHTML = originalBtnText;
+              return;
+            }
+          }
+
+          // 2. Simpan info alat
           this.showToast('info', 'Menyimpan data alat...');
           const res = await this.callApiPost('manageItems', {
             operation: this.modalOperation,
@@ -1544,6 +1635,9 @@
           }
         } catch (e) {
           this.showToast('error', 'Gagal memproses perubahan alat.');
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = originalBtnText;
         }
       }
 

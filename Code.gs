@@ -281,6 +281,12 @@ function doPost(e) {
         }
         return updateItemCycle(postData, userEmail);
         
+      case 'uploadImage':
+        if (userRole !== 'Admin' && userRole !== 'Super Admin') {
+          return jsonResponse(false, "Akses ditolak.");
+        }
+        return uploadImage(postData, userEmail);
+
       case 'manageItems':
         if (userRole !== 'Admin' && userRole !== 'Super Admin') {
           return jsonResponse(false, "Akses ditolak.");
@@ -968,4 +974,35 @@ function initDatabase() {
   }
   
   return jsonResponse(true, "Database SISTA-CSSD berhasil diinisialisasi.");
+}
+
+// Upload foto ke Google Drive folder
+function uploadImage(postData, actorEmail) {
+  var folderId = '1ZSelyuL7GYxOjEi-o6d8wIBc37NngxD9';
+  try {
+    var base64Data = postData.file_base64;
+    var fileName = postData.file_name || 'alat_foto.jpg';
+    var mimeType = postData.mime_type || 'image/jpeg';
+    
+    if (base64Data.indexOf(';base64,') !== -1) {
+      base64Data = base64Data.split(';base64,')[1];
+    }
+    
+    var decoded = Utilities.base64Decode(base64Data);
+    var blob = Utilities.newBlob(decoded, mimeType, fileName);
+    
+    var folder = DriveApp.getFolderById(folderId);
+    var file = folder.createFile(blob);
+    
+    // Set view permission for anyone with link
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    
+    var directUrl = "https://drive.google.com/uc?export=view&id=" + file.getId();
+    
+    writeLog(actorEmail, "Upload foto alat medis: " + fileName + " ke Drive Folder. File ID: " + file.getId());
+    
+    return jsonResponse(true, "Foto berhasil diunggah.", { url: directUrl });
+  } catch (error) {
+    return jsonResponse(false, "Gagal mengunggah foto: " + error.toString());
+  }
 }
