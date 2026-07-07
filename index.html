@@ -89,14 +89,7 @@
       <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
         <div class="bg-white/10 backdrop-blur-md py-8 px-6 shadow-2xl rounded-2xl border border-white/10 sm:px-10 text-white">
           
-          <!-- Konfigurasi URL API -->
-          <div class="mb-6">
-            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Google Apps Script Web App URL</label>
-            <input type="text" id="api-url-input" class="w-full bg-slate-900/60 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="https://script.google.com/macros/s/.../exec">
-            <p class="mt-1 text-[11px] text-slate-400">Masukkan URL Web App hasil deployment Google Apps Script Anda.</p>
-          </div>
-
-          <div class="border-t border-slate-700/60 my-6"></div>
+          <!-- Web App API URL Terintegrasi Otomatis -->
 
           <!-- Tombol Google Sign In -->
           <div class="flex flex-col items-center justify-center space-y-4">
@@ -618,9 +611,6 @@
       }
 
       init() {
-        // Tampilkan value API URL yang tersimpan ke input field
-        const apiInput = document.getElementById('api-url-input');
-        if (apiInput) apiInput.value = this.apiUrl;
 
         // Inisialisasi Google SSO
         window.onload = () => {
@@ -665,13 +655,6 @@
         localStorage.setItem('sista_dev_email', this.devEmail);
         localStorage.removeItem('sista_credential');
         this.credential = '';
-        
-        // Simpan API URL
-        const apiInput = document.getElementById('api-url-input').value.trim();
-        if (apiInput) {
-          this.apiUrl = apiInput;
-          localStorage.setItem('sista_api_url', this.apiUrl);
-        }
         
         this.showToast('success', 'Masuk dengan Mode Pengembang.');
         this.checkUserStatus();
@@ -744,13 +727,9 @@
         }
       }
 
-      // Update API URL dari input UI
+      // API URL terintegrasi statis di index.html
       updateApiUrlFromInput() {
-        const apiInput = document.getElementById('api-url-input');
-        if (apiInput && apiInput.value.trim()) {
-          this.apiUrl = apiInput.value.trim();
-          localStorage.setItem('sista_api_url', this.apiUrl);
-        }
+        // Tidak diperlukan input manual
       }
 
       // Setup Menu Berdasarkan Peran User
