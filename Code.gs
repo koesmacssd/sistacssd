@@ -97,8 +97,21 @@ function jsonResponse(success, message, data) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+// Memastikan semua tab sheet ada sebelum request diproses
+function ensureDatabaseInitialized() {
+  try {
+    var ss = getSpreadsheet();
+    if (!ss.getSheetByName(USERS_SHEET_NAME)) {
+      initDatabase();
+    }
+  } catch (e) {
+    Logger.log("Auto-initialization failed: " + e.toString());
+  }
+}
+
 // --- API ROUTING: GET ---
 function doGet(e) {
+  ensureDatabaseInitialized();
   try {
     var action = e.parameter.action;
     var idToken = e.parameter.credential;
@@ -187,6 +200,7 @@ function doGet(e) {
 
 // --- API ROUTING: POST ---
 function doPost(e) {
+  ensureDatabaseInitialized();
   var lock = LockService.getScriptLock();
   try {
     // Tunggu lock hingga 15 detik
