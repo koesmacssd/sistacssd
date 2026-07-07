@@ -828,6 +828,13 @@ function updateItemCycle(postData, actorEmail) {
           tanggal_sterilisasi: now,
           tanggal_kadaluwarsa: expiryDate
         });
+      } else if (nextCycle === 'Kotor') {
+        sheet.getRange(row, 5).setValue('Kotor');
+        sheet.getRange(row, 6).setValue(''); // Hapus tanggal sterilisasi
+        sheet.getRange(row, 7).setValue(''); // Hapus tanggal kadaluwarsa
+        
+        writeLog(actorEmail, "Mengubah status " + itemId + " ke Kotor.");
+        return jsonResponse(true, "Status alat berhasil diubah ke Kotor.", { id_alat: itemId, status: 'Kotor' });
       } else {
         return jsonResponse(false, "Status siklus '" + nextCycle + "' tidak valid.");
       }

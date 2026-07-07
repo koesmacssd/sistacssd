@@ -485,10 +485,11 @@
                       <th class="p-4">ID / QR Code</th>
                       <th class="p-4">Nama Alat</th>
                       <th class="p-4">Deskripsi</th>
-                      <th class="p-4">Status Posisi</th>
+                      <th class="p-4">Status</th>
+                      <th class="p-4">Posisi</th>
                       <th class="p-4">Tgl Sterilisasi</th>
                       <th class="p-4">Tgl Kadaluwarsa</th>
-                      <th class="p-4 text-right">Aksi Siklus & Kelola</th>
+                      <th class="p-4 text-right">Kelola</th>
                     </tr>
                   </thead>
                   <tbody id="inventaris-table-body" class="divide-y divide-slate-100">
@@ -1425,39 +1426,49 @@
         if (filtered.length === 0) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="7" class="p-8 text-center text-slate-500">Tidak ada alat yang cocok dengan pencarian Anda.</td>
+              <td colspan="8" class="p-8 text-center text-slate-500">Tidak ada alat yang cocok dengan pencarian Anda.</td>
             </tr>
           `;
           return;
         }
 
         filtered.forEach(item => {
-          let statusColor = 'bg-slate-100 text-slate-700';
-          let cycleBtnHtml = '';
+          const isBorrowed = item.status_posisi.startsWith('Dipinjam');
+          let statusSelectHtml = '';
+          let posisiHtml = '';
 
-          if (item.status_posisi === 'Steril') {
-            statusColor = 'bg-green-100 text-green-700';
-            cycleBtnHtml = `
-              <button onclick="app.updateItemCycle('${item.id_alat}', 'Proses Steril')" class="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 text-xs font-bold px-3 py-1 rounded-lg border border-yellow-200 transition duration-150">
-                Siklus Steril
-              </button>
+          if (isBorrowed) {
+            // Jika dipinjam, dropdown status terkunci
+            statusSelectHtml = `
+              <select disabled class="bg-blue-50 border border-blue-200 text-blue-700 text-[11px] font-bold px-2 py-0.5 rounded-lg focus:outline-none cursor-not-allowed">
+                <option selected>Dipinjam</option>
+              </select>
             `;
-          } else if (item.status_posisi === 'Kotor') {
-            statusColor = 'bg-red-100 text-red-700';
-            cycleBtnHtml = `
-              <button onclick="app.updateItemCycle('${item.id_alat}', 'Proses Steril')" class="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 text-xs font-bold px-3 py-1 rounded-lg border border-yellow-200 transition duration-150">
-                Sterilisasi
-              </button>
+            
+            // Posisi adalah nama ruangan (misal: "Dipinjam IGD" -> "IGD")
+            const roomName = item.status_posisi.substring(8).trim();
+            posisiHtml = `<span class="inline-block text-[11px] font-bold px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 border border-blue-200">${roomName}</span>`;
+          } else {
+            // Jika di CSSD, tampilkan dropdown pilihan status (Steril, Proses Steril, Kotor)
+            const statuses = ['Steril', 'Proses Steril', 'Kotor'];
+            let optionsHtml = '';
+            statuses.forEach(st => {
+              const isSelected = item.status_posisi === st ? 'selected' : '';
+              optionsHtml += `<option value="${st}" ${isSelected}>${st}</option>`;
+            });
+
+            let selectColorClass = '';
+            if (item.status_posisi === 'Steril') selectColorClass = 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100/70';
+            else if (item.status_posisi === 'Kotor') selectColorClass = 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100/70';
+            else if (item.status_posisi === 'Proses Steril') selectColorClass = 'bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100/70';
+
+            statusSelectHtml = `
+              <select onchange="app.updateItemCycle('${item.id_alat}', this.value)" class="${selectColorClass} border text-[11px] font-bold px-2 py-0.5 rounded-lg focus:outline-none cursor-pointer transition duration-150 focus:ring-2 focus:ring-brand-500 bg-white">
+                ${optionsHtml}
+              </select>
             `;
-          } else if (item.status_posisi === 'Proses Steril') {
-            statusColor = 'bg-yellow-100 text-yellow-700';
-            cycleBtnHtml = `
-              <button onclick="app.updateItemCycle('${item.id_alat}', 'Steril')" class="bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-green-600 shadow-sm transition duration-150">
-                Set Steril (Selesai)
-              </button>
-            `;
-          } else if (item.status_posisi.startsWith('Dipinjam')) {
-            statusColor = 'bg-blue-100 text-blue-700';
+
+            posisiHtml = `<span class="inline-block text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200">CSSD</span>`;
           }
 
           let imgHtml = '';
@@ -1477,14 +1488,14 @@
             <td class="p-4 flex items-center font-semibold text-slate-800">${imgHtml} <span onclick="app.openDetailModal('${item.id_alat}')" class="cursor-pointer hover:text-brand-500 hover:underline transition duration-150">${item.nama_alat}</span></td>
             <td class="p-4 text-slate-500 text-xs truncate max-w-xs">${item.deskripsi || '-'}</td>
             <td class="p-4">
-              <span class="inline-block text-[11px] font-bold px-2 py-0.5 rounded-md ${statusColor}">
-                ${item.status_posisi}
-              </span>
+              ${statusSelectHtml}
+            </td>
+            <td class="p-4">
+              ${posisiHtml}
             </td>
             <td class="p-4 text-xs text-slate-500">${item.tanggal_sterilisasi || '-'}</td>
             <td class="p-4 text-xs text-slate-500">${item.tanggal_kadaluwarsa_steril || '-'}</td>
             <td class="p-4 text-right space-x-1.5">
-              ${cycleBtnHtml}
               <button onclick="app.openEditToolModal('${item.id_alat}')" class="text-slate-400 hover:text-slate-600 inline-block align-middle" title="Ubah Info Alat">
                 <svg class="h-5 w-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
               </button>
@@ -1511,9 +1522,11 @@
             this.refreshData();
           } else {
             this.showToast('error', res.message);
+            this.renderInventaris(); // Reset dropdown ke data asli
           }
         } catch (e) {
           this.showToast('error', 'Gagal memproses siklus alat.');
+          this.renderInventaris(); // Reset dropdown ke data asli
         }
       }
 
