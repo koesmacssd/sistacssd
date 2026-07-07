@@ -292,6 +292,8 @@
             <div id="katalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               <!-- Render via JS -->
             </div>
+            <!-- Katalog Pagination Controls -->
+            <div id="katalog-pagination"></div>
           </div>
 
           <!-- TAB 2: KERANJANG REQUEST (RUANGAN) -->
@@ -360,6 +362,8 @@
             <div id="riwayat-list" class="space-y-4">
               <!-- Rendered via JS -->
             </div>
+            <!-- Riwayat Pagination Controls -->
+            <div id="riwayat-pagination"></div>
           </div>
 
           <!-- TAB 4: DASHBOARD ADMIN (ADMIN) -->
@@ -454,6 +458,8 @@
             <div id="admin-orders-list" class="space-y-6">
               <!-- Rendered via JS -->
             </div>
+            <!-- Admin Orders Pagination Controls -->
+            <div id="admin-orders-pagination"></div>
           </div>
 
           <!-- TAB 6: INVENTARIS ALAT (ADMIN) -->
@@ -481,14 +487,39 @@
               <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                   <thead>
-                    <tr class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
-                      <th class="p-4">ID / QR Code</th>
-                      <th class="p-4">Nama Alat</th>
+                    <tr class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 select-none">
+                      <th onclick="app.sortInventaris('id_alat')" class="p-4 cursor-pointer hover:bg-slate-100 hover:text-slate-700 transition duration-150 group">
+                        <div class="flex items-center space-x-1">
+                          <span>ID / QR Code</span>
+                          <span id="sort-icon-inventaris-id_alat" class="text-slate-400 group-hover:text-slate-600"></span>
+                        </div>
+                      </th>
+                      <th onclick="app.sortInventaris('nama_alat')" class="p-4 cursor-pointer hover:bg-slate-100 hover:text-slate-700 transition duration-150 group">
+                        <div class="flex items-center space-x-1">
+                          <span>Nama Alat</span>
+                          <span id="sort-icon-inventaris-nama_alat" class="text-slate-400 group-hover:text-slate-600"></span>
+                        </div>
+                      </th>
                       <th class="p-4">Deskripsi</th>
-                      <th class="p-4">Status</th>
+                      <th onclick="app.sortInventaris('status_posisi')" class="p-4 cursor-pointer hover:bg-slate-100 hover:text-slate-700 transition duration-150 group">
+                        <div class="flex items-center space-x-1">
+                          <span>Status</span>
+                          <span id="sort-icon-inventaris-status_posisi" class="text-slate-400 group-hover:text-slate-600"></span>
+                        </div>
+                      </th>
                       <th class="p-4">Posisi</th>
-                      <th class="p-4">Tgl Sterilisasi</th>
-                      <th class="p-4">Tgl Kadaluwarsa</th>
+                      <th onclick="app.sortInventaris('tanggal_sterilisasi')" class="p-4 cursor-pointer hover:bg-slate-100 hover:text-slate-700 transition duration-150 group">
+                        <div class="flex items-center space-x-1">
+                          <span>Tgl Sterilisasi</span>
+                          <span id="sort-icon-inventaris-tanggal_sterilisasi" class="text-slate-400 group-hover:text-slate-600"></span>
+                        </div>
+                      </th>
+                      <th onclick="app.sortInventaris('tanggal_kadaluwarsa_steril')" class="p-4 cursor-pointer hover:bg-slate-100 hover:text-slate-700 transition duration-150 group">
+                        <div class="flex items-center space-x-1">
+                          <span>Tgl Kadaluwarsa</span>
+                          <span id="sort-icon-inventaris-tanggal_kadaluwarsa_steril" class="text-slate-400 group-hover:text-slate-600"></span>
+                        </div>
+                      </th>
                       <th class="p-4 text-right">Kelola</th>
                     </tr>
                   </thead>
@@ -497,6 +528,8 @@
                   </tbody>
                 </table>
               </div>
+              <!-- Inventaris Pagination Controls -->
+              <div id="inventaris-pagination" class="border-t border-slate-100 bg-slate-50/50 px-4"></div>
             </div>
           </div>
 
@@ -546,14 +579,29 @@
               </button>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
-              <div class="max-h-[500px] overflow-y-auto custom-scrollbar">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div class="max-h-[500px] overflow-y-auto custom-scrollbar p-4">
                 <table class="w-full text-left text-xs">
                   <thead>
-                    <tr class="text-slate-500 font-bold border-b border-slate-200 pb-2">
-                      <th class="pb-2 w-48">Timestamp</th>
-                      <th class="pb-2 w-64">Aktor (Email)</th>
-                      <th class="pb-2">Aktivitas</th>
+                    <tr class="text-slate-500 font-bold border-b border-slate-200 pb-2 select-none">
+                      <th onclick="app.sortLogs('timestamp')" class="pb-2 w-48 cursor-pointer hover:bg-slate-50 transition duration-150 group">
+                        <div class="flex items-center space-x-1">
+                          <span>Timestamp</span>
+                          <span id="sort-icon-logs-timestamp" class="text-slate-400 group-hover:text-slate-600"></span>
+                        </div>
+                      </th>
+                      <th onclick="app.sortLogs('email_aktor')" class="pb-2 w-64 cursor-pointer hover:bg-slate-50 transition duration-150 group">
+                        <div class="flex items-center space-x-1">
+                          <span>Aktor (Email)</span>
+                          <span id="sort-icon-logs-email_aktor" class="text-slate-400 group-hover:text-slate-600"></span>
+                        </div>
+                      </th>
+                      <th onclick="app.sortLogs('aktivitas')" class="pb-2 cursor-pointer hover:bg-slate-50 transition duration-150 group">
+                        <div class="flex items-center space-x-1">
+                          <span>Aktivitas</span>
+                          <span id="sort-icon-logs-aktivitas" class="text-slate-400 group-hover:text-slate-600"></span>
+                        </div>
+                      </th>
                     </tr>
                   </thead>
                   <tbody id="logs-table-body" class="divide-y divide-slate-100">
@@ -561,6 +609,8 @@
                   </tbody>
                 </table>
               </div>
+              <!-- Logs Pagination Controls -->
+              <div id="logs-pagination" class="border-t border-slate-100 bg-slate-50/50 px-4"></div>
             </div>
           </div>
 
@@ -737,6 +787,31 @@
         
         this.currentTab = '';
         this.modalOperation = 'add'; // 'add' | 'edit'
+        
+        // State Paginasi
+        this.katalogPage = 1;
+        this.katalogPageSize = 12;
+        this.lastKatalogQuery = '';
+
+        this.inventarisPage = 1;
+        this.inventarisPageSize = 15;
+        this.lastInventarisQuery = '';
+
+        this.adminOrdersPage = 1;
+        this.adminOrdersPageSize = 15;
+
+        this.riwayatPage = 1;
+        this.riwayatPageSize = 10;
+
+        this.logsPage = 1;
+        this.logsPageSize = 25;
+
+        // State Sorting
+        this.inventarisSortKey = 'id_alat';
+        this.inventarisSortDir = 'asc';
+
+        this.logsSortKey = 'timestamp';
+        this.logsSortDir = 'desc';
       }
 
       init() {
@@ -1091,7 +1166,13 @@
         const query = document.getElementById('katalog-search').value.toLowerCase();
         grid.innerHTML = '';
 
-        // Filter alat berstatus steril saja
+        // Reset page if search query changes
+        if (query !== this.lastKatalogQuery) {
+          this.katalogPage = 1;
+          this.lastKatalogQuery = query;
+        }
+
+        // Filter search items
         const availableItems = this.items.filter(item => {
           return item.nama_alat.toLowerCase().includes(query) || item.id_alat.toLowerCase().includes(query);
         });
@@ -1102,10 +1183,16 @@
               <p class="text-slate-500 text-sm font-medium">Tidak ada alat medis steril yang ditemukan.</p>
             </div>
           `;
+          this.renderPaginationControls('katalog-pagination', 0, 1, this.katalogPageSize, 'changeKatalogPage');
           return;
         }
 
-        availableItems.forEach(item => {
+        // Slice for pagination
+        const start = (this.katalogPage - 1) * this.katalogPageSize;
+        const end = start + this.katalogPageSize;
+        const slicedItems = availableItems.slice(start, end);
+
+        slicedItems.forEach(item => {
           const inCart = this.cart.includes(item.id_alat);
           const isSteril = item.status_posisi === 'Steril';
           
@@ -1167,6 +1254,9 @@
           `;
           grid.appendChild(card);
         });
+
+        // Render pagination controls
+        this.renderPaginationControls('katalog-pagination', availableItems.length, this.katalogPage, this.katalogPageSize, 'changeKatalogPage');
       }
 
       // B. Keranjang (Ruangan)
@@ -1222,10 +1312,16 @@
               Belum ada riwayat permintaan peminjaman dari Ruangan Anda.
             </div>
           `;
+          this.renderPaginationControls('riwayat-pagination', 0, 1, this.riwayatPageSize, 'changeRiwayatPage');
           return;
         }
 
-        this.orders.forEach(order => {
+        // Slice for pagination
+        const start = (this.riwayatPage - 1) * this.riwayatPageSize;
+        const end = start + this.riwayatPageSize;
+        const slicedOrders = this.orders.slice(start, end);
+
+        slicedOrders.forEach(order => {
           let statusBadgeClass = 'bg-yellow-100 text-yellow-700 border-yellow-200';
           if (order.status_order === 'Ready for Pickup') statusBadgeClass = 'bg-blue-100 text-blue-700 border-blue-200';
           if (order.status_order === 'Aktif') statusBadgeClass = 'bg-green-100 text-green-700 border-green-200';
@@ -1280,6 +1376,9 @@
           `;
           list.appendChild(item);
         });
+
+        // Render pagination controls
+        this.renderPaginationControls('riwayat-pagination', this.orders.length, this.riwayatPage, this.riwayatPageSize, 'changeRiwayatPage');
       }
 
       // D. Admin Dashboard Stats
@@ -1316,10 +1415,16 @@
               Belum ada data permintaan peminjaman alat masuk.
             </div>
           `;
+          this.renderPaginationControls('admin-orders-pagination', 0, 1, this.adminOrdersPageSize, 'changeAdminOrdersPage');
           return;
         }
 
-        this.orders.forEach(order => {
+        // Slice for pagination
+        const start = (this.adminOrdersPage - 1) * this.adminOrdersPageSize;
+        const end = start + this.adminOrdersPageSize;
+        const slicedOrders = this.orders.slice(start, end);
+
+        slicedOrders.forEach(order => {
           let statusBadgeClass = 'bg-yellow-100 text-yellow-700 border-yellow-200';
           let actionBtnHtml = '';
 
@@ -1391,6 +1496,9 @@
           `;
           list.appendChild(item);
         });
+
+        // Render pagination controls
+        this.renderPaginationControls('admin-orders-pagination', this.orders.length, this.adminOrdersPage, this.adminOrdersPageSize, 'changeAdminOrdersPage');
       }
 
       // Update Order Status (Action Button)
@@ -1419,9 +1527,31 @@
         const query = document.getElementById('inventaris-search').value.toLowerCase();
         tbody.innerHTML = '';
 
+        // Reset page if search query changes
+        if (query !== this.lastInventarisQuery) {
+          this.inventarisPage = 1;
+          this.lastInventarisQuery = query;
+        }
+
         const filtered = this.items.filter(item => {
           return item.nama_alat.toLowerCase().includes(query) || item.id_alat.toLowerCase().includes(query);
         });
+
+        // Sort items before slicing for pagination
+        filtered.sort((a, b) => {
+          let valA = a[this.inventarisSortKey] || '';
+          let valB = b[this.inventarisSortKey] || '';
+          
+          if (typeof valA === 'string') valA = valA.toLowerCase();
+          if (typeof valB === 'string') valB = valB.toLowerCase();
+          
+          if (valA < valB) return this.inventarisSortDir === 'asc' ? -1 : 1;
+          if (valA > valB) return this.inventarisSortDir === 'asc' ? 1 : -1;
+          return 0;
+        });
+
+        // Update sorting indicator icons
+        this.updateSortIcons('inventaris', this.inventarisSortKey, this.inventarisSortDir);
 
         if (filtered.length === 0) {
           tbody.innerHTML = `
@@ -1429,10 +1559,16 @@
               <td colspan="8" class="p-8 text-center text-slate-500">Tidak ada alat yang cocok dengan pencarian Anda.</td>
             </tr>
           `;
+          this.renderPaginationControls('inventaris-pagination', 0, 1, this.inventarisPageSize, 'changeInventarisPage');
           return;
         }
 
-        filtered.forEach(item => {
+        // Slice for pagination
+        const start = (this.inventarisPage - 1) * this.inventarisPageSize;
+        const end = start + this.inventarisPageSize;
+        const slicedItems = filtered.slice(start, end);
+
+        slicedItems.forEach(item => {
           const isBorrowed = item.status_posisi.startsWith('Dipinjam');
           let statusSelectHtml = '';
           let posisiHtml = '';
@@ -1506,6 +1642,9 @@
           `;
           tbody.appendChild(tr);
         });
+
+        // Render pagination controls
+        this.renderPaginationControls('inventaris-pagination', filtered.length, this.inventarisPage, this.inventarisPageSize, 'changeInventarisPage');
       }
 
       // Update Siklus Status Alat Medis
@@ -1643,29 +1782,62 @@
           const res = await this.callApi('getLogs');
           if (res.success) {
             this.logs = res.data;
-            tbody.innerHTML = '';
-            
-            if (this.logs.length === 0) {
-              tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-500">Tidak ada log aktivitas.</td></tr>';
-              return;
-            }
-            
-            this.logs.forEach(log => {
-              const tr = document.createElement('tr');
-              tr.className = 'hover:bg-slate-50/50';
-              tr.innerHTML = `
-                <td class="py-2.5 text-slate-400">${log.timestamp}</td>
-                <td class="py-2.5 font-semibold text-slate-600">${log.email_aktor}</td>
-                <td class="py-2.5 text-slate-700">${log.aktivitas}</td>
-              `;
-              tbody.appendChild(tr);
-            });
+            this.logsPage = 1;
+            this.renderLogsPageOnly();
           } else {
             tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-red-500">${res.message}</td></tr>`;
+            this.renderPaginationControls('logs-pagination', 0, 1, this.logsPageSize, 'changeLogsPage');
           }
         } catch (e) {
           tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-red-500">Gagal mengambil logs.</td></tr>';
+          this.renderPaginationControls('logs-pagination', 0, 1, this.logsPageSize, 'changeLogsPage');
         }
+      }
+
+      renderLogsPageOnly() {
+        const tbody = document.getElementById('logs-table-body');
+        tbody.innerHTML = '';
+
+        if (!this.logs || this.logs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-500">Tidak ada log aktivitas.</td></tr>';
+          this.renderPaginationControls('logs-pagination', 0, 1, this.logsPageSize, 'changeLogsPage');
+          return;
+        }
+
+        // Sort logs before slicing for pagination
+        this.logs.sort((a, b) => {
+          let valA = a[this.logsSortKey] || '';
+          let valB = b[this.logsSortKey] || '';
+          
+          if (typeof valA === 'string') valA = valA.toLowerCase();
+          if (typeof valB === 'string') valB = valB.toLowerCase();
+          
+          if (valA < valB) return this.logsSortDir === 'asc' ? -1 : 1;
+          if (valA > valB) return this.logsSortDir === 'asc' ? 1 : -1;
+          return 0;
+        });
+
+        // Update sorting indicator icons
+        this.updateSortIcons('logs', this.logsSortKey, this.logsSortDir);
+
+        // Slice for pagination
+        const start = (this.logsPage - 1) * this.logsPageSize;
+        const end = start + this.logsPageSize;
+        const slicedLogs = this.logs.slice(start, end);
+
+        slicedLogs.forEach(log => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-50/50';
+          tr.innerHTML = `
+            <td class="py-2.5 text-slate-400">${log.timestamp}</td>
+            <td class="py-2.5 font-semibold text-slate-600">${log.email_aktor}</td>
+            <td class="py-2.5 text-slate-700">${log.aktivitas}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        // Render pagination controls
+        this.renderPaginationControls('logs-pagination', this.logs.length, this.logsPage, this.logsPageSize, 'changeLogsPage');
       }
 
       // --- DECODE GOOGLE SSO JWT ---
@@ -1680,6 +1852,124 @@
         } catch (e) {
           return null;
         }
+      }
+
+      // --- PAGINATION HANDLERS ---
+      changeKatalogPage(page) {
+        this.katalogPage = page;
+        this.renderKatalog();
+      }
+
+      changeInventarisPage(page) {
+        this.inventarisPage = page;
+        this.renderInventaris();
+      }
+
+      changeAdminOrdersPage(page) {
+        this.adminOrdersPage = page;
+        this.renderAdminOrders();
+      }
+
+      changeRiwayatPage(page) {
+        this.riwayatPage = page;
+        this.renderRiwayat();
+      }
+
+      changeLogsPage(page) {
+        this.logsPage = page;
+        this.renderLogsPageOnly();
+      }
+
+      // --- SORTING HANDLERS ---
+      sortInventaris(key) {
+        if (this.inventarisSortKey === key) {
+          this.inventarisSortDir = this.inventarisSortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          this.inventarisSortKey = key;
+          this.inventarisSortDir = 'asc';
+        }
+        this.renderInventaris();
+      }
+
+      sortLogs(key) {
+        if (this.logsSortKey === key) {
+          this.logsSortDir = this.logsSortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          this.logsSortKey = key;
+          this.logsSortDir = 'asc';
+        }
+        this.renderLogsPageOnly();
+      }
+
+      updateSortIcons(tableType, activeKey, activeDir) {
+        const keys = tableType === 'inventaris' ? 
+          ['id_alat', 'nama_alat', 'status_posisi', 'tanggal_sterilisasi', 'tanggal_kadaluwarsa_steril'] : 
+          ['timestamp', 'email_aktor', 'aktivitas'];
+          
+        keys.forEach(key => {
+          const iconSpan = document.getElementById(`sort-icon-${tableType}-${key}`);
+          if (!iconSpan) return;
+          
+          if (key === activeKey) {
+            if (activeDir === 'asc') {
+              iconSpan.innerHTML = `<svg class="h-3 w-3 inline text-brand-500 font-bold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 15l7-7 7 7" /></svg>`;
+            } else {
+              iconSpan.innerHTML = `<svg class="h-3 w-3 inline text-brand-500 font-bold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" /></svg>`;
+            }
+          } else {
+            iconSpan.innerHTML = `<svg class="h-3 w-3 inline opacity-30 group-hover:opacity-80 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" /></svg>`;
+          }
+        });
+      }
+
+      renderPaginationControls(containerId, totalItems, currentPage, pageSize, onPageChangeName) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        const totalPages = Math.ceil(totalItems / pageSize) || 1;
+        
+        if (totalPages <= 1) {
+          container.innerHTML = '';
+          container.classList.add('hidden');
+          return;
+        }
+        
+        container.classList.remove('hidden');
+        
+        const startItem = (currentPage - 1) * pageSize + 1;
+        const endItem = Math.min(currentPage * pageSize, totalItems);
+        
+        // Prev button
+        const prevDisabled = currentPage === 1 ? 'disabled class="opacity-50 cursor-not-allowed border border-slate-200 text-slate-400 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50"' : `class="border border-slate-300 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-xl text-xs font-semibold transition bg-white" onclick="app.${onPageChangeName}(${currentPage - 1})"`;
+        
+        // Next button
+        const nextDisabled = currentPage === totalPages ? 'disabled class="opacity-50 cursor-not-allowed border border-slate-200 text-slate-400 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50"' : `class="border border-slate-300 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-xl text-xs font-semibold transition bg-white" onclick="app.${onPageChangeName}(${currentPage + 1})"`;
+        
+        let pagesHtml = '';
+        for (let p = 1; p <= totalPages; p++) {
+          if (p === 1 || p === totalPages || (p >= currentPage - 1 && p <= currentPage + 1)) {
+            const activeClass = p === currentPage ? 'bg-brand-500 text-white border-brand-500 shadow-sm' : 'border-slate-300 text-slate-700 hover:bg-slate-50 bg-white';
+            pagesHtml += `<button class="border px-3 py-1.5 rounded-xl text-xs font-semibold transition ${activeClass}" onclick="app.${onPageChangeName}(${p})">${p}</button>`;
+          } else if (p === 2 || p === totalPages - 1) {
+            pagesHtml += `<span class="text-slate-400 text-xs px-1">...</span>`;
+          }
+        }
+        pagesHtml = pagesHtml.replace(/(<span class="text-slate-400 text-xs px-1">\.\.\.<\/span>\s*)+/g, '<span class="text-slate-400 text-xs px-1">...</span> ');
+
+        container.innerHTML = `
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-2">
+            <span class="text-xs text-slate-500 font-medium">
+              Menampilkan <span class="font-bold text-slate-800">${startItem}-${endItem}</span> dari <span class="font-bold text-slate-800">${totalItems}</span> data
+            </span>
+            <div class="flex items-center space-x-1.5">
+              <button ${prevDisabled}>Sebelumnya</button>
+              <div class="flex items-center space-x-1">
+                ${pagesHtml}
+              </div>
+              <button ${nextDisabled}>Berikutnya</button>
+            </div>
+          </div>
+        `;
       }
 
       // --- PROFILE EDIT MODAL ---
