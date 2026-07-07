@@ -276,6 +276,9 @@
               <!-- Search & Filter -->
               <div class="w-full sm:w-auto flex items-center space-x-2">
                 <input type="text" id="katalog-search" oninput="app.renderKatalog()" class="w-full sm:w-64 border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Cari nama alat...">
+                <button onclick="app.refreshData()" class="bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 p-2.5 rounded-xl shadow-sm transition duration-150 flex-shrink-0" title="Refresh Data">
+                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.25" /></svg>
+                </button>
               </div>
             </div>
 
@@ -355,9 +358,14 @@
 
           <!-- TAB 4: DASHBOARD ADMIN (ADMIN) -->
           <div id="tab-admin-dashboard" class="tab-content hidden space-y-6">
-            <div>
-              <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Dashboard Pemantauan</h1>
-              <p class="text-sm text-slate-500">Statistik real-time logistik alat steril CSSD.</p>
+            <div class="flex justify-between items-center">
+              <div>
+                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Dashboard Pemantauan</h1>
+                <p class="text-sm text-slate-500">Statistik real-time logistik alat steril CSSD.</p>
+              </div>
+              <button onclick="app.refreshData()" class="bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 p-2.5 rounded-xl shadow-sm transition duration-150" title="Refresh Data">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.25" /></svg>
+              </button>
             </div>
 
             <!-- Stats Grid -->
@@ -452,6 +460,9 @@
               
               <div class="w-full sm:w-auto flex items-center space-x-2">
                 <input type="text" id="inventaris-search" oninput="app.renderInventaris()" class="w-full sm:w-64 border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Cari ID/nama alat...">
+                <button onclick="app.refreshData()" class="bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 p-2.5 rounded-xl shadow-sm transition duration-150 flex-shrink-0" title="Refresh Data">
+                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.25" /></svg>
+                </button>
                 <button onclick="app.openAddToolModal()" class="bg-brand-500 hover:bg-brand-600 text-white font-semibold px-4 py-2 rounded-xl text-sm flex items-center space-x-1 flex-shrink-0 transition duration-150">
                   <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                   <span>Tambah Alat</span>
@@ -484,9 +495,14 @@
 
           <!-- TAB 7: MANAJEMEN USER (ADMIN) -->
           <div id="tab-admin-user-mgmt" class="tab-content hidden space-y-6">
-            <div>
-              <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Manajemen Akun Pengguna</h1>
-              <p class="text-sm text-slate-500">Approve user baru dan kelola wewenang akses peran.</p>
+            <div class="flex justify-between items-center">
+              <div>
+                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Manajemen Akun Pengguna</h1>
+                <p class="text-sm text-slate-500">Approve user baru dan kelola wewenang akses peran.</p>
+              </div>
+              <button onclick="app.refreshData()" class="bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 p-2.5 rounded-xl shadow-sm transition duration-150" title="Refresh Data">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.25" /></svg>
+              </button>
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -743,12 +759,13 @@
             this.setupNavigation();
             this.showView('dashboard');
             
-            // Set tab default berdasarkan role
-            if (this.user.peran === 'Ruangan') {
-              this.setTab('katalog');
-            } else {
-              this.setTab('admin-dashboard');
+            // Restore active tab
+            let savedTab = localStorage.getItem('sista_current_tab');
+            const allowedTabs = this.user.peran === 'Ruangan' ? ['katalog', 'keranjang', 'riwayat'] : ['admin-dashboard', 'admin-peminjaman', 'admin-inventaris', 'admin-user-mgmt', 'admin-logs'];
+            if (!savedTab || !allowedTabs.includes(savedTab)) {
+              savedTab = this.user.peran === 'Ruangan' ? 'katalog' : 'admin-dashboard';
             }
+            this.setTab(savedTab);
             this.refreshData();
           } else {
             if (res.data && res.data.code === 'NOT_REGISTERED') {
@@ -788,6 +805,7 @@
       // Set Active Tab di Dashboard
       setTab(tabName) {
         this.currentTab = tabName;
+        localStorage.setItem('sista_current_tab', tabName);
         
         // Sembunyikan semua tab
         document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));

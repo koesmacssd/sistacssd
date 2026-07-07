@@ -307,15 +307,17 @@ function doPost(e) {
 
 // Get User Profile
 function getUserProfile(email) {
+  if (!email) return null;
+  var trimmedEmail = email.toString().trim().toLowerCase();
   var ss = getSpreadsheet();
   var sheet = ss.getSheetByName(USERS_SHEET_NAME);
   if (!sheet) return null;
   var data = sheet.getDataRange().getValues();
   for (var i = 1; i < data.length; i++) {
-    if (data[i][1].toLowerCase() === email.toLowerCase()) {
+    if (data[i][1] && data[i][1].toString().trim().toLowerCase() === trimmedEmail) {
       return {
         id: data[i][0],
-        email: data[i][1],
+        email: data[i][1].toString().trim(),
         nama: data[i][2],
         peran: data[i][3],
         nama_ruangan: data[i][4],
@@ -457,13 +459,15 @@ function registerUser(postData, userEmail) {
   var ss = getSpreadsheet();
   var sheet = ss.getSheetByName(USERS_SHEET_NAME);
   
+  var cleanEmail = userEmail.toString().trim().toLowerCase();
+  
   // Cek jika sudah terdaftar
-  var existing = getUserProfile(userEmail);
+  var existing = getUserProfile(cleanEmail);
   if (existing) {
     return jsonResponse(false, "User sudah terdaftar.", existing);
   }
   
-  var name = postData.nama || userEmail.split('@')[0];
+  var name = postData.nama || cleanEmail.split('@')[0];
   var room = postData.nama_ruangan || "Umum";
   var role = "Ruangan"; // Default role
   var status = "Pending"; // Butuh persetujuan
@@ -471,23 +475,38 @@ function registerUser(postData, userEmail) {
   var lastRow = sheet.getLastRow();
   var id = "USR-" + (lastRow + 1) + "-" + Math.floor(100 + Math.random() * 900);
   
-  sheet.appendRow([id, userEmail, name, role, room, status]);
-  writeLog(userEmail, "Registrasi user baru. Ruangan: " + room);
+  sheet.appendRow([id, cleanEmail, name, role, room, status]);
+  writeLog(cleanEmail, "Registrasi user baru. Ruangan: " + room);
   
   // Kirim notifikasi ke Admin
-  sendTelegramNotification("👤 *Registrasi User Baru*\nNama: " + name + "\nEmail: " + userEmail + "\nRuangan: " + room + "\nStatus: Menunggu Persetujuan Admin.");
+  sendTelegramNotification("👤 *Registrasi User Baru*\nNama: " + name + "\nEmail: " + cleanEmail + "\nRuangan: " + room + "\nStatus: Menunggu Persetujuan Admin.");
   
-  return jsonResponse(true, "Registrasi berhasil. Menunggu persetujuan Admin.", { id: id, email: userEmail, status: status });
+  return jsonResponse(true, "Registrasi berhasil. Menunggu persetujuan Admin.", { id: id, email: cleanEmail, status: status });
 }
 
 // Auto register for Default Super Admin
 function registerUserAuto(email, name, role, room) {
-  var ss = getSpreadsheet();
-  var sheet = ss.getSheetByName(USERS_SHEET_NAME);
-  var lastRow = sheet.getLastRow();
-  var id = "USR-" + (lastRow + 1) + "-" + Math.floor(100 + Math.random() * 900);
-  sheet.appendRow([id, email, name, role, room, 'Aktif']);
-  writeLog(email, "Sistem otomatis mendaftarkan Super Admin default.");
+  var lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+    
+    var cleanEmail = email.toString().trim().toLowerCase();
+    
+    // Double-check if the user got registered while we were waiting for the lock
+    var profile = getUserProfile(cleanEmail);
+    if (profile) return;
+    
+    var ss = getSpreadsheet();
+    var sheet = ss.getSheetByName(USERS_SHEET_NAME);
+    var lastRow = sheet.getLastRow();
+    var id = "USR-" + (lastRow + 1) + "-" + Math.floor(100 + Math.random() * 900);
+    sheet.appendRow([id, cleanEmail, name, role, room, 'Aktif']);
+    writeLog(cleanEmail, "Sistem otomatis mendaftarkan Super Admin default.");
+  } catch (err) {
+    console.error("registerUserAuto error: " + err.toString());
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 // Update User Status (Approve/Reject/Change Role)
