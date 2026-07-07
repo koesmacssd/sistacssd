@@ -16,14 +16,19 @@ var LOGS_SHEET_NAME = 'logs';
 
 // Helper to get active sheet or open by ScriptProperty
 function getSpreadsheet() {
+  var id = '1J656JtbKRzBTjbhLEbXq7ks9mMc5IH-ObXz891JurQQ';
+  try {
+    if (id) return SpreadsheetApp.openById(id);
+  } catch (e) {}
+  
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     if (ss) return ss;
   } catch (e) {}
   
-  var id = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
-  if (id) {
-    return SpreadsheetApp.openById(id);
+  var propId = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
+  if (propId) {
+    return SpreadsheetApp.openById(propId);
   }
   throw new Error("Spreadsheet tidak ditemukan. Silakan buka dari Spreadsheet bound-script atau atur SPREADSHEET_ID di Script Properties.");
 }
