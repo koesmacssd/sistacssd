@@ -1000,9 +1000,24 @@ function uploadImage(postData, actorEmail) {
     var directUrl = "https://drive.google.com/uc?export=view&id=" + file.getId();
     
     writeLog(actorEmail, "Upload foto alat medis: " + fileName + " ke Drive Folder. File ID: " + file.getId());
+    console.log("Upload sukses. File ID: " + file.getId());
     
     return jsonResponse(true, "Foto berhasil diunggah.", { url: directUrl });
   } catch (error) {
-    return jsonResponse(false, "Gagal mengunggah foto: " + error.toString());
+    var errMsg = "ERROR Upload Foto: " + error.toString();
+    console.error(errMsg);
+    writeLog(actorEmail, errMsg);
+    return jsonResponse(false, errMsg);
+  }
+}
+
+// Jalankan fungsi ini sekali di editor Apps Script Anda untuk memicu dialog otorisasi Google Drive
+function triggerAuthorization() {
+  try {
+    var folderId = '1ZSelyuL7GYxOjEi-o6d8wIBc37NngxD9';
+    var folder = DriveApp.getFolderById(folderId);
+    Logger.log("Folder Drive berhasil diakses: " + folder.getName());
+  } catch (e) {
+    Logger.log("Otorisasi gagal atau folder tidak ditemukan: " + e.toString());
   }
 }
