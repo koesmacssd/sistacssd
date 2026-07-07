@@ -585,6 +585,69 @@
       </div>
     </div>
 
+    <!-- MODAL: DETAIL ALAT -->
+    <div id="detail-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+      <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity bg-slate-950/60" onclick="app.closeDetailModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-slate-100">
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-bold text-slate-900">Detail Alat Medis</h3>
+              <button onclick="app.closeDetailModal()" class="text-slate-400 hover:text-slate-600 focus:outline-none">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Foto Besar -->
+              <div id="detail-foto-container">
+                <img id="detail-foto" class="w-full h-64 object-cover rounded-2xl border border-slate-200 bg-slate-50 shadow-inner" src="" alt="Foto Alat" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z\' /></svg>';">
+              </div>
+              
+              <!-- Info Atribut -->
+              <div class="space-y-4 text-sm">
+                <div>
+                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">ID Alat / QR Code</span>
+                  <span id="detail-id" class="text-xs font-bold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg inline-block mt-1"></span>
+                </div>
+                <div>
+                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Nama Alat Medis</span>
+                  <span id="detail-nama" class="text-base font-extrabold text-slate-900 block mt-0.5"></span>
+                </div>
+                <div>
+                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Deskripsi</span>
+                  <p id="detail-deskripsi" class="text-slate-600 leading-relaxed mt-1"></p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Status Posisi</span>
+                    <span id="detail-status" class="inline-block text-[11px] font-bold px-2 py-0.5 rounded-md uppercase mt-1"></span>
+                  </div>
+                  <div>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Kadaluwarsa Steril</span>
+                    <span id="detail-kadaluwarsa" class="text-slate-700 font-semibold block mt-1"></span>
+                  </div>
+                </div>
+                <div>
+                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Tanggal Sterilisasi</span>
+                  <span id="detail-sterilisasi" class="text-slate-500 block mt-0.5"></span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex justify-end pt-6 border-t border-slate-100 mt-6">
+              <button onclick="app.closeDetailModal()" class="bg-brand-500 hover:bg-brand-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition duration-150 shadow-md">
+                Tutup Detail
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- SCRIPT LOGIKA SPA SISTA-CSSD -->
@@ -985,9 +1048,9 @@
 
           let imgHtml = '';
           if (item.foto_drive_url) {
-            imgHtml = `<img src="${item.foto_drive_url}" alt="${item.nama_alat}" class="w-full h-40 object-cover rounded-xl mb-3 bg-slate-50 border border-slate-100" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z\' /></svg>';">`;
+            imgHtml = `<img onclick="app.openDetailModal('${item.id_alat}')" src="${item.foto_drive_url}" alt="${item.nama_alat}" class="w-full h-40 object-cover rounded-xl mb-3 bg-slate-50 border border-slate-100 cursor-pointer hover:opacity-90 transition duration-150" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z\' /></svg>';">`;
           } else {
-            imgHtml = `<div class="w-full h-40 bg-slate-50 border border-slate-100 rounded-xl mb-3 flex items-center justify-center text-slate-400">
+            imgHtml = `<div onclick="app.openDetailModal('${item.id_alat}')" class="w-full h-40 bg-slate-50 border border-slate-100 rounded-xl mb-3 flex items-center justify-center text-slate-400 cursor-pointer hover:bg-slate-100 transition duration-150">
               <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             </div>`;
           }
@@ -1004,7 +1067,7 @@
                 </span>
               </div>
               <div>
-                <h3 class="text-base font-bold text-slate-900 line-clamp-1">${item.nama_alat}</h3>
+                <h3 onclick="app.openDetailModal('${item.id_alat}')" class="text-base font-bold text-slate-900 hover:text-brand-500 cursor-pointer transition line-clamp-1">${item.nama_alat}</h3>
                 <p class="text-xs text-slate-500 line-clamp-2 mt-1 min-h-[32px]">${item.deskripsi || 'Tidak ada deskripsi.'}</p>
               </div>
               <div class="border-t border-slate-100 pt-3 text-[11px] text-slate-400">
@@ -1096,7 +1159,7 @@
           order.items.forEach(it => {
             itemsListHtml += `
               <div class="flex items-center justify-between text-xs py-1 border-b border-slate-100 last:border-0">
-                <span class="font-semibold text-slate-800">${it.nama_alat} <span class="text-slate-400 font-bold ml-1 uppercase">(${it.id_alat})</span></span>
+                <span onclick="app.openDetailModal('${it.id_alat}')" class="font-semibold text-slate-800 hover:text-brand-500 cursor-pointer hover:underline transition duration-150">${it.nama_alat} <span class="text-slate-400 font-bold ml-1 uppercase">(${it.id_alat})</span></span>
                 <span class="text-slate-500 italic">${it.catatan_kondisi ? `Catatan: ${it.catatan_kondisi}` : ''}</span>
               </div>
             `;
@@ -1202,7 +1265,7 @@
           order.items.forEach(it => {
             itemsListHtml += `
               <div class="flex items-center justify-between text-xs py-1 border-b border-slate-100 last:border-0">
-                <span class="font-bold text-slate-800">${it.nama_alat} <span class="text-slate-400 font-bold uppercase ml-1">(${it.id_alat})</span></span>
+                <span onclick="app.openDetailModal('${it.id_alat}')" class="font-bold text-slate-800 hover:text-brand-500 cursor-pointer hover:underline transition duration-150">${it.nama_alat} <span class="text-slate-400 font-bold uppercase ml-1">(${it.id_alat})</span></span>
                 <span class="text-slate-500 italic">${it.catatan_kondisi ? `Catatan: ${it.catatan_kondisi}` : ''}</span>
               </div>
             `;
@@ -1313,9 +1376,9 @@
 
           let imgHtml = '';
           if (item.foto_drive_url) {
-            imgHtml = `<img src="${item.foto_drive_url}" class="h-10 w-10 object-cover rounded-lg border border-slate-200 mr-3 bg-slate-50 flex-shrink-0" onerror="this.style.display='none';">`;
+            imgHtml = `<img onclick="app.openDetailModal('${item.id_alat}')" src="${item.foto_drive_url}" class="h-10 w-10 object-cover rounded-lg border border-slate-200 mr-3 bg-slate-50 flex-shrink-0 cursor-pointer hover:opacity-80 transition duration-150" onerror="this.style.display='none';">`;
           } else {
-            imgHtml = `<div class="h-10 w-10 bg-slate-50 rounded-lg border border-slate-200 mr-3 flex items-center justify-center text-slate-400 flex-shrink-0">
+            imgHtml = `<div onclick="app.openDetailModal('${item.id_alat}')" class="h-10 w-10 bg-slate-50 rounded-lg border border-slate-200 mr-3 flex items-center justify-center text-slate-400 flex-shrink-0 cursor-pointer hover:bg-slate-100 transition duration-150">
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             </div>`;
           }
@@ -1324,7 +1387,7 @@
           tr.className = 'hover:bg-slate-50/50';
           tr.innerHTML = `
             <td class="p-4 font-bold text-slate-900">${item.id_alat}</td>
-            <td class="p-4 flex items-center font-semibold text-slate-800">${imgHtml} <span>${item.nama_alat}</span></td>
+            <td class="p-4 flex items-center font-semibold text-slate-800">${imgHtml} <span onclick="app.openDetailModal('${item.id_alat}')" class="cursor-pointer hover:text-brand-500 hover:underline transition duration-150">${item.nama_alat}</span></td>
             <td class="p-4 text-slate-500 text-xs truncate max-w-xs">${item.deskripsi || '-'}</td>
             <td class="p-4">
               <span class="inline-block text-[11px] font-bold px-2 py-0.5 rounded-md ${statusColor}">
@@ -1553,6 +1616,49 @@
 
       closeToolModal() {
         document.getElementById('tool-modal').classList.add('hidden');
+      }
+
+      openDetailModal(id) {
+        const item = this.items.find(i => i.id_alat === id);
+        if (!item) return;
+
+        // Set values
+        document.getElementById('detail-id').innerText = item.id_alat;
+        document.getElementById('detail-nama').innerText = item.nama_alat;
+        document.getElementById('detail-deskripsi').innerText = item.deskripsi || 'Tidak ada deskripsi.';
+        document.getElementById('detail-sterilisasi').innerText = item.tanggal_sterilisasi || '-';
+        document.getElementById('detail-kadaluwarsa').innerText = item.tanggal_kadaluwarsa_steril || '-';
+        
+        // Status badge styling
+        const statusEl = document.getElementById('detail-status');
+        statusEl.innerText = item.status_posisi;
+        statusEl.className = 'inline-block text-[11px] font-bold px-2 py-0.5 rounded-md uppercase mt-1';
+        
+        if (item.status_posisi === 'Steril') {
+          statusEl.classList.add('bg-green-100', 'text-green-700');
+        } else if (item.status_posisi === 'Kotor') {
+          statusEl.classList.add('bg-red-100', 'text-red-700');
+        } else if (item.status_posisi === 'Proses Steril') {
+          statusEl.classList.add('bg-yellow-100', 'text-yellow-700');
+        } else {
+          statusEl.classList.add('bg-blue-100', 'text-blue-700');
+        }
+
+        // Foto preview
+        const fotoImg = document.getElementById('detail-foto');
+        if (item.foto_drive_url) {
+          fotoImg.src = item.foto_drive_url;
+          fotoImg.style.display = 'block';
+        } else {
+          fotoImg.src = '';
+          fotoImg.style.display = 'none';
+        }
+
+        document.getElementById('detail-modal').classList.remove('hidden');
+      }
+
+      closeDetailModal() {
+        document.getElementById('detail-modal').classList.add('hidden');
       }
 
       previewImage(event) {
