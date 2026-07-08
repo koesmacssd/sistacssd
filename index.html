@@ -79,7 +79,18 @@
     </div>
 
     <!-- 1. HALAMAN LOGIN -->
-    <div id="view-login" class="flex-1 flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gradient-to-tr from-brand-900 via-slate-900 to-slate-800">
+    <div id="view-login" class="relative flex-1 flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gradient-to-tr from-brand-900 via-slate-900 to-slate-800">
+      
+      <!-- Loading Overlay -->
+      <div id="login-loading-overlay" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center space-y-4">
+        <div class="relative flex items-center justify-center">
+          <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-brand-500"></div>
+          <div class="absolute animate-pulse rounded-full h-8 w-8 bg-brand-500/20"></div>
+        </div>
+        <h3 class="text-lg font-bold text-white tracking-wide animate-pulse">Menghubungkan ke Akun...</h3>
+        <p class="text-xs text-slate-400">Memproses otentikasi Google SSO dan memuat profil SISTA-CSSD</p>
+      </div>
+
       <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <div class="inline-flex items-center justify-center p-2 mb-4 bg-white/10 rounded-2xl border border-white/10 shadow-lg">
           <img src="https://raw.githubusercontent.com/simpegkoesma/1/refs/heads/main/logo%20rsud%202%20png.png" alt="Logo RSUD dr. R. Koesma" class="h-20 w-auto object-contain">
@@ -1021,6 +1032,17 @@
         document.getElementById(`view-${viewName}`).classList.remove('hidden');
       }
 
+      showLoginLoading(show) {
+        const overlay = document.getElementById('login-loading-overlay');
+        if (overlay) {
+          if (show) {
+            overlay.classList.remove('hidden');
+          } else {
+            overlay.classList.add('hidden');
+          }
+        }
+      }
+
       // Memeriksa Status Registrasi User di Backend
       async checkUserStatus(isLogin = false) {
         this.updateApiUrlFromInput();
@@ -1031,6 +1053,9 @@
         }
 
         try {
+          if (isLogin) {
+            this.showLoginLoading(true);
+          }
           this.showToast('info', 'Menghubungkan ke server...');
           const params = isLogin ? { is_login: 'true' } : {};
           const res = await this.callApi('getUserProfile', params);
@@ -1080,6 +1105,8 @@
         } catch (e) {
           this.showToast('error', 'Koneksi gagal. Periksa kembali URL API Apps Script Anda.');
           this.showView('login');
+        } finally {
+          this.showLoginLoading(false);
         }
       }
 
