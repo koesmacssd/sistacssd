@@ -16,7 +16,7 @@ var LOGS_SHEET_NAME = 'logs';
 
 // Helper to get active sheet or open by ScriptProperty
 function getSpreadsheet() {
-  var id = '1J656JtbKRzBTjbhLEbXq7ks9mMc5IH-ObXz891JurQQ';
+  var id = '1Z5ExA5AtmZAIrWn7c_2SWtRotqlhiIpCXp9wwvC_CRI';
   try {
     if (id) return SpreadsheetApp.openById(id);
   } catch (e) {}
@@ -1027,7 +1027,7 @@ function initDatabase() {
 
 // Upload foto ke Google Drive folder
 function uploadImage(postData, actorEmail) {
-  var folderId = '1ZSelyuL7GYxOjEi-o6d8wIBc37NngxD9';
+  var folderId = '1C_BtvYduZmVGKyJr0tmyUga0iCHejLiD';
   try {
     var base64Data = postData.file_base64;
     var fileName = postData.file_name || 'alat_foto.jpg';
@@ -1090,7 +1090,7 @@ function uploadImage(postData, actorEmail) {
 // Jalankan fungsi ini sekali di editor Apps Script Anda untuk memicu dialog otorisasi Google Drive
 function triggerAuthorization() {
   try {
-    var folderId = '1ZSelyuL7GYxOjEi-o6d8wIBc37NngxD9';
+    var folderId = '1C_BtvYduZmVGKyJr0tmyUga0iCHejLiD';
     var folder = DriveApp.getFolderById(folderId);
     Logger.log("Folder Drive berhasil diakses: " + folder.getName());
   } catch (e) {
