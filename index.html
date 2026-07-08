@@ -1544,6 +1544,7 @@
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-4 border-b border-slate-100">
               <div>
                 <span class="text-xs font-bold text-slate-400 uppercase">ID Transaksi</span>
+                <span class="inline-block text-[10px] bg-brand-50 text-brand-700 border border-brand-100 font-bold px-2 py-0.5 rounded-md uppercase tracking-wider ml-1">${order.items.length} Alat</span>
                 <h4 class="text-base font-extrabold text-slate-900">${order.id_order}</h4>
               </div>
               <span class="inline-block text-xs font-bold px-3 py-1 rounded-full border ${statusBadgeClass}">
@@ -1557,7 +1558,7 @@
                 ${timelineHtml}
               </div>
               <div>
-                <span class="text-slate-400 font-bold uppercase tracking-wider block mb-2">Daftar Alat Peminjaman</span>
+                <span class="text-slate-400 font-bold uppercase tracking-wider block mb-2">Daftar Alat Peminjaman (${order.items.length} item)</span>
                 <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 max-h-36 overflow-y-auto custom-scrollbar">
                   ${itemsListHtml}
                 </div>
@@ -1659,6 +1660,7 @@
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-100">
               <div>
                 <span class="inline-block text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded-md uppercase tracking-wider mb-1">${order.id_order}</span>
+                <span class="inline-block text-[10px] bg-brand-50 text-brand-700 border border-brand-100 font-bold px-2 py-0.5 rounded-md uppercase tracking-wider mb-1 ml-1">${order.items.length} Alat</span>
                 <h4 class="text-base font-extrabold text-slate-900">${order.ruangan_peminjam} <span class="text-xs font-medium text-slate-500">(${order.email_peminjam})</span></h4>
               </div>
               <div class="flex items-center space-x-2">
@@ -1677,7 +1679,7 @@
                 <p>Kembali CSSD: <span class="font-medium text-slate-700">${order.tanggal_kembali || '-'}</span></p>
               </div>
               <div>
-                <span class="text-slate-400 font-bold uppercase tracking-wider block mb-2">Item yang Dipinjam</span>
+                <span class="text-slate-400 font-bold uppercase tracking-wider block mb-2">Item yang Dipinjam (${order.items.length} item)</span>
                 <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 max-h-36 overflow-y-auto custom-scrollbar">
                   ${itemsListHtml}
                 </div>
