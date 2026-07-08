@@ -364,6 +364,13 @@ function getUsersData() {
 
 // Get Items List
 function getItemsData() {
+  var cache = CacheService.getScriptCache();
+  var cached = cache.get("items_data_json");
+  if (cached) {
+    return ContentService.createTextOutput(cached)
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  
   var ss = getSpreadsheet();
   var sheet = ss.getSheetByName(ITEMS_SHEET_NAME);
   var data = sheet.getDataRange().getValues();
@@ -379,7 +386,23 @@ function getItemsData() {
       tanggal_kadaluwarsa_steril: data[i][6] ? Utilities.formatDate(new Date(data[i][6]), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") : ''
     });
   }
-  return jsonResponse(true, "Inventaris alat berhasil dimuat.", items);
+  
+  var responseObj = {
+    success: true,
+    message: "Inventaris alat berhasil dimuat.",
+    data: items
+  };
+  var responseJson = JSON.stringify(responseObj);
+  
+  // Cache data selama 10 menit (600 detik)
+  try {
+    cache.put("items_data_json", responseJson, 600);
+  } catch (e) {
+    Logger.log("Gagal menyimpan cache: " + e.toString());
+  }
+  
+  return ContentService.createTextOutput(responseJson)
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 // Get Orders & Details List
@@ -666,6 +689,8 @@ function createOrder(postData, userEmail, userRoom) {
     itemsSheet.getRange(itemRow, 5).setValue('Requested');
   }
   
+  clearItemsCache();
+  
   // Compile rincian item untuk email
   var itemDetails = [];
   for (var k = 0; k < itemIds.length; k++) {
@@ -855,6 +880,7 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
     return jsonResponse(false, "Status tujuan '" + nextStatus + "' tidak didukung.");
   }
   
+  clearItemsCache();
   return jsonResponse(true, "Status transaksi berhasil diperbarui ke " + nextStatus + ".", { id_order: orderId, status_order: nextStatus });
 }
 
@@ -884,6 +910,7 @@ function updateItemCycle(postData, actorEmail) {
         sheet.getRange(row, 5).setValue('Proses Steril');
         writeLog(actorEmail, "Mengubah status " + itemId + " ke Proses Steril.");
         sendTelegramNotification("🧪 *Proses Sterilisasi Dimulai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\nOleh: " + actorEmail);
+        clearItemsCache();
         return jsonResponse(true, "Status alat berhasil diubah ke Proses Steril.", { id_alat: itemId, status: 'Proses Steril' });
         
       } else if (nextCycle === 'Steril') {
@@ -903,6 +930,7 @@ function updateItemCycle(postData, actorEmail) {
         
         writeLog(actorEmail, "Menyelesaikan sterilisasi " + itemId + ". Kadaluwarsa dalam " + expiryDays + " hari.");
         sendTelegramNotification("💎 *Sterilisasi Selesai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\nStatus: Steril ✔\nKadaluwarsa: " + Utilities.formatDate(expiryDate, Session.getScriptTimeZone(), 'dd/MM/yyyy') + "\nOleh: " + actorEmail);
+        clearItemsCache();
         return jsonResponse(true, "Alat berhasil disterilkan dan siap dipinjam kembali.", { 
           id_alat: itemId, 
           status: 'Steril',
@@ -915,6 +943,7 @@ function updateItemCycle(postData, actorEmail) {
         sheet.getRange(row, 7).setValue(''); // Hapus tanggal kadaluwarsa
         
         writeLog(actorEmail, "Mengubah status " + itemId + " ke Kotor.");
+        clearItemsCache();
         return jsonResponse(true, "Status alat berhasil diubah ke Kotor.", { id_alat: itemId, status: 'Kotor' });
       } else {
         return jsonResponse(false, "Status siklus '" + nextCycle + "' tidak valid.");
@@ -956,6 +985,7 @@ function manageItems(postData, actorEmail) {
     sheet.appendRow([idAlat.toString().trim(), namaAlat.toString().trim(), deskripsi, fotoUrl, 'Steril', new Date(), '']);
     writeLog(actorEmail, "Menambah alat baru: " + namaAlat + " (" + idAlat + ")");
     sendTelegramNotification("🆕 *Alat Baru Ditambahkan*\nNama: " + namaAlat + "\nID: `" + idAlat + "`\nDeskripsi: " + (deskripsi || '-') + "\nOleh: " + actorEmail);
+    clearItemsCache();
     return jsonResponse(true, "Alat berhasil ditambahkan.");
     
   } else if (operation === 'edit') {
@@ -969,6 +999,7 @@ function manageItems(postData, actorEmail) {
         sheet.getRange(row, 4).setValue(fotoUrl); // Selalu set agar bisa update/clear
         
         writeLog(actorEmail, "Mengubah info alat: " + idAlat);
+        clearItemsCache();
         return jsonResponse(true, "Info alat berhasil diperbarui.");
       }
     }
@@ -987,6 +1018,7 @@ function manageItems(postData, actorEmail) {
         sheet.deleteRow(k + 1);
         writeLog(actorEmail, "Menghapus alat: " + idAlat);
         sendTelegramNotification("🗑️ *Alat Dihapus*\nNama: " + deletedName + "\nID: `" + idAlat + "`\nOleh: " + actorEmail);
+        clearItemsCache();
         return jsonResponse(true, "Alat berhasil dihapus dari inventaris.");
       }
     }
@@ -1109,6 +1141,18 @@ function sendHtmlEmail(to, subject, title, headerText, orderId, room, items, foo
     });
   } catch (e) {
     Logger.log("Email failed to " + to + ": " + e.toString());
+  }
+}
+
+/**
+ * Menghapus cache inventaris alat medis saat terjadi perubahan data
+ */
+function clearItemsCache() {
+  try {
+    CacheService.getScriptCache().remove("items_data_json");
+    Logger.log("Cache inventaris alat medis berhasil dihapus.");
+  } catch (e) {
+    Logger.log("Gagal menghapus cache: " + e.toString());
   }
 }
 
