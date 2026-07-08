@@ -18,6 +18,9 @@
   <!-- SheetJS Library for Excel Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   
+  <!-- SweetAlert2 for Aesthetic Alerts -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
   <script>
     tailwind.config = {
       theme: {
@@ -1698,17 +1701,50 @@
 
       // Update Order Status (Action Button)
       async updateOrderStatus(orderId, nextStatus) {
-        let confirmMsg = '';
+        let confirmConfig = null;
         if (nextStatus === 'Ready for Pickup') {
-          confirmMsg = 'Apakah Anda yakin alat medis sudah siap untuk diambil?';
+          confirmConfig = {
+            title: 'Siapkan Alat Medis?',
+            text: 'Apakah Anda yakin alat medis sudah siap untuk diambil?',
+            icon: 'question',
+            confirmButtonText: 'Ya, Siap!',
+            cancelButtonText: 'Batal'
+          };
         } else if (nextStatus === 'Aktif') {
-          confirmMsg = 'Apakah Anda yakin ingin mengonfirmasi serah terima alat medis ke perwakilan ruangan?';
+          confirmConfig = {
+            title: 'Konfirmasi Serah Terima?',
+            text: 'Apakah Anda yakin ingin menyerahkan alat medis ke perwakilan ruangan?',
+            icon: 'warning',
+            confirmButtonText: 'Ya, Serahkan!',
+            cancelButtonText: 'Batal'
+          };
         } else if (nextStatus === 'Selesai') {
-          confirmMsg = 'Apakah Anda yakin ingin menerima pengembalian peminjaman ini?\n\nPERINGATAN: Pastikan JUMLAH dan KONDISI fisik alat medis telah dihitung dan diperiksa dengan benar!';
+          confirmConfig = {
+            title: 'Konfirmasi Pengembalian?',
+            html: 'Apakah Anda yakin ingin menyelesaikan transaksi ini?<br><br><span style="color:#ef4444; font-weight:bold;">PERINGATAN:</span> Pastikan JUMLAH dan KONDISI fisik alat medis telah dihitung dan diperiksa dengan benar!',
+            icon: 'warning',
+            confirmButtonText: 'Ya, Sesuai!',
+            cancelButtonText: 'Batal'
+          };
         }
 
-        if (confirmMsg && !confirm(confirmMsg)) {
-          return;
+        if (confirmConfig) {
+          const result = await Swal.fire({
+            ...confirmConfig,
+            showCancelButton: true,
+            confirmButtonColor: '#3b82f6',
+            cancelButtonColor: '#64748b',
+            background: '#ffffff',
+            customClass: {
+              popup: 'rounded-2xl font-sans',
+              title: 'font-bold text-slate-900',
+              confirmButton: 'rounded-xl px-4 py-2.5 text-sm font-semibold shadow-md',
+              cancelButton: 'rounded-xl px-4 py-2.5 text-sm font-semibold'
+            }
+          });
+          if (!result.isConfirmed) {
+            return;
+          }
         }
 
         try {
@@ -1719,13 +1755,40 @@
           });
 
           if (res.success) {
-            this.showToast('success', res.message);
+            Swal.fire({
+              title: 'Berhasil!',
+              text: res.message,
+              icon: 'success',
+              confirmButtonColor: '#3b82f6',
+              customClass: {
+                popup: 'rounded-2xl font-sans',
+                confirmButton: 'rounded-xl px-4 py-2.5 text-sm font-semibold'
+              }
+            });
             this.refreshData();
           } else {
-            this.showToast('error', res.message);
+            Swal.fire({
+              title: 'Gagal!',
+              text: res.message,
+              icon: 'error',
+              confirmButtonColor: '#ef4444',
+              customClass: {
+                popup: 'rounded-2xl font-sans',
+                confirmButton: 'rounded-xl px-4 py-2.5 text-sm font-semibold'
+              }
+            });
           }
         } catch (e) {
-          this.showToast('error', 'Gagal memproses request status.');
+          Swal.fire({
+            title: 'Error!',
+            text: 'Gagal memproses request status.',
+            icon: 'error',
+            confirmButtonColor: '#ef4444',
+            customClass: {
+              popup: 'rounded-2xl font-sans',
+              confirmButton: 'rounded-xl px-4 py-2.5 text-sm font-semibold'
+            }
+          });
         }
       }
 
@@ -2745,7 +2808,24 @@
       }
 
       async deleteItem(id) {
-        if (!confirm(`Apakah Anda yakin ingin menghapus alat ${id} dari inventaris?`)) return;
+        const result = await Swal.fire({
+          title: 'Hapus Alat?',
+          text: `Apakah Anda yakin ingin menghapus alat ${id} dari inventaris?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#ef4444',
+          cancelButtonColor: '#64748b',
+          confirmButtonText: 'Ya, Hapus!',
+          cancelButtonText: 'Batal',
+          customClass: {
+            popup: 'rounded-2xl font-sans',
+            title: 'font-bold text-slate-900',
+            confirmButton: 'rounded-xl px-4 py-2.5 text-sm font-semibold shadow-md',
+            cancelButton: 'rounded-xl px-4 py-2.5 text-sm font-semibold'
+          }
+        });
+
+        if (!result.isConfirmed) return;
 
         try {
           this.showToast('info', 'Menghapus alat...');
@@ -2755,13 +2835,40 @@
           });
 
           if (res.success) {
-            this.showToast('success', res.message);
+            Swal.fire({
+              title: 'Dihapus!',
+              text: res.message,
+              icon: 'success',
+              confirmButtonColor: '#3b82f6',
+              customClass: {
+                popup: 'rounded-2xl font-sans',
+                confirmButton: 'rounded-xl px-4 py-2.5 text-sm font-semibold'
+              }
+            });
             this.refreshData();
           } else {
-            this.showToast('error', res.message);
+            Swal.fire({
+              title: 'Gagal!',
+              text: res.message,
+              icon: 'error',
+              confirmButtonColor: '#ef4444',
+              customClass: {
+                popup: 'rounded-2xl font-sans',
+                confirmButton: 'rounded-xl px-4 py-2.5 text-sm font-semibold'
+              }
+            });
           }
         } catch (e) {
-          this.showToast('error', 'Koneksi gagal.');
+          Swal.fire({
+            title: 'Error!',
+            text: 'Gagal memproses request penghapusan.',
+            icon: 'error',
+            confirmButtonColor: '#ef4444',
+            customClass: {
+              popup: 'rounded-2xl font-sans',
+              confirmButton: 'rounded-xl px-4 py-2.5 text-sm font-semibold'
+            }
+          });
         }
       }
 
