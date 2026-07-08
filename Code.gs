@@ -170,6 +170,15 @@ function doGet(e) {
       case 'getUserProfile':
         writeLog(userEmail, "Login ke sistem. Peran: " + userRole + ", Ruangan: " + userRoom);
         sendTelegramNotification("🔐 *Login Pengguna*\nNama: " + userProfile.nama + "\nEmail: " + userEmail + "\nPeran: " + userRole + "\nRuangan: " + userRoom + "\nWaktu: " + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss'));
+        // Kirim email notifikasi login ke user
+        try {
+          MailApp.sendEmail(userEmail,
+            "Notifikasi Login SISTA-CSSD",
+            "Halo " + userProfile.nama + ",\n\nAkun Anda baru saja terdeteksi masuk ke dalam sistem SISTA-CSSD.\n\nRuangan: " + userRoom + "\nWaktu: " + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss') + "\n\nJika ini bukan aktivitas Anda, harap segera menghubungi Admin CSSD."
+          );
+        } catch (e) {
+          Logger.log("Email failed: " + e.toString());
+        }
         return jsonResponse(true, "Profil user berhasil diambil.", userProfile);
         
       case 'getItems':
@@ -578,6 +587,14 @@ function updateUserStatus(postData, actorEmail) {
         }
       } else if (newStatus === 'Nonaktif') {
         sendTelegramNotification("🚫 *Akun Dinonaktifkan*\nNama: " + (targetNama || data[i][2]) + "\nEmail: " + targetEmail + "\nDinonaktifkan oleh: " + actorEmail);
+        try {
+          MailApp.sendEmail(targetEmail,
+            "Akun SISTA-CSSD Dinonaktifkan",
+            "Halo " + (targetNama || data[i][2]) + ",\n\nAkun SISTA-CSSD Anda telah dinonaktifkan oleh Admin.\n\nHubungi petugas CSSD jika Anda merasa ini adalah kesalahan.\n\nSalam,\nTim Admin CSSD RSUD dr. R. Koesma."
+          );
+        } catch (e) {
+          Logger.log("Email failed: " + e.toString());
+        }
       } else if (newRole && newRole !== data[i][3]) {
         sendTelegramNotification("🔄 *Perubahan Peran User*\nNama: " + (targetNama || data[i][2]) + "\nEmail: " + targetEmail + "\nPeran: " + data[i][3] + " → " + newRole + "\nDiubah oleh: " + actorEmail);
       }
@@ -766,6 +783,14 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
     
     writeLog(actorEmail, "Konfirmasi serah terima alat untuk " + orderId + ". Status: Aktif.");
     sendTelegramNotification("🤝 *Serah Terima Selesai*\nID Order: `" + orderId + "`\nStatus: Aktif (Alat sedang dipinjam oleh " + borrowerRoom + ").");
+    try {
+      MailApp.sendEmail(borrowerEmail,
+        "Serah Terima Alat Selesai - SISTA-CSSD [" + orderId + "]",
+        "Halo,\n\nProses serah terima alat medis steril dengan ID Transaksi " + orderId + " telah selesai dilakukan.\n\nStatus saat ini: Sedang Dipinjam oleh Ruangan " + borrowerRoom + ".\n\nHarap pastikan alat dijaga dengan baik dan segera dikembalikan dalam keadaan bersih setelah digunakan."
+      );
+    } catch (e) {
+      Logger.log("Email failed: " + e.toString());
+    }
 
   } else if (nextStatus === 'Selesai') {
     if (actorRole !== 'Admin' && actorRole !== 'Super Admin') return jsonResponse(false, "Akses ditolak.");
