@@ -115,9 +115,8 @@ function doGet(e) {
   try {
     var action = e.parameter.action;
     var idToken = e.parameter.credential;
-    var devEmail = e.parameter.dev_email; // Untuk kemudahan pengujian jika SSO tidak aktif
     
-    // Autentikasi user
+    // Autentikasi user (hanya Google SSO Token yang diperbolehkan)
     var userEmail = "";
     var userName = "";
     if (idToken) {
@@ -128,22 +127,24 @@ function doGet(e) {
       } else {
         return jsonResponse(false, "Token autentikasi tidak valid atau telah kedaluwarsa.");
       }
-    } else if (devEmail) {
-      userEmail = devEmail;
-      userName = devEmail.split('@')[0];
     }
     
     if (!action) {
       return jsonResponse(false, "Parameter 'action' diperlukan.");
     }
 
-    // Inisialisasi Database (Bisa diakses siapa saja untuk setup awal)
+    // Inisialisasi Database (Hanya Super Admin yang bisa melakukan inisialisasi)
     if (action === 'initDb') {
+      if (!userEmail) return jsonResponse(false, "Autentikasi diperlukan untuk inisialisasi database.");
+      var initProfile = getUserProfile(userEmail);
+      if (!initProfile || initProfile.peran !== 'Super Admin') {
+        return jsonResponse(false, "Akses ditolak. Hanya Super Admin yang dapat menginisialisasi database.");
+      }
       return initDatabase();
     }
 
     if (!userEmail) {
-      return jsonResponse(false, "Autentikasi diperlukan. Kirim parameter 'credential' atau 'dev_email'.");
+      return jsonResponse(false, "Autentikasi diperlukan. Kirim parameter 'credential' (Google Sign-In).");
     }
 
     // Ambil User Role
@@ -219,9 +220,8 @@ function doPost(e) {
 
     var action = postData.action;
     var idToken = postData.credential;
-    var devEmail = postData.dev_email;
     
-    // Autentikasi user
+    // Autentikasi user (hanya Google SSO Token yang diperbolehkan)
     var userEmail = "";
     var userName = "";
     if (idToken) {
@@ -232,9 +232,6 @@ function doPost(e) {
       } else {
         return jsonResponse(false, "Token autentikasi tidak valid atau telah kedaluwarsa.");
       }
-    } else if (devEmail) {
-      userEmail = devEmail;
-      userName = devEmail.split('@')[0];
     }
 
     if (!action) {
@@ -242,7 +239,7 @@ function doPost(e) {
     }
 
     if (!userEmail) {
-      return jsonResponse(false, "Autentikasi diperlukan.");
+      return jsonResponse(false, "Autentikasi diperlukan. Gunakan Google Sign-In.");
     }
 
     // Cek registrasi user (Registrasi baru tidak perlu check active status)
@@ -1123,4 +1120,188 @@ function updateSelfProfile(postData, userEmail) {
     }
   }
   return jsonResponse(false, "User tidak ditemukan.");
+}
+
+// --- BACKUP & ARSIP OTOMATIS ---
+
+/**
+ * Backup otomatis harian: Menyalin seluruh spreadsheet database ke folder backup di Google Drive.
+ * Jalankan fungsi setupDailyBackupTrigger() SEKALI di editor Apps Script untuk mengaktifkan.
+ */
+function dailyBackup() {
+  try {
+    var ss = getSpreadsheet();
+    var file = DriveApp.getFileById(ss.getId());
+    
+    // Buat/cari folder backup
+    var parentFolder = file.getParents().next();
+    var backupFolderName = 'SISTA-CSSD_Backup';
+    var backupFolders = parentFolder.getFoldersByName(backupFolderName);
+    var backupFolder;
+    if (backupFolders.hasNext()) {
+      backupFolder = backupFolders.next();
+    } else {
+      backupFolder = parentFolder.createFolder(backupFolderName);
+    }
+    
+    // Hapus backup yang lebih dari 30 hari
+    var cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - 30);
+    var oldFiles = backupFolder.getFiles();
+    while (oldFiles.hasNext()) {
+      var oldFile = oldFiles.next();
+      if (oldFile.getDateCreated() < cutoffDate) {
+        oldFile.setTrashed(true);
+      }
+    }
+    
+    // Buat salinan baru
+    var dateStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd_HHmm');
+    var backupName = 'BACKUP_SISTA-CSSD_' + dateStr;
+    file.makeCopy(backupName, backupFolder);
+    
+    Logger.log('Backup harian berhasil: ' + backupName);
+  } catch (e) {
+    Logger.log('Backup harian gagal: ' + e.toString());
+  }
+}
+
+/**
+ * Jalankan fungsi ini SEKALI di editor Apps Script untuk mengaktifkan trigger backup harian jam 00:00.
+ */
+function setupDailyBackupTrigger() {
+  // Hapus trigger lama jika ada
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === 'dailyBackup') {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+  // Buat trigger baru: setiap hari jam 00:00 - 01:00
+  ScriptApp.newTrigger('dailyBackup')
+    .timeBased()
+    .everyDays(1)
+    .atHour(0)
+    .create();
+  Logger.log('Trigger backup harian berhasil dipasang. Backup akan berjalan setiap malam jam 00:00.');
+}
+
+/**
+ * Arsipkan log lama (>90 hari) ke sheet terpisah 'logs_archive'.
+ * Arsipkan order yang telah 'Selesai' lebih dari 90 hari ke sheet 'orders_archive' dan 'order_details_archive'.
+ * Jalankan fungsi setupQuarterlyArchiveTrigger() SEKALI untuk mengaktifkan arsip otomatis.
+ */
+function archiveOldData() {
+  var ss = getSpreadsheet();
+  var cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - 90); // 90 hari = 3 bulan
+  
+  // --- 1. Arsipkan Logs ---
+  var logsSheet = ss.getSheetByName(LOGS_SHEET_NAME);
+  if (logsSheet) {
+    var logsArchiveName = 'logs_archive';
+    var logsArchive = ss.getSheetByName(logsArchiveName);
+    if (!logsArchive) {
+      logsArchive = ss.insertSheet(logsArchiveName);
+      logsArchive.appendRow(['timestamp', 'email', 'activity']);
+    }
+    
+    var logsData = logsSheet.getDataRange().getValues();
+    var rowsToDelete = [];
+    
+    for (var i = logsData.length - 1; i >= 1; i--) {
+      var logDate = new Date(logsData[i][0]);
+      if (logDate < cutoffDate) {
+        logsArchive.appendRow(logsData[i]);
+        rowsToDelete.push(i + 1); // Baris 1-indexed
+      }
+    }
+    
+    // Hapus baris dari sheet utama (dari bawah ke atas agar indeks tetap valid)
+    for (var d = 0; d < rowsToDelete.length; d++) {
+      logsSheet.deleteRow(rowsToDelete[d]);
+    }
+    
+    if (rowsToDelete.length > 0) {
+      Logger.log('Arsipkan ' + rowsToDelete.length + ' baris log lama ke ' + logsArchiveName);
+    }
+  }
+  
+  // --- 2. Arsipkan Orders Selesai ---
+  var ordersSheet = ss.getSheetByName(ORDERS_SHEET_NAME);
+  var detailsSheet = ss.getSheetByName(DETAILS_SHEET_NAME);
+  
+  if (ordersSheet && detailsSheet) {
+    var ordersArchiveName = 'orders_archive';
+    var detailsArchiveName = 'order_details_archive';
+    
+    var ordersArchive = ss.getSheetByName(ordersArchiveName);
+    if (!ordersArchive) {
+      ordersArchive = ss.insertSheet(ordersArchiveName);
+      ordersArchive.appendRow(['id_order', 'email_peminjam', 'ruangan_peminjam', 'status_order', 'tanggal_request', 'tanggal_diambil', 'tanggal_kembali']);
+    }
+    
+    var detailsArchive = ss.getSheetByName(detailsArchiveName);
+    if (!detailsArchive) {
+      detailsArchive = ss.insertSheet(detailsArchiveName);
+      detailsArchive.appendRow(['id_detail', 'id_order', 'id_alat', 'catatan_kondisi']);
+    }
+    
+    var ordersData = ordersSheet.getDataRange().getValues();
+    var detailsData = detailsSheet.getDataRange().getValues();
+    var archivedOrderIds = [];
+    var orderRowsToDelete = [];
+    
+    for (var o = ordersData.length - 1; o >= 1; o--) {
+      var orderStatus = ordersData[o][3];
+      var orderReturnDate = ordersData[o][6] ? new Date(ordersData[o][6]) : null;
+      
+      if (orderStatus === 'Selesai' && orderReturnDate && orderReturnDate < cutoffDate) {
+        ordersArchive.appendRow(ordersData[o]);
+        archivedOrderIds.push(ordersData[o][0]);
+        orderRowsToDelete.push(o + 1);
+      }
+    }
+    
+    // Arsipkan detail terkait
+    var detailRowsToDelete = [];
+    for (var dt = detailsData.length - 1; dt >= 1; dt--) {
+      if (archivedOrderIds.indexOf(detailsData[dt][1]) !== -1) {
+        detailsArchive.appendRow(detailsData[dt]);
+        detailRowsToDelete.push(dt + 1);
+      }
+    }
+    
+    // Hapus dari sheet utama (dari bawah ke atas)
+    for (var dr = 0; dr < detailRowsToDelete.length; dr++) {
+      detailsSheet.deleteRow(detailRowsToDelete[dr]);
+    }
+    for (var or2 = 0; or2 < orderRowsToDelete.length; or2++) {
+      ordersSheet.deleteRow(orderRowsToDelete[or2]);
+    }
+    
+    if (archivedOrderIds.length > 0) {
+      Logger.log('Arsipkan ' + archivedOrderIds.length + ' transaksi selesai ke ' + ordersArchiveName);
+    }
+  }
+}
+
+/**
+ * Jalankan fungsi ini SEKALI di editor Apps Script untuk mengaktifkan trigger arsip otomatis (setiap minggu).
+ */
+function setupWeeklyArchiveTrigger() {
+  // Hapus trigger lama jika ada
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === 'archiveOldData') {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+  // Buat trigger baru: setiap Minggu jam 02:00 - 03:00
+  ScriptApp.newTrigger('archiveOldData')
+    .timeBased()
+    .onWeekDay(ScriptApp.WeekDay.SUNDAY)
+    .atHour(2)
+    .create();
+  Logger.log('Trigger arsip mingguan berhasil dipasang. Arsip akan berjalan setiap Minggu jam 02:00.');
 }
