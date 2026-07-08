@@ -995,6 +995,11 @@
           }
         };
 
+        // Listen hash routing
+        window.addEventListener('hashchange', () => {
+          this.handleHashRouting();
+        });
+
         // Auto login jika credential sudah ada
         if (this.credential) {
           this.checkUserStatus();
@@ -1030,6 +1035,49 @@
         document.getElementById('view-dashboard').classList.add('hidden');
 
         document.getElementById(`view-${viewName}`).classList.remove('hidden');
+      }
+
+      handleHashRouting() {
+        if (!this.user) return; // Belum login, abaikan hash routing
+        
+        const hash = window.location.hash.substring(1);
+        if (!hash) return;
+        
+        const allowedTabs = this.user.peran === 'Ruangan' ? ['katalog', 'keranjang', 'riwayat'] : ['admin-dashboard', 'admin-peminjaman', 'admin-inventaris', 'admin-user-mgmt', 'admin-logs'];
+        
+        if (allowedTabs.includes(hash)) {
+          if (this.currentTab !== hash) {
+            this.setTab(hash, false);
+          }
+        }
+      }
+
+      prefetchBackgroundData() {
+        // Tarik sisa data di background setelah halaman utama selesai dimuat
+        setTimeout(async () => {
+          try {
+            if (!this.items || this.items.length === 0) {
+              this.callApi('getItems').then(res => { 
+                if (res.success) {
+                  this.items = res.data;
+                  if (this.currentTab === 'katalog') this.renderKatalog();
+                  if (this.currentTab === 'admin-inventaris') this.renderInventaris();
+                  if (this.currentTab === 'admin-dashboard') this.updateAdminDashboardStats();
+                }
+              });
+            }
+            if (!this.orders || this.orders.length === 0) {
+              this.callApi('getOrders').then(res => {
+                if (res.success) {
+                  this.orders = res.data;
+                  if (this.currentTab === 'riwayat') this.renderRiwayat();
+                  if (this.currentTab === 'admin-peminjaman') this.renderAdminOrders();
+                  if (this.currentTab === 'admin-dashboard') this.updateAdminDashboardStats();
+                }
+              });
+            }
+          } catch (e) {}
+        }, 1500);
       }
 
       showLoginLoading(show) {
@@ -1082,14 +1130,17 @@
             this.setupNavigation();
             this.showView('dashboard');
             
-            // Restore active tab
-            let savedTab = localStorage.getItem('sista_current_tab');
+            // Restore active tab using Hash routing fallback
+            let initialTab = window.location.hash.substring(1);
             const allowedTabs = this.user.peran === 'Ruangan' ? ['katalog', 'keranjang', 'riwayat'] : ['admin-dashboard', 'admin-peminjaman', 'admin-inventaris', 'admin-user-mgmt', 'admin-logs'];
-            if (!savedTab || !allowedTabs.includes(savedTab)) {
-              savedTab = this.user.peran === 'Ruangan' ? 'katalog' : 'admin-dashboard';
+            if (!initialTab || !allowedTabs.includes(initialTab)) {
+              initialTab = localStorage.getItem('sista_current_tab') || (this.user.peran === 'Ruangan' ? 'katalog' : 'admin-dashboard');
+              if (!allowedTabs.includes(initialTab)) {
+                initialTab = this.user.peran === 'Ruangan' ? 'katalog' : 'admin-dashboard';
+              }
             }
-            this.setTab(savedTab);
-            this.refreshData();
+            this.setTab(initialTab);
+            this.prefetchBackgroundData(); // Tarik data lainnya di background secara asinkron
           } else {
             if (res.data && res.data.code === 'NOT_REGISTERED') {
               document.getElementById('register-email-text').innerText = res.data.email;
@@ -1127,10 +1178,14 @@
         }
       }
 
-      // Set Active Tab di Dashboard
-      setTab(tabName) {
+      // Set Active Tab di Dashboard (Asynchronous Lazy Load)
+      async setTab(tabName, updateHash = true) {
         this.currentTab = tabName;
         localStorage.setItem('sista_current_tab', tabName);
+        
+        if (updateHash) {
+          window.location.hash = tabName;
+        }
         
         // Sembunyikan semua tab
         document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -1151,18 +1206,67 @@
           activeBtn.classList.add('bg-brand-500', 'text-white');
         }
 
-        // Trigger reload per tab jika diperlukan
-        if (tabName === 'katalog') this.renderKatalog();
-        if (tabName === 'keranjang') this.renderCart();
-        if (tabName === 'riwayat') this.renderRiwayat();
-        if (tabName === 'admin-dashboard') this.updateAdminDashboardStats();
-        if (tabName === 'admin-peminjaman') this.renderAdminOrders();
-        if (tabName === 'admin-inventaris') this.renderInventaris();
-        if (tabName === 'admin-user-mgmt') this.renderUserManagement();
-        if (tabName === 'admin-logs') this.refreshLogs();
-
         // Auto-close sidebar on mobile
         this.closeSidebar();
+
+        // Lazy load data berdasarkan tab yang aktif
+        try {
+          if (tabName === 'katalog') {
+            if (!this.items || this.items.length === 0) {
+              const catalogList = document.getElementById('katalog-list');
+              if (catalogList) catalogList.innerHTML = '<div class="p-8 text-center text-slate-500 text-sm font-medium">Memuat katalog alat steril...</div>';
+              const res = await this.callApi('getItems');
+              if (res.success) this.items = res.data;
+            }
+            this.renderKatalog();
+          } else if (tabName === 'keranjang') {
+            this.renderCart();
+          } else if (tabName === 'riwayat') {
+            if (!this.orders || this.orders.length === 0) {
+              const riwayatList = document.getElementById('riwayat-list');
+              if (riwayatList) riwayatList.innerHTML = '<div class="p-8 text-center text-slate-500 text-sm font-medium">Memuat riwayat peminjaman...</div>';
+              const res = await this.callApi('getOrders');
+              if (res.success) this.orders = res.data;
+            }
+            this.renderRiwayat();
+          } else if (tabName === 'admin-dashboard') {
+            if ((!this.items || this.items.length === 0) || (!this.orders || this.orders.length === 0)) {
+              const [itemsRes, ordersRes] = await Promise.all([
+                this.items && this.items.length > 0 ? { success: true, data: this.items } : this.callApi('getItems'),
+                this.orders && this.orders.length > 0 ? { success: true, data: this.orders } : this.callApi('getOrders')
+              ]);
+              if (itemsRes.success) this.items = itemsRes.data;
+              if (ordersRes.success) this.orders = ordersRes.data;
+            }
+            this.updateAdminDashboardStats();
+          } else if (tabName === 'admin-peminjaman') {
+            if (!this.orders || this.orders.length === 0) {
+              const adminOrdersList = document.getElementById('admin-orders-list');
+              if (adminOrdersList) adminOrdersList.innerHTML = '<div class="p-8 text-center text-slate-500 text-sm font-medium">Memuat data peminjaman...</div>';
+              const res = await this.callApi('getOrders');
+              if (res.success) this.orders = res.data;
+            }
+            this.renderAdminOrders();
+          } else if (tabName === 'admin-inventaris') {
+            if (!this.items || this.items.length === 0) {
+              const inventarisTable = document.getElementById('inventaris-table-body');
+              if (inventarisTable) inventarisTable.innerHTML = '<tr><td colspan="6" class="p-4 text-center">Memuat data inventaris...</td></tr>';
+              const res = await this.callApi('getItems');
+              if (res.success) this.items = res.data;
+            }
+            this.renderInventaris();
+          } else if (tabName === 'admin-user-mgmt') {
+            const userTable = document.getElementById('users-table-body');
+            if (userTable) userTable.innerHTML = '<tr><td colspan="6" class="p-4 text-center">Memuat manajemen user...</td></tr>';
+            const res = await this.callApi('getUsers');
+            if (res.success) this.users = res.data;
+            this.renderUserManagement();
+          } else if (tabName === 'admin-logs') {
+            this.refreshLogs();
+          }
+        } catch (e) {
+          this.showToast('error', 'Gagal memproses pemuatan data.');
+        }
       }
 
       toggleSidebar() {
@@ -1283,7 +1387,7 @@
         return await response.json();
       }
 
-      // Refresh Data Inventaris dan Orders secara berkala
+      // Force reload all data
       async refreshData() {
         const refreshButtons = document.querySelectorAll('button[onclick*="refreshData"]');
         const refreshIcons = document.querySelectorAll('button[onclick*="refreshData"] svg');
@@ -1293,6 +1397,10 @@
         refreshIcons.forEach(icon => icon.classList.add('animate-spin'));
 
         try {
+          // Bersihkan data lokal untuk memaksa fetch baru
+          this.items = null;
+          this.orders = null;
+          
           const [itemsRes, ordersRes] = await Promise.all([
             this.callApi('getItems'),
             this.callApi('getOrders')
@@ -1302,7 +1410,7 @@
           if (ordersRes.success) this.orders = ordersRes.data;
 
           this.updateCartBadge();
-          this.setTab(this.currentTab);
+          await this.setTab(this.currentTab, false);
           
           this.showToast('success', 'Data berhasil diperbarui.');
         } catch (e) {
