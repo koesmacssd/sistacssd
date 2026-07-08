@@ -173,14 +173,13 @@ function doGet(e) {
           writeLog(userEmail, "Login ke sistem. Peran: " + userRole + ", Ruangan: " + userRoom);
           sendTelegramNotification("🔐 *Login Pengguna*\nNama: " + userProfile.nama + "\nEmail: " + userEmail + "\nPeran: " + userRole + "\nRuangan: " + userRoom + "\nWaktu: " + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss'));
           // Kirim email notifikasi login ke user
-          try {
-            MailApp.sendEmail(userEmail,
-              "Notifikasi Login SISTA-CSSD",
-              "Halo " + userProfile.nama + ",\n\nAkun Anda baru saja terdeteksi masuk ke dalam sistem SISTA-CSSD.\n\nRuangan: " + userRoom + "\nWaktu: " + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss') + "\n\nJika ini bukan aktivitas Anda, harap segera menghubungi Admin CSSD."
-            );
-          } catch (e) {
-            Logger.log("Email failed: " + e.toString());
-          }
+          sendGeneralHtmlEmail(
+            userEmail,
+            "Notifikasi Keamanan Login - SISTA-CSSD",
+            "Notifikasi Keamanan Login",
+            "Halo <strong>" + userProfile.nama + "</strong>,<br><br>Akun Anda baru saja terdeteksi masuk (login) ke dalam sistem <strong>SISTA-CSSD</strong> (Sistem Informasi Serah Terima Alat CSSD) RSUD dr. R. Koesma Tuban.<br><br>Jika ini adalah aktivitas Anda, Anda dapat mengabaikan email ini. Namun, jika Anda tidak merasa melakukan login ini, silakan segera hubungi Admin CSSD untuk mengamankan akun Anda.",
+            "Waktu Login: " + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss') + " | Ruangan: " + userRoom
+          );
         }
         return jsonResponse(true, "Profil user berhasil diambil.", userProfile);
         
@@ -580,24 +579,22 @@ function updateUserStatus(postData, actorEmail) {
       // Notifikasi Telegram berdasarkan aksi
       if (newStatus === 'Aktif') {
         sendTelegramNotification("✅ *Akun Disetujui*\nNama: " + (targetNama || data[i][2]) + "\nEmail: " + targetEmail + "\nPeran: " + (newRole || data[i][3]) + "\nRuangan: " + (targetRoom || data[i][4]) + "\nDisetujui oleh: " + actorEmail);
-        try {
-          MailApp.sendEmail(targetEmail, 
-            "Akun SISTA-CSSD Anda Telah Aktif", 
-            "Halo " + data[i][2] + ",\n\nAkun SISTA-CSSD Anda telah disetujui oleh Admin. Sekarang Anda dapat menggunakan sistem.\n\nSalam,\nTim Admin CSSD RSUD dr. R. Koesma."
-          );
-        } catch (e) {
-          Logger.log("Email failed: " + e.toString());
-        }
+        sendGeneralHtmlEmail(
+          targetEmail,
+          "Akun SISTA-CSSD Anda Telah Aktif",
+          "Aktivasi Akun Berhasil",
+          "Halo <strong>" + data[i][2] + "</strong>,<br><br>Akun Anda pada sistem <strong>SISTA-CSSD</strong> telah disetujui oleh Admin. Sekarang Anda sudah dapat menggunakan aplikasi untuk mengajukan peminjaman alat steril.",
+          "Salam hangat,<br>Tim Admin CSSD RSUD dr. R. Koesma Tuban"
+        );
       } else if (newStatus === 'Nonaktif') {
         sendTelegramNotification("🚫 *Akun Dinonaktifkan*\nNama: " + (targetNama || data[i][2]) + "\nEmail: " + targetEmail + "\nDinonaktifkan oleh: " + actorEmail);
-        try {
-          MailApp.sendEmail(targetEmail,
-            "Akun SISTA-CSSD Dinonaktifkan",
-            "Halo " + (targetNama || data[i][2]) + ",\n\nAkun SISTA-CSSD Anda telah dinonaktifkan oleh Admin.\n\nHubungi petugas CSSD jika Anda merasa ini adalah kesalahan.\n\nSalam,\nTim Admin CSSD RSUD dr. R. Koesma."
-          );
-        } catch (e) {
-          Logger.log("Email failed: " + e.toString());
-        }
+        sendGeneralHtmlEmail(
+          targetEmail,
+          "Akun SISTA-CSSD Dinonaktifkan",
+          "Akun Dinonaktifkan",
+          "Halo <strong>" + (targetNama || data[i][2]) + "</strong>,<br><br>Akun SISTA-CSSD Anda telah dinonaktifkan oleh Admin CSSD.<br><br>Silakan hubungi pihak Instalasi CSSD jika Anda membutuhkan klarifikasi lebih lanjut mengenai penonaktifan ini.",
+          "Instalasi CSSD RSUD dr. R. Koesma Tuban"
+        );
       } else if (newRole && newRole !== data[i][3]) {
         sendTelegramNotification("🔄 *Perubahan Peran User*\nNama: " + (targetNama || data[i][2]) + "\nEmail: " + targetEmail + "\nPeran: " + data[i][3] + " → " + newRole + "\nDiubah oleh: " + actorEmail);
       }
@@ -669,6 +666,16 @@ function createOrder(postData, userEmail, userRoom) {
     itemsSheet.getRange(itemRow, 5).setValue('Requested');
   }
   
+  // Compile rincian item untuk email
+  var itemDetails = [];
+  for (var k = 0; k < itemIds.length; k++) {
+    var itemId = itemIds[k];
+    itemDetails.push({
+      id: itemId,
+      nama: itemsMap[itemId].nama
+    });
+  }
+  
   writeLog(userEmail, "Membuat request peminjaman baru " + orderId + " dengan " + itemIds.length + " item.");
   
   // Notifikasi
@@ -676,14 +683,16 @@ function createOrder(postData, userEmail, userRoom) {
   sendTelegramNotification(notifMessage);
   
   // Kirim email konfirmasi ke Peminjam
-  try {
-    MailApp.sendEmail(userEmail, 
-      "Konfirmasi Request Peminjaman Alat " + orderId, 
-      "Halo,\n\nPermintaan peminjaman alat steril dengan ID " + orderId + " telah kami terima dan sedang diproses oleh Tim CSSD.\n\nRuangan: " + userRoom + "\nJumlah Item: " + itemIds.length + "\n\nTerima kasih."
-    );
-  } catch (e) {
-    Logger.log("Email failed: " + e.toString());
-  }
+  sendHtmlEmail(
+    userEmail,
+    "Konfirmasi Request Peminjaman Alat " + orderId,
+    "Konfirmasi Pengajuan Peminjaman",
+    "Halo,<br><br>Permintaan pengajuan peminjaman alat medis steril Anda telah berhasil kami terima dan saat ini sedang dalam proses penyiapan oleh Tim CSSD RSUD dr. R. Koesma Tuban.",
+    orderId,
+    userRoom,
+    itemDetails,
+    "Harap tunggu notifikasi email selanjutnya saat alat telah siap untuk diambil di CSSD."
+  );
 
   return jsonResponse(true, "Request peminjaman berhasil dibuat.", { id_order: orderId });
 }
@@ -726,14 +735,26 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
   // Get items in this order
   var detailsData = detailsSheet.getDataRange().getValues();
   var orderItemIds = [];
+  var orderItemDetails = [];
+  
+  var itemsData = itemsSheet.getDataRange().getValues();
+  var itemsInfoMap = {};
+  for (var i = 1; i < itemsData.length; i++) {
+    itemsInfoMap[itemsData[i][0]] = itemsData[i][1];
+  }
+  
   for (var d = 1; d < detailsData.length; d++) {
     if (detailsData[d][1] === orderId) {
-      orderItemIds.push(detailsData[d][2]);
+      var itemId = detailsData[d][2];
+      orderItemIds.push(itemId);
+      orderItemDetails.push({
+        id: itemId,
+        nama: itemsInfoMap[itemId] || "Alat Tidak Dikenal"
+      });
     }
   }
 
   // Get item rows in items sheet
-  var itemsData = itemsSheet.getDataRange().getValues();
   var itemRowsMap = {};
   for (var i = 1; i < itemsData.length; i++) {
     itemRowsMap[itemsData[i][0]] = i + 1;
@@ -761,12 +782,16 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
     
     // Notifikasi
     sendTelegramNotification("📦 *Alat Siap Diambil*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nSilakan perwakilan ruangan mengambil alat steril di CSSD.");
-    try {
-      MailApp.sendEmail(borrowerEmail,
-        "Alat Siap Diambil - SISTA-CSSD [" + orderId + "]",
-        "Halo,\n\nAlat-alat medis steril yang Anda minta dengan ID " + orderId + " telah disiapkan dan siap diambil di CSSD RSUD dr. R. Koesma.\n\nSilakan bawa kartu identitas ruangan Anda."
-      );
-    } catch (e) {}
+    sendHtmlEmail(
+      borrowerEmail,
+      "Alat Siap Diambil - SISTA-CSSD [" + orderId + "]",
+      "Alat Medis Steril Siap Diambil",
+      "Halo,<br><br>Alat-alat medis steril yang Anda ajukan telah selesai disiapkan oleh Tim CSSD dan sudah <strong>siap diambil</strong> di Instalasi CSSD RSUD dr. R. Koesma.",
+      orderId,
+      borrowerRoom,
+      orderItemDetails,
+      "Harap membawa kartu identitas ruangan Anda saat melakukan pengambilan barang."
+    );
 
   } else if (nextStatus === 'Aktif') {
     if (actorRole !== 'Admin' && actorRole !== 'Super Admin') return jsonResponse(false, "Akses ditolak.");
@@ -786,14 +811,16 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
     
     writeLog(actorEmail, "Konfirmasi serah terima alat untuk " + orderId + ". Status: Aktif.");
     sendTelegramNotification("🤝 *Serah Terima Selesai*\nID Order: `" + orderId + "`\nStatus: Aktif (Alat sedang dipinjam oleh " + borrowerRoom + ").");
-    try {
-      MailApp.sendEmail(borrowerEmail,
-        "Serah Terima Alat Selesai - SISTA-CSSD [" + orderId + "]",
-        "Halo,\n\nProses serah terima alat medis steril dengan ID Transaksi " + orderId + " telah selesai dilakukan.\n\nStatus saat ini: Sedang Dipinjam oleh Ruangan " + borrowerRoom + ".\n\nHarap pastikan alat dijaga dengan baik dan segera dikembalikan dalam keadaan bersih setelah digunakan."
-      );
-    } catch (e) {
-      Logger.log("Email failed: " + e.toString());
-    }
+    sendHtmlEmail(
+      borrowerEmail,
+      "Serah Terima Alat Selesai - SISTA-CSSD [" + orderId + "]",
+      "Serah Terima Alat Medis Selesai",
+      "Halo,<br><br>Proses serah terima alat medis steril dengan ID Transaksi di bawah ini telah selesai dilakukan. Status transaksi saat ini aktif (sedang dipinjam).",
+      orderId,
+      borrowerRoom,
+      orderItemDetails,
+      "Harap pastikan alat dijaga dengan baik dan segera dikembalikan dalam keadaan lengkap setelah digunakan."
+    );
 
   } else if (nextStatus === 'Selesai') {
     if (actorRole !== 'Admin' && actorRole !== 'Super Admin') return jsonResponse(false, "Akses ditolak.");
@@ -813,12 +840,16 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
     
     writeLog(actorEmail, "Konfirmasi pengembalian alat untuk " + orderId + ". Status: Selesai.");
     sendTelegramNotification("✅ *Alat Berhasil Dikembalikan*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nStatus Transaksi: Selesai. Semua alat diposisikan sebagai 'Kotor' untuk masuk ke siklus sterilisasi.");
-    try {
-      MailApp.sendEmail(borrowerEmail,
-        "Peminjaman Selesai - SISTA-CSSD [" + orderId + "]",
-        "Halo,\n\nTerima kasih, alat medis yang Anda pinjam dengan ID " + orderId + " telah resmi dikembalikan secara lengkap ke CSSD."
-      );
-    } catch (e) {}
+    sendHtmlEmail(
+      borrowerEmail,
+      "Peminjaman Selesai - SISTA-CSSD [" + orderId + "]",
+      "Pengembalian Alat Medis Berhasil",
+      "Halo,<br><br>Terima kasih, alat-alat medis steril yang Anda pinjam telah resmi dikembalikan secara lengkap ke CSSD RSUD dr. R. Koesma Tuban.",
+      orderId,
+      borrowerRoom,
+      orderItemDetails,
+      "Transaksi peminjaman ini telah resmi dinyatakan SELESAI."
+    );
 
   } else {
     return jsonResponse(false, "Status tujuan '" + nextStatus + "' tidak didukung.");
@@ -992,6 +1023,136 @@ function sendTelegramNotification(message) {
     }
   } catch (e) {
     Logger.log("Gagal mengirim notifikasi Telegram: " + e.toString());
+  }
+}
+
+// --- EMAIL NOTIFICATION TEMPLATES ---
+
+/**
+ * Mengirim email HTML estetik berisi rincian daftar barang pinjaman (format standard perusahaan besar)
+ */
+function sendHtmlEmail(to, subject, title, headerText, orderId, room, items, footerText) {
+  var itemsTableRows = "";
+  if (items && items.length > 0) {
+    for (var i = 0; i < items.length; i++) {
+      itemsTableRows += 
+        "<tr style='border-bottom: 1px solid #e2e8f0;'>" +
+          "<td style='padding: 12px; font-weight: bold; color: #0f172a; font-family: monospace; font-size: 13px;'>" + items[i].id + "</td>" +
+          "<td style='padding: 12px; color: #334155; font-size: 13px;'>" + items[i].nama + "</td>" +
+        "</tr>";
+    }
+  }
+
+  var htmlBody = 
+    "<div style='font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; background-color: #f8fafc; padding: 40px 20px;'>" +
+      "<div style='max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;'>" +
+        
+        // Header
+        "<div style='background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 32px; text-align: center;'>" +
+          "<h1 style='color: #ffffff; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;'>SISTA-CSSD</h1>" +
+          "<p style='color: #94a3b8; margin: 8px 0 0 0; font-size: 13px; font-weight: 500;'>RSUD dr. R. Koesma Tuban</p>" +
+        "</div>" +
+
+        // Body Content
+        "<div style='padding: 32px;'>" +
+          "<h2 style='color: #0f172a; margin: 0 0 16px 0; font-size: 18px; font-weight: 700;'>" + title + "</h2>" +
+          "<p style='color: #475569; line-height: 1.6; font-size: 14px; margin: 0 0 24px 0;'>" + headerText + "</p>" +
+
+          // Order Details Card
+          "<div style='background-color: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 24px;'>" +
+            "<table style='width: 100%; font-size: 13px; border-collapse: collapse;'>" +
+              "<tr>" +
+                "<td style='padding: 6px 0; color: #64748b; font-weight: 600; width: 120px;'>ID Transaksi:</td>" +
+                "<td style='padding: 6px 0; color: #0f172a; font-weight: 700; font-family: monospace; font-size: 14px;'>" + orderId + "</td>" +
+              "</tr>" +
+              "<tr>" +
+                "<td style='padding: 6px 0; color: #64748b; font-weight: 600;'>Ruangan / Unit:</td>" +
+                "<td style='padding: 6px 0; color: #0f172a; font-weight: 600;'>" + room + "</td>" +
+              "</tr>" +
+            "</table>" +
+          "</div>" +
+
+          // Items Table
+          (itemsTableRows ? (
+            "<h3 style='color: #475569; font-size: 12px; font-weight: 700; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.05em;'>Rincian Daftar Alat:</h3>" +
+            "<table style='width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; margin-bottom: 24px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;'>" +
+              "<thead>" +
+                "<tr style='background-color: #f1f5f9; border-bottom: 1px solid #e2e8f0;'>" +
+                  "<th style='padding: 12px; color: #475569; font-weight: 700;'>ID ALAT (QR)</th>" +
+                  "<th style='padding: 12px; color: #475569; font-weight: 700;'>NAMA ALAT MEDIS</th>" +
+                "</tr>" +
+              "</thead>" +
+              "<tbody>" +
+                itemsTableRows +
+              "</tbody>" +
+            "</table>"
+          ) : "") +
+
+          "<p style='color: #1e3a8a; line-height: 1.6; font-size: 13px; margin: 0; font-style: italic; background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 0 8px 8px 0;'>" + footerText + "</p>" +
+        "</div>" +
+
+        // Footer
+        "<div style='background-color: #f1f5f9; padding: 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b;'>" +
+          "<p style='margin: 0; font-weight: bold;'>Instalasi CSSD - RSUD dr. R. Koesma Tuban</p>" +
+          "<p style='margin: 4px 0 0 0;'>Layanan Sterilisasi Alat Medis Aman & Terpercaya</p>" +
+          "<p style='margin: 12px 0 0 0; color: #94a3b8;'>Email ini dikirim secara otomatis oleh sistem SISTA-CSSD. Harap tidak membalas email ini.</p>" +
+        "</div>" +
+
+      "</div>" +
+    "</div>";
+
+  try {
+    MailApp.sendEmail({
+      to: to,
+      subject: subject,
+      htmlBody: htmlBody
+    });
+  } catch (e) {
+    Logger.log("Email failed to " + to + ": " + e.toString());
+  }
+}
+
+/**
+ * Mengirim email HTML estetik untuk notifikasi umum (login, persetujuan user)
+ */
+function sendGeneralHtmlEmail(to, subject, title, bodyText, footerText) {
+  var htmlBody = 
+    "<div style='font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; background-color: #f8fafc; padding: 40px 20px;'>" +
+      "<div style='max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;'>" +
+        
+        // Header
+        "<div style='background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 32px; text-align: center;'>" +
+          "<h1 style='color: #ffffff; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;'>SISTA-CSSD</h1>" +
+          "<p style='color: #94a3b8; margin: 8px 0 0 0; font-size: 13px; font-weight: 500;'>RSUD dr. R. Koesma Tuban</p>" +
+        "</div>" +
+
+        // Body Content
+        "<div style='padding: 32px;'>" +
+          "<h2 style='color: #0f172a; margin: 0 0 16px 0; font-size: 18px; font-weight: 700;'>" + title + "</h2>" +
+          "<p style='color: #475569; line-height: 1.6; font-size: 14px; margin: 0 0 24px 0;'>" + bodyText + "</p>" +
+          (footerText ? (
+            "<p style='color: #1e3a8a; line-height: 1.6; font-size: 13px; margin: 0; font-style: italic; background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 0 8px 8px 0;'>" + footerText + "</p>"
+          ) : "") +
+        "</div>" +
+
+        // Footer
+        "<div style='background-color: #f1f5f9; padding: 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b;'>" +
+          "<p style='margin: 0; font-weight: bold;'>Instalasi CSSD - RSUD dr. R. Koesma Tuban</p>" +
+          "<p style='margin: 4px 0 0 0;'>Layanan Sterilisasi Alat Medis Aman & Terpercaya</p>" +
+          "<p style='margin: 12px 0 0 0; color: #94a3b8;'>Email ini dikirim secara otomatis oleh sistem SISTA-CSSD. Harap tidak membalas email ini.</p>" +
+        "</div>" +
+
+      "</div>" +
+    "</div>";
+
+  try {
+    MailApp.sendEmail({
+      to: to,
+      subject: subject,
+      htmlBody: htmlBody
+    });
+  } catch (e) {
+    Logger.log("Email failed to " + to + ": " + e.toString());
   }
 }
 
