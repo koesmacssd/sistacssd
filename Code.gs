@@ -168,16 +168,19 @@ function doGet(e) {
 
     switch (action) {
       case 'getUserProfile':
-        writeLog(userEmail, "Login ke sistem. Peran: " + userRole + ", Ruangan: " + userRoom);
-        sendTelegramNotification("🔐 *Login Pengguna*\nNama: " + userProfile.nama + "\nEmail: " + userEmail + "\nPeran: " + userRole + "\nRuangan: " + userRoom + "\nWaktu: " + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss'));
-        // Kirim email notifikasi login ke user
-        try {
-          MailApp.sendEmail(userEmail,
-            "Notifikasi Login SISTA-CSSD",
-            "Halo " + userProfile.nama + ",\n\nAkun Anda baru saja terdeteksi masuk ke dalam sistem SISTA-CSSD.\n\nRuangan: " + userRoom + "\nWaktu: " + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss') + "\n\nJika ini bukan aktivitas Anda, harap segera menghubungi Admin CSSD."
-          );
-        } catch (e) {
-          Logger.log("Email failed: " + e.toString());
+        var isLogin = e.parameter.is_login === 'true';
+        if (isLogin) {
+          writeLog(userEmail, "Login ke sistem. Peran: " + userRole + ", Ruangan: " + userRoom);
+          sendTelegramNotification("🔐 *Login Pengguna*\nNama: " + userProfile.nama + "\nEmail: " + userEmail + "\nPeran: " + userRole + "\nRuangan: " + userRoom + "\nWaktu: " + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss'));
+          // Kirim email notifikasi login ke user
+          try {
+            MailApp.sendEmail(userEmail,
+              "Notifikasi Login SISTA-CSSD",
+              "Halo " + userProfile.nama + ",\n\nAkun Anda baru saja terdeteksi masuk ke dalam sistem SISTA-CSSD.\n\nRuangan: " + userRoom + "\nWaktu: " + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss') + "\n\nJika ini bukan aktivitas Anda, harap segera menghubungi Admin CSSD."
+            );
+          } catch (e) {
+            Logger.log("Email failed: " + e.toString());
+          }
         }
         return jsonResponse(true, "Profil user berhasil diambil.", userProfile);
         

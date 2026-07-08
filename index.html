@@ -974,7 +974,7 @@
         this.credential = response.credential;
         localStorage.setItem('sista_credential', this.credential);
         this.showToast('success', 'Autentikasi Google SSO berhasil!');
-        this.checkUserStatus();
+        this.checkUserStatus(true);
       }
 
 
@@ -999,7 +999,7 @@
       }
 
       // Memeriksa Status Registrasi User di Backend
-      async checkUserStatus() {
+      async checkUserStatus(isLogin = false) {
         this.updateApiUrlFromInput();
         if (!this.apiUrl) {
           this.showView('login');
@@ -1009,7 +1009,8 @@
 
         try {
           this.showToast('info', 'Menghubungkan ke server...');
-          const res = await this.callApi('getUserProfile');
+          const params = isLogin ? { is_login: 'true' } : {};
+          const res = await this.callApi('getUserProfile', params);
           
           if (res.success) {
             this.user = res.data;
