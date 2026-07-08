@@ -1698,6 +1698,19 @@
 
       // Update Order Status (Action Button)
       async updateOrderStatus(orderId, nextStatus) {
+        let confirmMsg = '';
+        if (nextStatus === 'Ready for Pickup') {
+          confirmMsg = 'Apakah Anda yakin alat medis sudah siap untuk diambil?';
+        } else if (nextStatus === 'Aktif') {
+          confirmMsg = 'Apakah Anda yakin ingin mengonfirmasi serah terima alat medis ke perwakilan ruangan?';
+        } else if (nextStatus === 'Selesai') {
+          confirmMsg = 'Apakah Anda yakin ingin menerima pengembalian peminjaman ini?\n\nPERINGATAN: Pastikan JUMLAH dan KONDISI fisik alat medis telah dihitung dan diperiksa dengan benar!';
+        }
+
+        if (confirmMsg && !confirm(confirmMsg)) {
+          return;
+        }
+
         try {
           this.showToast('info', 'Memperbarui status transaksi...');
           const res = await this.callApiPost('updateOrderStatus', {
