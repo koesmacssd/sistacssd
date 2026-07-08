@@ -528,6 +528,8 @@ function updateUserStatus(postData, actorEmail) {
   var newStatus = postData.status_aktif; // 'Aktif' | 'Nonaktif' | 'Pending'
   var newRole = postData.peran; // 'Super Admin' | 'Admin' | 'Ruangan'
   var targetRoom = postData.nama_ruangan;
+  var targetNama = postData.nama;
+  var targetNoHp = postData.no_hp;
   
   if (!targetEmail) {
     return jsonResponse(false, "Parameter 'target_email' diperlukan.");
@@ -554,8 +556,14 @@ function updateUserStatus(postData, actorEmail) {
       if (targetRoom) {
         sheet.getRange(row, 5).setValue(targetRoom);
       }
+      if (targetNama) {
+        sheet.getRange(row, 3).setValue(targetNama.toString().trim());
+      }
+      if (targetNoHp) {
+        sheet.getRange(row, 7).setValue(targetNoHp.toString().trim());
+      }
       
-      var msg = "Update User " + targetEmail + ": Status=" + (newStatus || 'N/A') + ", Peran=" + (newRole || 'N/A');
+      var msg = "Update User " + targetEmail + ": Status=" + (newStatus || 'N/A') + ", Peran=" + (newRole || 'N/A') + ", Nama=" + (targetNama || 'N/A') + ", No HP=" + (targetNoHp || 'N/A') + ", Ruangan=" + (targetRoom || 'N/A');
       writeLog(actorEmail, msg);
       
       // Kirim email notifikasi ke user jika status aktif disetujui

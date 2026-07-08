@@ -830,6 +830,57 @@
       </div>
     </div>
 
+    <!-- MODAL: ADMIN EDIT USER -->
+    <div id="admin-edit-user-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+      <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity bg-slate-950/60" onclick="app.closeAdminEditUserModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-slate-100">
+          <div class="p-6">
+            <h3 class="text-lg font-bold text-slate-900 mb-4">Edit Akun Pengguna (Admin)</h3>
+            <form onsubmit="app.submitAdminEditUserForm(event)" class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700">Email Akun (Google)</label>
+                <input type="email" id="admin-edit-email" disabled class="mt-1 w-full border border-slate-200 bg-slate-50 text-slate-500 rounded-xl px-4 py-2 text-sm cursor-not-allowed">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700">Nama Lengkap Pengguna</label>
+                <input type="text" id="admin-edit-nama" required class="mt-1 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Masukkan nama lengkap...">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700">Nomor HP / WhatsApp</label>
+                <input type="tel" id="admin-edit-phone" required class="mt-1 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Contoh: 081234567890">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700">Nama Ruangan / Unit Kerja</label>
+                <select id="admin-edit-room" onchange="app.toggleAdminEditCustomRoom()" class="mt-1 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
+                  <option value="CSSD">CSSD</option>
+                  <option value="IBS (Bedah)">IBS (Bedah)</option>
+                  <option value="ICU">ICU</option>
+                  <option value="IGD">IGD</option>
+                  <option value="VK (Persalinan)">VK (Persalinan)</option>
+                  <option value="Paviliun">Paviliun</option>
+                  <option value="Rawat Inap Bedah">Rawat Inap Bedah</option>
+                  <option value="Rawat Inap Anak">Rawat Inap Anak</option>
+                  <option value="Poliklinik">Poliklinik</option>
+                  <option value="Lainnya">Lainnya (Ketik Manual)</option>
+                </select>
+              </div>
+              <div id="admin-edit-custom-room-container" class="hidden">
+                <label class="block text-sm font-medium text-slate-700">Nama Ruangan Custom</label>
+                <input type="text" id="admin-edit-room-custom" class="mt-1 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Ketik nama ruangan Anda...">
+              </div>
+
+              <div class="flex justify-end space-x-2 pt-4 border-t border-slate-100 mt-6">
+                <button type="button" onclick="app.closeAdminEditUserModal()" class="border border-slate-300 text-slate-700 px-4 py-2 rounded-xl text-sm transition duration-150">Batal</button>
+                <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition duration-150">Simpan Perubahan</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- SCRIPT LOGIKA SPA SISTA-CSSD -->
@@ -1794,8 +1845,14 @@
               if (u.status_aktif === 'Nonaktif') statusBadge = 'bg-red-100 text-red-700 border-red-200';
 
               let actionBtns = '';
+              const editBtn = `
+                <button onclick="app.openAdminEditUserModal('${u.email}')" class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold px-2.5 py-1 rounded-lg shadow-sm transition duration-150 mr-1" title="Edit Profil/Nama/No HP/Ruangan">
+                  Edit
+                </button>
+              `;
+
               if (u.status_aktif === 'Pending') {
-                actionBtns = `
+                actionBtns = editBtn + `
                   <button onclick="app.updateUser('${u.email}', 'Aktif', 'Ruangan')" class="bg-green-500 hover:bg-green-600 text-white text-xs font-semibold px-2.5 py-1 rounded-lg shadow-sm transition duration-150">
                     Setujui (Ruangan)
                   </button>
@@ -1805,11 +1862,11 @@
                 `;
               } else {
                 const nextStatus = u.status_aktif === 'Aktif' ? 'Nonaktif' : 'Aktif';
-                actionBtns = `
+                actionBtns = editBtn + `
                   <button onclick="app.updateUser('${u.email}', '${nextStatus}')" class="text-xs font-bold px-3 py-1 rounded-lg border border-slate-300 hover:bg-slate-50 transition duration-150">
                     ${u.status_aktif === 'Aktif' ? 'Deaktivasi' : 'Aktivasi'}
                   </button>
-                  <select onchange="app.updateUserRole('${u.email}', this.value)" class="text-xs border border-slate-300 rounded-lg px-2 py-1 ml-1 focus:outline-none">
+                  <select onchange="app.updateUserRole('${u.email}', this.value)" class="text-xs border border-slate-300 rounded-lg px-2 py-1 ml-1 focus:outline-none bg-white">
                     <option value="" disabled selected>Ubah Peran</option>
                     <option value="Ruangan">Ruangan</option>
                     <option value="Admin">Admin</option>
@@ -2273,6 +2330,102 @@
           if (saveBtn) {
             saveBtn.disabled = false;
             saveBtn.innerHTML = originalBtnText;
+          }
+        }
+      }
+
+      // --- ADMIN EDIT USER MODAL ---
+      openAdminEditUserModal(userEmail) {
+        if (!this.users) return;
+        const targetUser = this.users.find(u => u.email === userEmail);
+        if (!targetUser) {
+          this.showToast('error', 'Data pengguna tidak ditemukan.');
+          return;
+        }
+
+        this.adminEditingEmail = userEmail;
+
+        document.getElementById('admin-edit-email').value = targetUser.email;
+        document.getElementById('admin-edit-nama').value = targetUser.nama;
+        document.getElementById('admin-edit-phone').value = targetUser.no_hp || '';
+
+        const roomSelect = document.getElementById('admin-edit-room');
+        const customContainer = document.getElementById('admin-edit-custom-room-container');
+        const customInput = document.getElementById('admin-edit-room-custom');
+
+        const standardRooms = ['CSSD', 'IBS (Bedah)', 'ICU', 'IGD', 'VK (Persalinan)', 'Paviliun', 'Rawat Inap Bedah', 'Rawat Inap Anak', 'Poliklinik'];
+
+        if (standardRooms.includes(targetUser.nama_ruangan)) {
+          roomSelect.value = targetUser.nama_ruangan;
+          customContainer.classList.add('hidden');
+          customInput.value = '';
+        } else {
+          roomSelect.value = 'Lainnya';
+          customContainer.classList.remove('hidden');
+          customInput.value = targetUser.nama_ruangan;
+        }
+
+        document.getElementById('admin-edit-user-modal').classList.remove('hidden');
+      }
+
+      closeAdminEditUserModal() {
+        document.getElementById('admin-edit-user-modal').classList.add('hidden');
+        this.adminEditingEmail = null;
+      }
+
+      toggleAdminEditCustomRoom() {
+        const roomSelect = document.getElementById('admin-edit-room').value;
+        const customContainer = document.getElementById('admin-edit-custom-room-container');
+        if (roomSelect === 'Lainnya') {
+          customContainer.classList.remove('hidden');
+        } else {
+          customContainer.classList.add('hidden');
+        }
+      }
+
+      async submitAdminEditUserForm(e) {
+        e.preventDefault();
+        if (!this.adminEditingEmail) return;
+
+        const nama = document.getElementById('admin-edit-nama').value.trim();
+        const roomSelect = document.getElementById('admin-edit-room').value;
+        const roomCustom = document.getElementById('admin-edit-room-custom').value.trim();
+        const nama_ruangan = (roomSelect === 'Lainnya') ? roomCustom : roomSelect;
+        const no_hp = document.getElementById('admin-edit-phone').value.trim();
+
+        if (!nama || !nama_ruangan || !no_hp) {
+          this.showToast('warning', 'Semua kolom wajib diisi.');
+          return;
+        }
+
+        const saveBtn = e.submitter || document.querySelector('#admin-edit-user-modal button[type="submit"]');
+        if (saveBtn) {
+          saveBtn.disabled = true;
+          saveBtn.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2 inline-block text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Menyimpan...`;
+        }
+
+        try {
+          this.showToast('info', 'Memperbarui data pengguna...');
+          const res = await this.callApiPost('updateUserStatus', {
+            target_email: this.adminEditingEmail,
+            nama: nama,
+            nama_ruangan: nama_ruangan,
+            no_hp: no_hp
+          });
+
+          if (res.success) {
+            this.showToast('success', 'Data pengguna berhasil diperbarui oleh Admin.');
+            this.closeAdminEditUserModal();
+            this.renderUserManagement();
+          } else {
+            this.showToast('error', res.message);
+          }
+        } catch (err) {
+          this.showToast('error', 'Gagal memperbarui data pengguna.');
+        } finally {
+          if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = 'Simpan Perubahan';
           }
         }
       }
