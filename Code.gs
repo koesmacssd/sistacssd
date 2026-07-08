@@ -168,6 +168,8 @@ function doGet(e) {
 
     switch (action) {
       case 'getUserProfile':
+        writeLog(userEmail, "Login ke sistem. Peran: " + userRole + ", Ruangan: " + userRoom);
+        sendTelegramNotification("🔐 *Login Pengguna*\nNama: " + userProfile.nama + "\nEmail: " + userEmail + "\nPeran: " + userRole + "\nRuangan: " + userRoom + "\nWaktu: " + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss'));
         return jsonResponse(true, "Profil user berhasil diambil.", userProfile);
         
       case 'getItems':
@@ -563,8 +565,9 @@ function updateUserStatus(postData, actorEmail) {
       var msg = "Update User " + targetEmail + ": Status=" + (newStatus || 'N/A') + ", Peran=" + (newRole || 'N/A') + ", Nama=" + (targetNama || 'N/A') + ", No HP=" + (targetNoHp || 'N/A') + ", Ruangan=" + (targetRoom || 'N/A');
       writeLog(actorEmail, msg);
       
-      // Kirim email notifikasi ke user jika status aktif disetujui
+      // Notifikasi Telegram berdasarkan aksi
       if (newStatus === 'Aktif') {
+        sendTelegramNotification("✅ *Akun Disetujui*\nNama: " + (targetNama || data[i][2]) + "\nEmail: " + targetEmail + "\nPeran: " + (newRole || data[i][3]) + "\nRuangan: " + (targetRoom || data[i][4]) + "\nDisetujui oleh: " + actorEmail);
         try {
           MailApp.sendEmail(targetEmail, 
             "Akun SISTA-CSSD Anda Telah Aktif", 
@@ -573,6 +576,10 @@ function updateUserStatus(postData, actorEmail) {
         } catch (e) {
           Logger.log("Email failed: " + e.toString());
         }
+      } else if (newStatus === 'Nonaktif') {
+        sendTelegramNotification("🚫 *Akun Dinonaktifkan*\nNama: " + (targetNama || data[i][2]) + "\nEmail: " + targetEmail + "\nDinonaktifkan oleh: " + actorEmail);
+      } else if (newRole && newRole !== data[i][3]) {
+        sendTelegramNotification("🔄 *Perubahan Peran User*\nNama: " + (targetNama || data[i][2]) + "\nEmail: " + targetEmail + "\nPeran: " + data[i][3] + " → " + newRole + "\nDiubah oleh: " + actorEmail);
       }
       
       return jsonResponse(true, "User berhasil diperbarui.", { email: targetEmail });
@@ -817,6 +824,7 @@ function updateItemCycle(postData, actorEmail) {
         }
         sheet.getRange(row, 5).setValue('Proses Steril');
         writeLog(actorEmail, "Mengubah status " + itemId + " ke Proses Steril.");
+        sendTelegramNotification("🧪 *Proses Sterilisasi Dimulai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\nOleh: " + actorEmail);
         return jsonResponse(true, "Status alat berhasil diubah ke Proses Steril.", { id_alat: itemId, status: 'Proses Steril' });
         
       } else if (nextCycle === 'Steril') {
@@ -835,6 +843,7 @@ function updateItemCycle(postData, actorEmail) {
         sheet.getRange(row, 7).setValue(expiryDate);
         
         writeLog(actorEmail, "Menyelesaikan sterilisasi " + itemId + ". Kadaluwarsa dalam " + expiryDays + " hari.");
+        sendTelegramNotification("💎 *Sterilisasi Selesai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\nStatus: Steril ✔\nKadaluwarsa: " + Utilities.formatDate(expiryDate, Session.getScriptTimeZone(), 'dd/MM/yyyy') + "\nOleh: " + actorEmail);
         return jsonResponse(true, "Alat berhasil disterilkan dan siap dipinjam kembali.", { 
           id_alat: itemId, 
           status: 'Steril',
@@ -887,6 +896,7 @@ function manageItems(postData, actorEmail) {
     
     sheet.appendRow([idAlat.toString().trim(), namaAlat.toString().trim(), deskripsi, fotoUrl, 'Steril', new Date(), '']);
     writeLog(actorEmail, "Menambah alat baru: " + namaAlat + " (" + idAlat + ")");
+    sendTelegramNotification("🆕 *Alat Baru Ditambahkan*\nNama: " + namaAlat + "\nID: `" + idAlat + "`\nDeskripsi: " + (deskripsi || '-') + "\nOleh: " + actorEmail);
     return jsonResponse(true, "Alat berhasil ditambahkan.");
     
   } else if (operation === 'edit') {
@@ -914,8 +924,10 @@ function manageItems(postData, actorEmail) {
         if (status !== 'Steril' && status !== 'Kotor' && status !== 'Proses Steril') {
           return jsonResponse(false, "Alat sedang dalam status transaksi (" + status + ") sehingga tidak bisa dihapus.");
         }
+        var deletedName = data[k][1];
         sheet.deleteRow(k + 1);
         writeLog(actorEmail, "Menghapus alat: " + idAlat);
+        sendTelegramNotification("🗑️ *Alat Dihapus*\nNama: " + deletedName + "\nID: `" + idAlat + "`\nOleh: " + actorEmail);
         return jsonResponse(true, "Alat berhasil dihapus dari inventaris.");
       }
     }
@@ -926,18 +938,13 @@ function manageItems(postData, actorEmail) {
 }
 
 // --- NOTIFICATION UTILITIES ---
+var TELEGRAM_BOT_TOKEN = '7799138005:AAHYqmBkBWLMvUJbaAG5vH7rEb1HtazX2CU';
+var TELEGRAM_CHAT_ID = '@koesmasurat';
+
 function sendTelegramNotification(message) {
-  var token = getConfig('TELEGRAM_TOKEN', '');
-  var chatId = getConfig('TELEGRAM_CHAT_ID', '');
-  
-  if (!token || !chatId || token === 'TOKEN_BOT' || chatId === 'CHAT_ID') {
-    Logger.log("Telegram Token/Chat ID belum diatur. Pesan: " + message);
-    return;
-  }
-  
-  var url = "https://api.telegram.org/bot" + token + "/sendMessage";
+  var url = "https://api.telegram.org/bot" + TELEGRAM_BOT_TOKEN + "/sendMessage";
   var payload = {
-    chat_id: chatId,
+    chat_id: TELEGRAM_CHAT_ID,
     text: message,
     parse_mode: "Markdown"
   };
@@ -951,7 +958,10 @@ function sendTelegramNotification(message) {
   
   try {
     var response = UrlFetchApp.fetch(url, options);
-    Logger.log("Telegram Response: " + response.getContentText());
+    var result = JSON.parse(response.getContentText());
+    if (!result.ok) {
+      Logger.log("Telegram Error: " + response.getContentText());
+    }
   } catch (e) {
     Logger.log("Gagal mengirim notifikasi Telegram: " + e.toString());
   }
@@ -1116,6 +1126,7 @@ function updateSelfProfile(postData, userEmail) {
       sheet.getRange(row, 5).setValue(namaRuangan.toString().trim());
       sheet.getRange(row, 7).setValue(noHp.toString().trim());
       writeLog(userEmail, "Memperbarui profil mandiri: Nama=" + nama + ", Ruangan=" + namaRuangan + ", No HP=" + noHp);
+      sendTelegramNotification("📝 *Profil Diperbarui*\nEmail: " + userEmail + "\nNama: " + nama + "\nRuangan: " + namaRuangan + "\nNo HP: " + noHp);
       return jsonResponse(true, "Profil berhasil diperbarui.");
     }
   }
