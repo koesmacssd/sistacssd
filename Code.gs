@@ -460,6 +460,8 @@ function getOrdersData(filterRoom, filterEmail) {
       tanggal_request: ordersData[o][4] ? Utilities.formatDate(new Date(ordersData[o][4]), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") : '',
       tanggal_diambil: ordersData[o][5] ? Utilities.formatDate(new Date(ordersData[o][5]), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") : '',
       tanggal_kembali: ordersData[o][6] ? Utilities.formatDate(new Date(ordersData[o][6]), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") : '',
+      catatan_kembali_cssd: ordersData[o][7] || '',
+      foto_kembali_cssd: ordersData[o][8] || '',
       items: detailsMap[orderId] || []
     });
   }
@@ -850,22 +852,26 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
 
   } else if (nextStatus === 'Selesai') {
     if (actorRole !== 'Admin' && actorRole !== 'Super Admin') return jsonResponse(false, "Akses ditolak.");
-    if (currentStatus !== 'Aktif') return jsonResponse(false, "Status transisi tidak valid. Status saat ini: " + currentStatus);
+    if (currentStatus !== 'Aktif' && currentStatus !== 'Tidak Lengkap') {
+      return jsonResponse(false, "Status transisi tidak valid. Status saat ini: " + currentStatus);
+    }
     
     // Update order (Set status & tanggal_kembali)
     ordersSheet.getRange(orderRow, 4).setValue('Selesai');
     ordersSheet.getRange(orderRow, 7).setValue(now);
     
-    // Update items -> 'Kotor'
-    for (var c = 0; c < orderItemIds.length; c++) {
-      var itemRow = itemRowsMap[orderItemIds[c]];
-      if (itemRow) {
-        itemsSheet.getRange(itemRow, 5).setValue('Kotor');
+    // Update items -> 'Kotor' (Hanya jika sebelumnya dari 'Aktif')
+    if (currentStatus === 'Aktif') {
+      for (var c = 0; c < orderItemIds.length; c++) {
+        var itemRow = itemRowsMap[orderItemIds[c]];
+        if (itemRow) {
+          itemsSheet.getRange(itemRow, 5).setValue('Kotor');
+        }
       }
     }
     
-    writeLog(actorEmail, "Konfirmasi pengembalian alat untuk " + orderId + ". Status: Selesai.");
-    sendTelegramNotification("✅ *Alat Berhasil Dikembalikan*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nStatus Transaksi: Selesai. Semua alat diposisikan sebagai 'Kotor' untuk masuk ke siklus sterilisasi.");
+    writeLog(actorEmail, "Konfirmasi pengembalian lengkap untuk " + orderId + ". Status: Selesai.");
+    sendTelegramNotification("✅ *Alat Berhasil Dikembalikan Lengkap*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nStatus Transaksi: Selesai. Semua alat diposisikan sebagai 'Kotor' untuk masuk ke siklus sterilisasi.");
     sendHtmlEmail(
       borrowerEmail,
       "Peminjaman Selesai - SISTA-CSSD [" + orderId + "]",
@@ -874,7 +880,41 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
       orderId,
       borrowerRoom,
       orderItemDetails,
-      "Transaksi peminjaman ini telah resmi dinyatakan SELESAI."
+      "Transaksi peminjaman ini telah resmi dinyatakan SELESAI dan lengkap."
+    );
+
+  } else if (nextStatus === 'Tidak Lengkap') {
+    if (actorRole !== 'Admin' && actorRole !== 'Super Admin') return jsonResponse(false, "Akses ditolak.");
+    if (currentStatus !== 'Aktif') return jsonResponse(false, "Status transisi tidak valid. Status saat ini: " + currentStatus);
+    
+    var catatan = postData.catatan_kembali || '';
+    var fotoUrl = postData.foto_kembali || '';
+    
+    // Update order (Set status, tanggal_kembali, catatan, dan foto)
+    ordersSheet.getRange(orderRow, 4).setValue('Tidak Lengkap');
+    ordersSheet.getRange(orderRow, 7).setValue(now);
+    ordersSheet.getRange(orderRow, 8).setValue(catatan);
+    ordersSheet.getRange(orderRow, 9).setValue(fotoUrl);
+    
+    // Update items -> 'Kotor' (agar returned parts bisa disterilkan kembali)
+    for (var c = 0; c < orderItemIds.length; c++) {
+      var itemRow = itemRowsMap[orderItemIds[c]];
+      if (itemRow) {
+        itemsSheet.getRange(itemRow, 5).setValue('Kotor');
+      }
+    }
+    
+    writeLog(actorEmail, "Konfirmasi pengembalian tidak lengkap untuk " + orderId + ". Catatan: " + catatan);
+    sendTelegramNotification("⚠️ *Pengembalian Tidak Lengkap*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nCatatan: " + catatan + "\nOleh: " + actorEmail);
+    sendHtmlEmail(
+      borrowerEmail,
+      "Pengembalian Bermasalah/Tidak Lengkap - SISTA-CSSD [" + orderId + "]",
+      "Pengembalian Alat Medis Tidak Lengkap",
+      "Halo,<br><br>Proses pengembalian alat medis untuk transaksi di bawah ini telah dilakukan, namun terdeteksi dalam kondisi <strong>tidak lengkap / rusak</strong>.<br><br><strong>Catatan CSSD:</strong> " + catatan,
+      orderId,
+      borrowerRoom,
+      orderItemDetails,
+      "Harap segera melengkapi kekurangan alat medis tersebut ke pihak CSSD."
     );
 
   } else {
