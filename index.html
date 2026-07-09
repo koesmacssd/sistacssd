@@ -449,7 +449,7 @@
             </div>
 
             <!-- Stats Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <!-- Total Order Pending -->
               <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center space-x-4">
                 <div class="p-3 bg-yellow-100 rounded-xl text-yellow-600">
@@ -488,6 +488,20 @@
                 <div>
                   <p class="text-sm font-medium text-slate-500">Alat Kotor</p>
                   <p id="stat-kotor" class="text-2xl font-extrabold text-slate-900">0</p>
+                </div>
+              </div>
+              <!-- Kedaluwarsa Steril -->
+              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex items-center space-x-4">
+                <div class="p-3 bg-rose-100 rounded-xl text-rose-600">
+                  <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-slate-500">Kedaluwarsa Steril</p>
+                  <p class="text-xs mt-0.5 whitespace-nowrap">
+                    <span id="stat-expired-red" class="text-red-600 font-extrabold text-lg">0</span> <span class="text-slate-400 font-bold text-[9px] mr-1">EXP</span> 
+                    <span class="text-slate-300">|</span>
+                    <span id="stat-expired-orange" class="text-amber-600 font-extrabold text-lg ml-1">0</span> <span class="text-slate-400 font-bold text-[9px]">&lt;7H</span>
+                  </p>
                 </div>
               </div>
             </div>
@@ -1830,6 +1844,9 @@
         let countActive = 0;
         let countKotor = 0;
 
+        let countExpired = 0;
+        let countSoonExpired = 0;
+
         this.orders.forEach(o => {
           if (o.status_order === 'Pending') countPending++;
           if (o.status_order === 'Ready for Pickup') countReady++;
@@ -1838,12 +1855,30 @@
 
         this.items.forEach(i => {
           if (['Kotor', 'Pencucian', 'Proses Steril', 'Penyimpanan'].includes(i.status_posisi)) countKotor++;
+          
+          if (i.status_posisi === 'Steril' && i.tanggal_kadaluwarsa_steril) {
+            const expDate = new Date(i.tanggal_kadaluwarsa_steril);
+            const today = new Date();
+            expDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            
+            const diffTime = expDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays <= 0) {
+              countExpired++;
+            } else if (diffDays <= 7) {
+              countSoonExpired++;
+            }
+          }
         });
 
         document.getElementById('stat-pending').innerText = countPending;
         document.getElementById('stat-ready').innerText = countReady;
         document.getElementById('stat-aktif').innerText = countActive;
         document.getElementById('stat-kotor').innerText = countKotor;
+        document.getElementById('stat-expired-red').innerText = countExpired;
+        document.getElementById('stat-expired-orange').innerText = countSoonExpired;
       }
 
       // E. Monitor Peminjaman (Admin)
