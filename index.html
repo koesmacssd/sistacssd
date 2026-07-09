@@ -1837,7 +1837,7 @@
         });
 
         this.items.forEach(i => {
-          if (i.status_posisi === 'Kotor') countKotor++;
+          if (['Kotor', 'Pencucian', 'Proses Steril', 'Penyimpanan'].includes(i.status_posisi)) countKotor++;
         });
 
         document.getElementById('stat-pending').innerText = countPending;
@@ -2554,8 +2554,8 @@
             const roomName = item.status_posisi.substring(8).trim();
             posisiHtml = `<span class="inline-block text-[11px] font-bold px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 border border-blue-200">${roomName}</span>`;
           } else {
-            // Jika di CSSD, tampilkan dropdown pilihan status (Steril, Proses Steril, Kotor)
-            const statuses = ['Steril', 'Proses Steril', 'Kotor'];
+             // Jika di CSSD, tampilkan dropdown pilihan status (Steril, Pencucian, Proses Steril, Penyimpanan, Kotor)
+            const statuses = ['Steril', 'Pencucian', 'Proses Steril', 'Penyimpanan', 'Kotor'];
             let optionsHtml = '';
             statuses.forEach(st => {
               const isSelected = item.status_posisi === st ? 'selected' : '';
@@ -2566,6 +2566,8 @@
             if (item.status_posisi === 'Steril') selectColorClass = 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100/70';
             else if (item.status_posisi === 'Kotor') selectColorClass = 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100/70';
             else if (item.status_posisi === 'Proses Steril') selectColorClass = 'bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100/70';
+            else if (item.status_posisi === 'Pencucian') selectColorClass = 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100/70';
+            else if (item.status_posisi === 'Penyimpanan') selectColorClass = 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100/70';
 
             statusSelectHtml = `
               <select onchange="app.updateItemCycle('${item.id_alat}', this.value)" class="${selectColorClass} border text-[11px] font-bold px-2 py-0.5 rounded-lg focus:outline-none cursor-pointer transition duration-150 focus:ring-2 focus:ring-brand-500 bg-white">
@@ -3340,8 +3342,12 @@
           statusEl.classList.add('bg-red-100', 'text-red-700');
         } else if (item.status_posisi === 'Proses Steril') {
           statusEl.classList.add('bg-yellow-100', 'text-yellow-700');
-        } else {
+        } else if (item.status_posisi === 'Pencucian') {
           statusEl.classList.add('bg-blue-100', 'text-blue-700');
+        } else if (item.status_posisi === 'Penyimpanan') {
+          statusEl.classList.add('bg-indigo-100', 'text-indigo-700');
+        } else {
+          statusEl.classList.add('bg-slate-100', 'text-slate-700');
         }
 
         // Foto preview

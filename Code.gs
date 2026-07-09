@@ -962,18 +962,36 @@ function updateItemCycle(postData, actorEmail) {
       var currentStatus = data[i][4];
       
       if (nextCycle === 'Proses Steril') {
-        if (currentStatus !== 'Kotor' && currentStatus !== 'Steril') {
-          return jsonResponse(false, "Alat harus bersetatus 'Kotor' atau 'Steril' untuk masuk proses sterilisasi.");
-        }
         sheet.getRange(row, 5).setValue('Proses Steril');
         writeLog(actorEmail, "Mengubah status " + itemId + " ke Proses Steril.");
         sendTelegramNotification("🧪 *Proses Sterilisasi Dimulai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\nOleh: " + actorEmail);
         clearItemsCache();
         return jsonResponse(true, "Status alat berhasil diubah ke Proses Steril.", { id_alat: itemId, status: 'Proses Steril' });
         
+      } else if (nextCycle === 'Pencucian') {
+        sheet.getRange(row, 5).setValue('Pencucian');
+        writeLog(actorEmail, "Mengubah status " + itemId + " ke Pencucian.");
+        sendTelegramNotification("🧼 *Proses Pencucian Dimulai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\nOleh: " + actorEmail);
+        clearItemsCache();
+        return jsonResponse(true, "Status alat berhasil diubah ke Pencucian.", { id_alat: itemId, status: 'Pencucian' });
+        
+      } else if (nextCycle === 'Penyimpanan') {
+        sheet.getRange(row, 5).setValue('Penyimpanan');
+        writeLog(actorEmail, "Mengubah status " + itemId + " ke Penyimpanan.");
+        sendTelegramNotification("📦 *Alat Masuk Penyimpanan*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\nOleh: " + actorEmail);
+        clearItemsCache();
+        return jsonResponse(true, "Status alat berhasil diubah ke Penyimpanan.", { id_alat: itemId, status: 'Penyimpanan' });
+        
+      } else if (nextCycle === 'Kotor') {
+        sheet.getRange(row, 5).setValue('Kotor');
+        writeLog(actorEmail, "Mengubah status " + itemId + " ke Kotor.");
+        sendTelegramNotification("🔴 *Status Alat Diubah ke Kotor*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\nOleh: " + actorEmail);
+        clearItemsCache();
+        return jsonResponse(true, "Status alat berhasil diubah ke Kotor.", { id_alat: itemId, status: 'Kotor' });
+        
       } else if (nextCycle === 'Steril') {
-        if (currentStatus !== 'Proses Steril') {
-          return jsonResponse(false, "Alat harus berstatus 'Proses Steril' untuk selesai disterilkan.");
+        if (currentStatus !== 'Proses Steril' && currentStatus !== 'Penyimpanan' && currentStatus !== 'Pencucian' && currentStatus !== 'Kotor') {
+          return jsonResponse(false, "Alat harus berstatus 'Proses Steril', 'Penyimpanan', 'Pencucian', atau 'Kotor' untuk selesai disterilkan.");
         }
         
         var now = new Date();
@@ -1101,7 +1119,7 @@ function manageItems(postData, actorEmail) {
     for (var k = 1; k < data.length; k++) {
       if (data[k][0] && data[k][0].toString().trim().toLowerCase() === searchId) {
         var status = data[k][4];
-        if (status !== 'Steril' && status !== 'Kotor' && status !== 'Proses Steril') {
+        if (status !== 'Steril' && status !== 'Kotor' && status !== 'Proses Steril' && status !== 'Pencucian' && status !== 'Penyimpanan') {
           return jsonResponse(false, "Alat sedang dalam status transaksi (" + status + ") sehingga tidak bisa dihapus.");
         }
         var deletedName = data[k][1];
