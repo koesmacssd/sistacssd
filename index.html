@@ -730,8 +730,7 @@
                 <textarea id="modal-deskripsi" rows="3" class="mt-1 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Berikan deskripsi detail tentang alat..."></textarea>
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700">Masa Aktif Steril (Hari)</label>
-                <select id="modal-masa-aktif" class="mt-1 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
+                <select id="modal-masa-aktif" onchange="app.checkCustomMasaAktif()" class="mt-1 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
                   <option value="3">3 Hari (Kertas biasa / Terbuka)</option>
                   <option value="7">7 Hari (Kertas steril single)</option>
                   <option value="14">14 Hari (Kertas steril double / Pouch)</option>
@@ -739,7 +738,9 @@
                   <option value="90">90 Hari (Plastic Pouches Sealed)</option>
                   <option value="180">180 Hari</option>
                   <option value="365">365 Hari (Masa aktif khusus / Pabrikan)</option>
+                  <option value="custom">Kustom (Tulis Hari Manual)</option>
                 </select>
+                <input type="number" id="modal-masa-aktif-custom" class="hidden mt-2 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Tulis jumlah hari kustom (misal: 45)" min="1">
               </div>
               <div>
                 <label class="block text-sm font-medium text-slate-700">Foto Alat Medis (Upload)</label>
@@ -1360,6 +1361,22 @@
           customContainer.classList.remove('hidden');
         } else {
           customContainer.classList.add('hidden');
+        }
+      }
+
+      checkCustomMasaAktif() {
+        const select = document.getElementById('modal-masa-aktif');
+        const customInput = document.getElementById('modal-masa-aktif-custom');
+        if (select && customInput) {
+          if (select.value === 'custom') {
+            customInput.classList.remove('hidden');
+            customInput.required = true;
+            customInput.focus();
+          } else {
+            customInput.classList.add('hidden');
+            customInput.required = false;
+            customInput.value = '';
+          }
         }
       }
 
@@ -2746,6 +2763,13 @@
         document.getElementById('modal-foto-camera').value = '';
         document.getElementById('modal-masa-aktif').value = '30';
         
+        const customInput = document.getElementById('modal-masa-aktif-custom');
+        if (customInput) {
+          customInput.value = '';
+          customInput.classList.add('hidden');
+          customInput.required = false;
+        }
+        
         const preview = document.getElementById('modal-foto-preview');
         preview.src = '';
         preview.classList.add('hidden');
@@ -2767,7 +2791,23 @@
         document.getElementById('modal-foto-url').value = item.foto_drive_url || '';
         document.getElementById('modal-foto-file').value = '';
         document.getElementById('modal-foto-camera').value = '';
-        document.getElementById('modal-masa-aktif').value = item.masa_aktif_hari || '30';
+        
+        const standardValues = ['3', '7', '14', '30', '90', '180', '365'];
+        const itemMasaAktif = (item.masa_aktif_hari || 30).toString();
+        const selectEl = document.getElementById('modal-masa-aktif');
+        const customInput = document.getElementById('modal-masa-aktif-custom');
+        
+        if (standardValues.includes(itemMasaAktif)) {
+          selectEl.value = itemMasaAktif;
+          customInput.value = '';
+          customInput.classList.add('hidden');
+          customInput.required = false;
+        } else {
+          selectEl.value = 'custom';
+          customInput.value = itemMasaAktif;
+          customInput.classList.remove('hidden');
+          customInput.required = true;
+        }
         
         const preview = document.getElementById('modal-foto-preview');
         if (item.foto_drive_url) {
@@ -2991,7 +3031,15 @@
         const idAlat = document.getElementById('modal-id-alat').value.trim();
         const namaAlat = document.getElementById('modal-nama-alat').value.trim();
         const deskripsi = document.getElementById('modal-deskripsi').value.trim();
-        const masaAktif = document.getElementById('modal-masa-aktif').value;
+        
+        let masaAktif = document.getElementById('modal-masa-aktif').value;
+        if (masaAktif === 'custom') {
+          masaAktif = document.getElementById('modal-masa-aktif-custom').value.trim();
+          if (!masaAktif || isNaN(masaAktif) || parseInt(masaAktif) <= 0) {
+            this.showToast('warning', 'Harap masukkan jumlah hari kustom yang valid.');
+            return;
+          }
+        }
         
         let fileInput = document.getElementById('modal-foto-file');
         const cameraInput = document.getElementById('modal-foto-camera');
