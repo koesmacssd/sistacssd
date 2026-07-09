@@ -462,6 +462,8 @@ function getOrdersData(filterRoom, filterEmail) {
       tanggal_kembali: ordersData[o][6] ? Utilities.formatDate(new Date(ordersData[o][6]), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") : '',
       catatan_kembali_cssd: ordersData[o][7] || '',
       foto_kembali_cssd: ordersData[o][8] || '',
+      catatan_lengkap_cssd: ordersData[o][9] || '',
+      foto_lengkap_cssd: ordersData[o][10] || '',
       items: detailsMap[orderId] || []
     });
   }
@@ -860,6 +862,14 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
     ordersSheet.getRange(orderRow, 4).setValue('Selesai');
     ordersSheet.getRange(orderRow, 7).setValue(now);
     
+    // Jika dari 'Tidak Lengkap', simpan bukti pelengkap
+    if (currentStatus === 'Tidak Lengkap') {
+      var catatanLengkap = postData.catatan_lengkap || '';
+      var fotoLengkap = postData.foto_lengkap || '';
+      ordersSheet.getRange(orderRow, 10).setValue(catatanLengkap);
+      ordersSheet.getRange(orderRow, 11).setValue(fotoLengkap);
+    }
+    
     // Update items -> 'Kotor' (Hanya jika sebelumnya dari 'Aktif')
     if (currentStatus === 'Aktif') {
       for (var c = 0; c < orderItemIds.length; c++) {
@@ -870,13 +880,20 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
       }
     }
     
-    writeLog(actorEmail, "Konfirmasi pengembalian lengkap untuk " + orderId + ". Status: Selesai.");
-    sendTelegramNotification("✅ *Alat Berhasil Dikembalikan Lengkap*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nStatus Transaksi: Selesai. Semua alat diposisikan sebagai 'Kotor' untuk masuk ke siklus sterilisasi.");
+    if (currentStatus === 'Tidak Lengkap') {
+      var catatanLengkap = postData.catatan_lengkap || '';
+      writeLog(actorEmail, "Konfirmasi pemenuhan kekurangan untuk " + orderId + ". Catatan: " + catatanLengkap);
+      sendTelegramNotification("✅ *Kekurangan Alat Dilengkapi*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nCatatan: " + catatanLengkap + "\nStatus Transaksi: Selesai ✔");
+    } else {
+      writeLog(actorEmail, "Konfirmasi pengembalian lengkap untuk " + orderId + ". Status: Selesai.");
+      sendTelegramNotification("✅ *Alat Berhasil Dikembalikan Lengkap*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nStatus Transaksi: Selesai. Semua alat diposisikan sebagai 'Kotor' untuk masuk ke siklus sterilisasi.");
+    }
+
     sendHtmlEmail(
       borrowerEmail,
       "Peminjaman Selesai - SISTA-CSSD [" + orderId + "]",
       "Pengembalian Alat Medis Berhasil",
-      "Halo,<br><br>Terima kasih, alat-alat medis steril yang Anda pinjam telah resmi dikembalikan secara lengkap ke CSSD RSUD dr. R. Koesma Tuban.",
+      "Halo,<br><br>Terima kasih, alat-alat medis steril yang Anda pinjam telah resmi dikembalikan secara lengkap ke CSSD RSUD dr. R. Koesma Tuban." + (currentStatus === 'Tidak Lengkap' ? "<br><br><strong>Catatan Penyelesaian:</strong> " + postData.catatan_lengkap : ""),
       orderId,
       borrowerRoom,
       orderItemDetails,

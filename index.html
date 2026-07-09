@@ -1754,6 +1754,28 @@
             `;
           }
 
+          let catatanLengkapHtml = '';
+          if (order.catatan_lengkap_cssd) {
+            let fotoHtml = '';
+            if (order.foto_lengkap_cssd) {
+              const directFotoUrl = this.getDirectImageUrl(order.foto_lengkap_cssd);
+              fotoHtml = `
+                <div class="mt-2">
+                  <a href="${order.foto_lengkap_cssd}" target="_blank" class="inline-block hover:opacity-85 transition">
+                    <img src="${directFotoUrl}" class="h-16 w-24 object-cover rounded-lg border border-emerald-200 bg-slate-50" title="Klik untuk memperbesar">
+                  </a>
+                </div>
+              `;
+            }
+            catatanLengkapHtml = `
+              <div class="mt-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200/50 space-y-1 text-xs">
+                <span class="text-emerald-700 font-bold uppercase tracking-wider block">✅ Bukti Penyelesaian / Kekurangan Dilengkapi</span>
+                <p class="text-emerald-800 font-semibold">${order.catatan_lengkap_cssd}</p>
+                ${fotoHtml}
+              </div>
+            `;
+          }
+
           // Build list items
           let itemsListHtml = '';
           order.items.forEach(it => {
@@ -1784,6 +1806,7 @@
                 <span class="text-slate-400 font-bold uppercase tracking-wider block">Timestamps Transaksi</span>
                 ${timelineHtml}
                 ${catatanMasalahHtml}
+                ${catatanLengkapHtml}
               </div>
               <div>
                 <span class="text-slate-400 font-bold uppercase tracking-wider block mb-2">Daftar Alat Peminjaman (${order.items.length} item)</span>
@@ -1907,6 +1930,28 @@
             `;
           }
 
+          let catatanLengkapHtml = '';
+          if (order.catatan_lengkap_cssd) {
+            let fotoHtml = '';
+            if (order.foto_lengkap_cssd) {
+              const directFotoUrl = this.getDirectImageUrl(order.foto_lengkap_cssd);
+              fotoHtml = `
+                <div class="mt-2">
+                  <a href="${order.foto_lengkap_cssd}" target="_blank" class="inline-block hover:opacity-85 transition">
+                    <img src="${directFotoUrl}" class="h-16 w-24 object-cover rounded-lg border border-emerald-200 bg-slate-50" title="Klik untuk memperbesar">
+                  </a>
+                </div>
+              `;
+            }
+            catatanLengkapHtml = `
+              <div class="mt-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200/50 space-y-1 text-xs">
+                <span class="text-emerald-700 font-bold uppercase tracking-wider block">✅ Bukti Penyelesaian / Kekurangan Dilengkapi</span>
+                <p class="text-emerald-800 font-semibold">${order.catatan_lengkap_cssd}</p>
+                ${fotoHtml}
+              </div>
+            `;
+          }
+
           let itemsListHtml = '';
           order.items.forEach(it => {
             itemsListHtml += `
@@ -1941,6 +1986,7 @@
                 <p>Serah Terima: <span class="font-medium text-slate-700">${order.tanggal_diambil || '-'}</span></p>
                 <p>Kembali CSSD: <span class="font-medium text-slate-700">${order.tanggal_kembali || '-'}</span></p>
                 ${catatanMasalahHtml}
+                ${catatanLengkapHtml}
               </div>
               <div>
                 <span class="text-slate-400 font-bold uppercase tracking-wider block mb-2">Item yang Dipinjam (${order.items.length} item)</span>
@@ -2007,13 +2053,8 @@
           };
         } else if (nextStatus === 'Selesai') {
           if (currentStatus === 'Tidak Lengkap') {
-            confirmConfig = {
-              title: 'Kekurangan Sudah Dilengkapi?',
-              html: 'Apakah Anda yakin seluruh kekurangan barang pada transaksi ini sudah dilengkapi?<br><br>Status transaksi akan berubah menjadi <span class="font-bold text-green-600">Selesai</span>.',
-              icon: 'question',
-              confirmButtonText: 'Ya, Lengkap!',
-              cancelButtonText: 'Batal'
-            };
+            await this.handleCompleteResolve(orderId);
+            return;
           } else {
             const result = await Swal.fire({
               title: 'Konfirmasi Pengembalian Alat',
@@ -2257,6 +2298,164 @@
           if (cameraInput) cameraInput.value = '';
         } else if (event.target.id === 'swal-foto-camera') {
           const fileInput = document.getElementById('swal-foto-file');
+          if (fileInput) fileInput.value = '';
+        }
+
+        if (file && preview) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            preview.src = e.target.result;
+            preview.classList.remove('hidden');
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+
+      async handleCompleteResolve(orderId) {
+        let fileInput = document.getElementById('swal-foto-file-resolve');
+        let cameraInput = document.getElementById('swal-foto-camera-resolve');
+        
+        if (!fileInput) {
+          fileInput = document.createElement('input');
+          fileInput.type = 'file';
+          fileInput.id = 'swal-foto-file-resolve';
+          fileInput.accept = 'image/*';
+          fileInput.className = 'hidden';
+          fileInput.onchange = (e) => this.swalPreviewImageResolve(e);
+          document.body.appendChild(fileInput);
+        }
+        if (!cameraInput) {
+          cameraInput = document.createElement('input');
+          cameraInput.type = 'file';
+          cameraInput.id = 'swal-foto-camera-resolve';
+          cameraInput.accept = 'image/*';
+          cameraInput.capture = 'environment';
+          cameraInput.className = 'hidden';
+          cameraInput.onchange = (e) => this.swalPreviewImageResolve(e);
+          document.body.appendChild(cameraInput);
+        }
+
+        fileInput.value = '';
+        cameraInput.value = '';
+
+        const { value: formValues } = await Swal.fire({
+          title: 'Kekurangan Barang Dilengkapi',
+          html: `
+            <div class="text-left space-y-3 font-sans">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Catatan Serah Terima Kekurangan</label>
+                <textarea id="swal-catatan-lengkap" rows="3" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Contoh: Barang kekurangan berupa 1 gunting bedah sudah diserahkan oleh perawat Ruangan A." required></textarea>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Foto Bukti Penyerahan</label>
+                <div class="flex items-center space-x-2">
+                  <button type="button" onclick="document.getElementById('swal-foto-camera-resolve').click()" class="inline-flex items-center space-x-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 text-xs font-semibold px-3 py-2 rounded-xl transition duration-150 shadow-sm">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Ambil Foto</span>
+                  </button>
+                  
+                  <button type="button" onclick="document.getElementById('swal-foto-file-resolve').click()" class="inline-flex items-center space-x-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold px-3 py-2 rounded-xl transition duration-150 shadow-sm">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Pilih Galeri</span>
+                  </button>
+                </div>
+                <div class="mt-3 text-center">
+                  <img id="swal-foto-preview-resolve" class="hidden mx-auto h-24 object-cover rounded-xl border border-slate-200 bg-slate-50">
+                </div>
+              </div>
+            </div>
+          `,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Simpan & Selesaikan 💾',
+          cancelButtonText: 'Batal',
+          confirmButtonColor: '#10b981',
+          cancelButtonColor: '#64748b',
+          customClass: {
+            popup: 'rounded-2xl font-sans',
+            title: 'font-bold text-slate-900',
+            confirmButton: 'rounded-xl px-4 py-2.5 text-xs font-semibold shadow-md',
+            cancelButton: 'rounded-xl px-4 py-2.5 text-xs font-semibold'
+          },
+          preConfirm: () => {
+            const catatan = document.getElementById('swal-catatan-lengkap').value.trim();
+            if (!catatan) {
+              Swal.showValidationMessage('Keterangan penyerahan wajib diisi!');
+              return false;
+            }
+            return { catatan };
+          }
+        });
+
+        if (!formValues) return;
+
+        const catatan = formValues.catatan;
+        let fotoUrl = '';
+
+        let activeFileInput = fileInput;
+        if (cameraInput.files && cameraInput.files[0]) {
+          activeFileInput = cameraInput;
+        }
+
+        try {
+          Swal.fire({
+            title: 'Memproses...',
+            text: 'Mengunggah bukti foto dan menyelesaikan transaksi...',
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.showLoading();
+            }
+          });
+
+          if (activeFileInput.files && activeFileInput.files[0]) {
+            const file = activeFileInput.files[0];
+            const compressedBase64 = await this.compressImage(file);
+            const uploadRes = await this.callApiPost('uploadImage', {
+              file_base64: compressedBase64,
+              file_name: `RESOLVE_${orderId}_${file.name.replace(/\.[^/.]+$/, "")}.jpg`,
+              mime_type: 'image/jpeg'
+            });
+
+            if (uploadRes.success) {
+              fotoUrl = uploadRes.data.url;
+            } else {
+              throw new Error('Gagal mengunggah foto: ' + uploadRes.message);
+            }
+          }
+
+          await this.processUpdateOrderStatus(orderId, 'Selesai', {
+            catatan_lengkap: catatan,
+            foto_lengkap: fotoUrl
+          });
+
+        } catch (err) {
+          Swal.fire({
+            title: 'Gagal!',
+            text: err.message || 'Terjadi kesalahan saat menyelesaikan transaksi.',
+            icon: 'error',
+            confirmButtonColor: '#ef4444',
+            customClass: {
+              popup: 'rounded-2xl font-sans',
+              confirmButton: 'rounded-xl px-4 py-2.5 text-sm font-semibold'
+            }
+          });
+        }
+      }
+
+      swalPreviewImageResolve(event) {
+        const file = event.target.files[0];
+        const preview = document.getElementById('swal-foto-preview-resolve');
+        
+        if (event.target.id === 'swal-foto-file-resolve') {
+          const cameraInput = document.getElementById('swal-foto-camera-resolve');
+          if (cameraInput) cameraInput.value = '';
+        } else if (event.target.id === 'swal-foto-camera-resolve') {
+          const fileInput = document.getElementById('swal-foto-file-resolve');
           if (fileInput) fileInput.value = '';
         }
 
