@@ -383,7 +383,8 @@ function getItemsData() {
       foto_drive_url: data[i][3],
       status_posisi: data[i][4],
       tanggal_sterilisasi: data[i][5] ? Utilities.formatDate(new Date(data[i][5]), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") : '',
-      tanggal_kadaluwarsa_steril: data[i][6] ? Utilities.formatDate(new Date(data[i][6]), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") : ''
+      tanggal_kadaluwarsa_steril: data[i][6] ? Utilities.formatDate(new Date(data[i][6]), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") : '',
+      masa_aktif_hari: data[i][7] !== undefined && data[i][7] !== '' ? parseInt(data[i][7]) : 30
     });
   }
   
@@ -919,8 +920,14 @@ function updateItemCycle(postData, actorEmail) {
         }
         
         var now = new Date();
-        var expiryDaysStr = getConfig('STERILE_EXPIRY_DAYS', '30');
-        var expiryDays = parseInt(expiryDaysStr) || 30;
+        var itemExpiryDays = data[i][7];
+        var expiryDays = 30;
+        if (itemExpiryDays !== undefined && itemExpiryDays !== '') {
+          expiryDays = parseInt(itemExpiryDays) || 30;
+        } else {
+          var expiryDaysStr = getConfig('STERILE_EXPIRY_DAYS', '30');
+          expiryDays = parseInt(expiryDaysStr) || 30;
+        }
         var expiryDate = new Date();
         expiryDate.setDate(now.getDate() + expiryDays);
         
@@ -969,6 +976,7 @@ function manageItems(postData, actorEmail) {
   var fotoUrl = postData.foto_drive_url || '';
   
   var data = sheet.getDataRange().getValues();
+  var masaAktif = parseInt(postData.masa_aktif_hari) || 30;
   
   if (operation === 'add') {
     if (!idAlat || !namaAlat) {
@@ -982,9 +990,22 @@ function manageItems(postData, actorEmail) {
       }
     }
     
-    sheet.appendRow([idAlat.toString().trim(), namaAlat.toString().trim(), deskripsi, fotoUrl, 'Steril', new Date(), '']);
-    writeLog(actorEmail, "Menambah alat baru: " + namaAlat + " (" + idAlat + ")");
-    sendTelegramNotification("🆕 *Alat Baru Ditambahkan*\nNama: " + namaAlat + "\nID: `" + idAlat + "`\nDeskripsi: " + (deskripsi || '-') + "\nOleh: " + actorEmail);
+    var now = new Date();
+    var expiryDate = new Date();
+    expiryDate.setDate(now.getDate() + masaAktif);
+
+    sheet.appendRow([
+      idAlat.toString().trim(), 
+      namaAlat.toString().trim(), 
+      deskripsi, 
+      fotoUrl, 
+      'Steril', 
+      now, 
+      expiryDate, 
+      masaAktif
+    ]);
+    writeLog(actorEmail, "Menambah alat baru: " + namaAlat + " (" + idAlat + ") dengan masa aktif " + masaAktif + " hari");
+    sendTelegramNotification("🆕 *Alat Baru Ditambahkan*\nNama: " + namaAlat + "\nID: `" + idAlat + "`\nDeskripsi: " + (deskripsi || '-') + "\nMasa Aktif: " + masaAktif + " hari\nOleh: " + actorEmail);
     clearItemsCache();
     return jsonResponse(true, "Alat berhasil ditambahkan.");
     
@@ -998,7 +1019,19 @@ function manageItems(postData, actorEmail) {
         sheet.getRange(row, 3).setValue(deskripsi);
         sheet.getRange(row, 4).setValue(fotoUrl); // Selalu set agar bisa update/clear
         
-        writeLog(actorEmail, "Mengubah info alat: " + idAlat);
+        sheet.getRange(row, 8).setValue(masaAktif);
+        
+        // Jika statusnya saat ini 'Steril' dan ada tanggal sterilisasi, update tanggal kadaluwarsa
+        var statusPosisi = data[j][4];
+        var tglSteril = data[j][5];
+        if (statusPosisi === 'Steril' && tglSteril) {
+          var sterilDate = new Date(tglSteril);
+          var newExpiryDate = new Date(sterilDate.getTime());
+          newExpiryDate.setDate(sterilDate.getDate() + masaAktif);
+          sheet.getRange(row, 7).setValue(newExpiryDate);
+        }
+        
+        writeLog(actorEmail, "Mengubah info alat: " + idAlat + " (Masa aktif: " + masaAktif + " hari)");
         clearItemsCache();
         return jsonResponse(true, "Info alat berhasil diperbarui.");
       }
