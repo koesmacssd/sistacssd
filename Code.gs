@@ -13,6 +13,7 @@ var ITEMS_SHEET_NAME = 'items';
 var ORDERS_SHEET_NAME = 'orders';
 var DETAILS_SHEET_NAME = 'order_details';
 var LOGS_SHEET_NAME = 'logs';
+var ADMINS_SHEET_NAME = 'admins_contact';
 
 // Helper to get active sheet or open by ScriptProperty
 function getSpreadsheet() {
@@ -204,6 +205,9 @@ function doGet(e) {
         }
         return getLogsData();
 
+      case 'getAdminContacts':
+        return getAdminContacts();
+        
       default:
         return jsonResponse(false, "Action GET '" + action + "' tidak dikenali.");
     }
@@ -305,6 +309,12 @@ function doPost(e) {
         
       case 'updateSelfProfile':
         return updateSelfProfile(postData, userEmail);
+        
+      case 'saveAdminContacts':
+        if (userRole !== 'Admin' && userRole !== 'Super Admin') {
+          return jsonResponse(false, "Akses ditolak.");
+        }
+        return saveAdminContacts(postData, userEmail, userRole);
         
       default:
         return jsonResponse(false, "Action POST '" + action + "' tidak dikenali.");
@@ -1656,4 +1666,49 @@ function setupWeeklyArchiveTrigger() {
     .atHour(2)
     .create();
   Logger.log('Trigger arsip mingguan berhasil dipasang. Arsip akan berjalan setiap Minggu jam 02:00.');
+}
+
+function getAdminContacts() {
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(ADMINS_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(ADMINS_SHEET_NAME);
+    sheet.appendRow(['Nama', 'WhatsApp']);
+  }
+  var data = sheet.getDataRange().getValues();
+  var contacts = [];
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0]) {
+      contacts.push({
+        nama: data[i][0].toString(),
+        whatsapp: data[i][1] ? data[i][1].toString() : ''
+      });
+    }
+  }
+  return jsonResponse(true, "Daftar kontak admin berhasil dimuat.", contacts);
+}
+
+function saveAdminContacts(postData, actorEmail, actorRole) {
+  var contacts = postData.contacts; // Array of { nama, whatsapp }
+  if (!Array.isArray(contacts)) {
+    return jsonResponse(false, "Parameter 'contacts' harus berupa array.");
+  }
+  
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(ADMINS_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(ADMINS_SHEET_NAME);
+  }
+  
+  sheet.clear();
+  sheet.appendRow(['Nama', 'WhatsApp']);
+  
+  for (var i = 0; i < contacts.length; i++) {
+    if (contacts[i].nama) {
+      sheet.appendRow([contacts[i].nama, contacts[i].whatsapp || '']);
+    }
+  }
+  
+  writeLog(actorEmail, "Memperbarui daftar kontak admin. Total: " + contacts.length);
+  return jsonResponse(true, "Pengaturan kontak admin berhasil disimpan.");
 }
