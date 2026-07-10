@@ -803,13 +803,10 @@
               </div>
               <div>
                 <select id="modal-masa-aktif" onchange="app.checkCustomMasaAktif()" class="mt-1 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
-                  <option value="3">3 Hari (Kertas biasa / Terbuka)</option>
-                  <option value="7">7 Hari (Kertas steril single)</option>
-                  <option value="14">14 Hari (Kertas steril double / Pouch)</option>
-                  <option value="30" selected>30 Hari (Standar Cassette / Wrapping)</option>
-                  <option value="90">90 Hari (Plastic Pouches Sealed)</option>
+                  <option value="14">14 Hari</option>
+                  <option value="30" selected>30 Hari</option>
                   <option value="180">180 Hari</option>
-                  <option value="365">365 Hari (Masa aktif khusus / Pabrikan)</option>
+                  <option value="270">270 Hari</option>
                   <option value="custom">Kustom (Tulis Hari Manual)</option>
                 </select>
                 <input type="number" id="modal-masa-aktif-custom" class="hidden mt-2 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Tulis jumlah hari kustom (misal: 45)" min="1">
@@ -3681,7 +3678,7 @@
         document.getElementById('modal-foto-file').value = '';
         document.getElementById('modal-foto-camera').value = '';
         
-        const standardValues = ['3', '7', '14', '30', '90', '180', '365'];
+        const standardValues = ['14', '30', '180', '270'];
         const itemMasaAktif = (item.masa_aktif_hari || 30).toString();
         const selectEl = document.getElementById('modal-masa-aktif');
         const customInput = document.getElementById('modal-masa-aktif-custom');
