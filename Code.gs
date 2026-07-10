@@ -319,6 +319,12 @@ function doPost(e) {
         }
         return saveAdminContacts(postData, userEmail, userRole);
         
+      case 'getFullBackupData':
+        if (userRole !== 'Admin' && userRole !== 'Super Admin') {
+          return jsonResponse(false, "Akses ditolak.");
+        }
+        return getFullBackupData(userEmail);
+        
       default:
         return jsonResponse(false, "Action POST '" + action + "' tidak dikenali.");
     }
@@ -1892,4 +1898,35 @@ function getItemHistory(idAlat) {
   });
   
   return jsonResponse(true, "Riwayat alat berhasil diambil.", historyEvents);
+}
+
+// Get Full Backup Data (All sheets)
+function getFullBackupData(actorEmail) {
+  try {
+    var ss = getSpreadsheet();
+    var sheets = ss.getSheets();
+    var backupData = {};
+    
+    for (var i = 0; i < sheets.length; i++) {
+      var sheetName = sheets[i].getName();
+      var range = sheets[i].getDataRange();
+      var values = range.getValues();
+      
+      var formattedValues = values.map(function(row) {
+        return row.map(function(cell) {
+          if (cell instanceof Date) {
+            return Utilities.formatDate(cell, Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+          }
+          return cell;
+        });
+      });
+      
+      backupData[sheetName] = formattedValues;
+    }
+    
+    writeLog(actorEmail, "Mengunduh full backup database");
+    return jsonResponse(true, "Data backup berhasil dimuat.", backupData);
+  } catch (err) {
+    return jsonResponse(false, "Gagal memuat backup database: " + err.toString());
+  }
 }

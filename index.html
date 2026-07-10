@@ -774,6 +774,22 @@
                 </button>
               </div>
             </div>
+
+            <!-- Card Pencadangan Sistem (Database Backup) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
+              <div>
+                <h3 class="text-lg font-bold text-slate-900">Pencadangan Sistem (Database Backup)</h3>
+                <p class="text-xs text-slate-500 mt-1">Unduh semua data database dari Google Sheets (Daftar Alat, Transaksi, Pengguna, dan Log Audit) dalam satu file Excel (.xlsx) dengan tab terpisah untuk setiap sheet.</p>
+              </div>
+              <div class="pt-4 border-t border-slate-100 flex justify-start">
+                <button type="button" onclick="app.downloadFullBackup()" class="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold px-6 py-2.5 rounded-xl shadow-md transition duration-150">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.58 4 8 4s8-1.79 8-4M4 7c0-2.21 3.58-4 8-4s8 1.79 8 4m0 5c0 2.21-3.58 4-8 4s-8-1.79-8-4" />
+                  </svg>
+                  <span>Unduh Cadangan Database</span>
+                </button>
+              </div>
+            </div>
           </div>
 
         </main>
@@ -3458,6 +3474,50 @@
         } catch (e) {
           this.showToast('error', 'Gagal memproses ekspor Excel.');
           console.error(e);
+        }
+      }
+
+      async downloadFullBackup() {
+        try {
+          this.showToast('info', 'Mengambil data cadangan database...');
+          const res = await this.callApiPost('getFullBackupData', {});
+          
+          if (!res.success) {
+            this.showToast('error', 'Gagal mengambil backup: ' + res.message);
+            return;
+          }
+          
+          const workbook = XLSX.utils.book_new();
+          const backupData = res.data;
+          
+          for (const sheetName in backupData) {
+            if (backupData.hasOwnProperty(sheetName)) {
+              const worksheet = XLSX.utils.aoa_to_sheet(backupData[sheetName]);
+              
+              // Auto-fit column widths
+              const max_len = {};
+              const rows = backupData[sheetName];
+              if (rows.length > 0) {
+                rows.forEach(row => {
+                  row.forEach((cell, colIdx) => {
+                    const val = String(cell || '');
+                    max_len[colIdx] = Math.max(max_len[colIdx] || 10, val.length);
+                  });
+                });
+                worksheet['!cols'] = Object.keys(max_len).map(colIdx => ({
+                  wch: max_len[colIdx] + 3
+                }));
+              }
+              
+              XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+            }
+          }
+          
+          XLSX.writeFile(workbook, `SISTA_CSSD_Backup_Database_${new Date().toISOString().slice(0,10)}.xlsx`);
+          this.showToast('success', 'Cadangan database berhasil diunduh.');
+        } catch (e) {
+          console.error(e);
+          this.showToast('error', 'Terjadi kesalahan saat mengunduh cadangan.');
         }
       }
 
