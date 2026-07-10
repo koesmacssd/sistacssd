@@ -355,6 +355,16 @@ function getUserProfile(email) {
   return null;
 }
 
+// Get Actor Info String for notifications
+function getActorInfoString(email) {
+  if (!email) return "Sistem";
+  var profile = getUserProfile(email);
+  if (profile && profile.nama) {
+    return profile.nama + " (" + email + ")";
+  }
+  return email;
+}
+
 // Get Users List
 function getUsersData() {
   var ss = getSpreadsheet();
@@ -638,8 +648,9 @@ function updateUserStatus(postData, actorEmail) {
       writeLog(actorEmail, msg);
       
       // Notifikasi Telegram berdasarkan aksi
+      var actorInfo = getActorInfoString(actorEmail);
       if (newStatus === 'Aktif') {
-        sendTelegramNotification("✅ *Akun Disetujui*\nNama: " + (targetNama || data[i][2]) + "\nEmail: " + targetEmail + "\nPeran: " + (newRole || data[i][3]) + "\nRuangan: " + (targetRoom || data[i][4]) + "\nDisetujui oleh: " + actorEmail);
+        sendTelegramNotification("✅ *Akun Disetujui*\nNama: " + (targetNama || data[i][2]) + "\nEmail: " + targetEmail + "\nPeran: " + (newRole || data[i][3]) + "\nRuangan: " + (targetRoom || data[i][4]) + "\n\nDisetujui oleh: " + actorInfo);
         sendGeneralHtmlEmail(
           targetEmail,
           "Akun SISTA-CSSD Anda Telah Aktif",
@@ -648,7 +659,7 @@ function updateUserStatus(postData, actorEmail) {
           "Salam hangat,<br>Tim Admin CSSD RSUD dr. R. Koesma Tuban"
         );
       } else if (newStatus === 'Nonaktif') {
-        sendTelegramNotification("🚫 *Akun Dinonaktifkan*\nNama: " + (targetNama || data[i][2]) + "\nEmail: " + targetEmail + "\nDinonaktifkan oleh: " + actorEmail);
+        sendTelegramNotification("🚫 *Akun Dinonaktifkan*\nNama: " + (targetNama || data[i][2]) + "\nEmail: " + targetEmail + "\n\nDinonaktifkan oleh: " + actorInfo);
         sendGeneralHtmlEmail(
           targetEmail,
           "Akun SISTA-CSSD Dinonaktifkan",
@@ -657,7 +668,7 @@ function updateUserStatus(postData, actorEmail) {
           "Instalasi CSSD RSUD dr. R. Koesma Tuban"
         );
       } else if (newRole && newRole !== data[i][3]) {
-        sendTelegramNotification("🔄 *Perubahan Peran User*\nNama: " + (targetNama || data[i][2]) + "\nEmail: " + targetEmail + "\nPeran: " + data[i][3] + " → " + newRole + "\nDiubah oleh: " + actorEmail);
+        sendTelegramNotification("🔄 *Perubahan Peran User*\nNama: " + (targetNama || data[i][2]) + "\nEmail: " + targetEmail + "\nPeran: " + data[i][3] + " → " + newRole + "\n\nDiubah oleh: " + actorInfo);
       }
       
       return jsonResponse(true, "User berhasil diperbarui.", { email: targetEmail });
@@ -742,7 +753,8 @@ function createOrder(postData, userEmail, userRoom) {
   writeLog(userEmail, "Membuat request peminjaman baru " + orderId + " dengan " + itemIds.length + " item.");
   
   // Notifikasi
-  var notifMessage = "📥 *Peminjaman Alat Baru*\nID: `" + orderId + "`\nRuangan: " + userRoom + "\nPengaju: " + userEmail + "\nJumlah Alat: " + itemIds.length + " item.\nStatus: Pending (Menunggu CSSD menyiapkan barang).";
+  var userInfo = getActorInfoString(userEmail);
+  var notifMessage = "📥 *Peminjaman Alat Baru*\nID: `" + orderId + "`\nRuangan: " + userRoom + "\nPengaju: " + userInfo + "\nJumlah Alat: " + itemIds.length + " item.\nStatus: Pending (Menunggu CSSD menyiapkan barang).";
   sendTelegramNotification(notifMessage);
   
   // Kirim email konfirmasi ke Peminjam
@@ -844,7 +856,8 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
     writeLog(actorEmail, "Menyiapkan barang untuk " + orderId + ". Status: Ready for Pickup.");
     
     // Notifikasi
-    sendTelegramNotification("📦 *Alat Siap Diambil*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nSilakan perwakilan ruangan mengambil alat steril di CSSD.");
+    var actorInfo = getActorInfoString(actorEmail);
+    sendTelegramNotification("📦 *Alat Siap Diambil*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nSilakan perwakilan ruangan mengambil alat steril di CSSD.\n\nAdmin CSSD: " + actorInfo);
     sendHtmlEmail(
       borrowerEmail,
       "Alat Siap Diambil - SISTA-CSSD [" + orderId + "]",
@@ -873,7 +886,8 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
     }
     
     writeLog(actorEmail, "Konfirmasi serah terima alat untuk " + orderId + ". Status: Aktif.");
-    sendTelegramNotification("🤝 *Serah Terima Selesai*\nID Order: `" + orderId + "`\nStatus: Aktif (Alat sedang dipinjam oleh " + borrowerRoom + ").");
+    var actorInfo = getActorInfoString(actorEmail);
+    sendTelegramNotification("🤝 *Serah Terima Selesai*\nID Order: `" + orderId + "`\nStatus: Aktif (Alat sedang dipinjam oleh " + borrowerRoom + ").\n\nAdmin CSSD: " + actorInfo);
     sendHtmlEmail(
       borrowerEmail,
       "Serah Terima Alat Selesai - SISTA-CSSD [" + orderId + "]",
@@ -918,13 +932,14 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
       }
     }
     
+    var actorInfo = getActorInfoString(actorEmail);
     if (currentStatus === 'Tidak Lengkap') {
       var catatanLengkap = postData.catatan_lengkap || '';
       writeLog(actorEmail, "Konfirmasi pemenuhan kekurangan untuk " + orderId + ". Catatan: " + catatanLengkap);
-      sendTelegramNotification("✅ *Kekurangan Alat Dilengkapi*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nCatatan: " + catatanLengkap + "\nStatus Transaksi: Selesai ✔");
+      sendTelegramNotification("✅ *Kekurangan Alat Dilengkapi*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nCatatan: " + catatanLengkap + "\nStatus Transaksi: Selesai ✔\n\nAdmin CSSD: " + actorInfo);
     } else {
       writeLog(actorEmail, "Konfirmasi pengembalian lengkap untuk " + orderId + ". Status: Selesai.");
-      sendTelegramNotification("✅ *Alat Berhasil Dikembalikan Lengkap*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nStatus Transaksi: Selesai. Semua alat diposisikan sebagai 'Kotor' untuk masuk ke siklus sterilisasi.");
+      sendTelegramNotification("✅ *Alat Berhasil Dikembalikan Lengkap*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nStatus Transaksi: Selesai. Semua alat diposisikan sebagai 'Kotor' untuk masuk ke siklus sterilisasi.\n\nAdmin CSSD: " + actorInfo);
     }
 
     sendHtmlEmail(
@@ -964,7 +979,8 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
     }
     
     writeLog(actorEmail, "Konfirmasi pengembalian tidak lengkap untuk " + orderId + ". Catatan: " + catatan);
-    sendTelegramNotification("⚠️ *Pengembalian Tidak Lengkap*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nCatatan: " + catatan + "\nOleh: " + actorEmail);
+    var actorInfo = getActorInfoString(actorEmail);
+    sendTelegramNotification("⚠️ *Pengembalian Tidak Lengkap*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nCatatan: " + catatan + "\n\nAdmin CSSD: " + actorInfo);
     sendHtmlEmail(
       borrowerEmail,
       "Pengembalian Bermasalah/Tidak Lengkap - SISTA-CSSD [" + orderId + "]",
@@ -1003,31 +1019,32 @@ function updateItemCycle(postData, actorEmail) {
       var row = i + 1;
       var currentStatus = data[i][4];
       
+      var actorInfo = getActorInfoString(actorEmail);
       if (nextCycle === 'Proses Steril') {
         sheet.getRange(row, 5).setValue('Proses Steril');
         writeLog(actorEmail, "Mengubah status " + itemId + " ke Proses Steril.");
-        sendTelegramNotification("🧪 *Proses Sterilisasi Dimulai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\nOleh: " + actorEmail);
+        sendTelegramNotification("🧪 *Proses Sterilisasi Dimulai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\n\nOleh: " + actorInfo);
         clearItemsCache();
         return jsonResponse(true, "Status alat berhasil diubah ke Proses Steril.", { id_alat: itemId, status: 'Proses Steril' });
         
       } else if (nextCycle === 'Pencucian') {
         sheet.getRange(row, 5).setValue('Pencucian');
         writeLog(actorEmail, "Mengubah status " + itemId + " ke Pencucian.");
-        sendTelegramNotification("🧼 *Proses Pencucian Dimulai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\nOleh: " + actorEmail);
+        sendTelegramNotification("🧼 *Proses Pencucian Dimulai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\n\nOleh: " + actorInfo);
         clearItemsCache();
         return jsonResponse(true, "Status alat berhasil diubah ke Pencucian.", { id_alat: itemId, status: 'Pencucian' });
         
       } else if (nextCycle === 'Penyimpanan') {
         sheet.getRange(row, 5).setValue('Penyimpanan');
         writeLog(actorEmail, "Mengubah status " + itemId + " ke Penyimpanan.");
-        sendTelegramNotification("📦 *Alat Masuk Penyimpanan*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\nOleh: " + actorEmail);
+        sendTelegramNotification("📦 *Alat Masuk Penyimpanan*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\n\nOleh: " + actorInfo);
         clearItemsCache();
         return jsonResponse(true, "Status alat berhasil diubah ke Penyimpanan.", { id_alat: itemId, status: 'Penyimpanan' });
         
       } else if (nextCycle === 'Kotor') {
         sheet.getRange(row, 5).setValue('Kotor');
         writeLog(actorEmail, "Mengubah status " + itemId + " ke Kotor.");
-        sendTelegramNotification("🔴 *Status Alat Diubah ke Kotor*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\nOleh: " + actorEmail);
+        sendTelegramNotification("🔴 *Status Alat Diubah ke Kotor*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\n\nOleh: " + actorInfo);
         clearItemsCache();
         return jsonResponse(true, "Status alat berhasil diubah ke Kotor.", { id_alat: itemId, status: 'Kotor' });
         
@@ -1053,7 +1070,8 @@ function updateItemCycle(postData, actorEmail) {
         sheet.getRange(row, 7).setValue(expiryDate);
         
         writeLog(actorEmail, "Menyelesaikan sterilisasi " + itemId + ". Kadaluwarsa dalam " + expiryDays + " hari.");
-        sendTelegramNotification("💎 *Sterilisasi Selesai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\nStatus: Steril ✔\nKadaluwarsa: " + Utilities.formatDate(expiryDate, Session.getScriptTimeZone(), 'dd/MM/yyyy') + "\nOleh: " + actorEmail);
+        var actorInfo = getActorInfoString(actorEmail);
+        sendTelegramNotification("💎 *Sterilisasi Selesai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\nStatus: Steril ✔\nKadaluwarsa: " + Utilities.formatDate(expiryDate, Session.getScriptTimeZone(), 'dd/MM/yyyy') + "\n\nOleh: " + actorInfo);
         clearItemsCache();
         return jsonResponse(true, "Alat berhasil disterilkan dan siap dipinjam kembali.", { 
           id_alat: itemId, 
@@ -1125,7 +1143,8 @@ function manageItems(postData, actorEmail) {
       masaAktif
     ]);
     writeLog(actorEmail, "Menambah alat baru: " + namaAlat + " (" + idAlat + ") dengan masa aktif " + masaAktif + " hari");
-    sendTelegramNotification("🆕 *Alat Baru Ditambahkan*\nNama: " + namaAlat + "\nID: `" + idAlat + "`\nDeskripsi: " + (deskripsi || '-') + "\nMasa Aktif: " + masaAktif + " hari\nOleh: " + actorEmail);
+    var actorInfo = getActorInfoString(actorEmail);
+    sendTelegramNotification("🆕 *Alat Baru Ditambahkan*\nNama: " + namaAlat + "\nID: `" + idAlat + "`\nDeskripsi: " + (deskripsi || '-') + "\nMasa Aktif: " + masaAktif + " hari\n\nOleh: " + actorInfo);
     clearItemsCache();
     return jsonResponse(true, "Alat berhasil ditambahkan.");
     
@@ -1170,7 +1189,8 @@ function manageItems(postData, actorEmail) {
         var deletedName = data[k][1];
         sheet.deleteRow(k + 1);
         writeLog(actorEmail, "Menghapus alat: " + idAlat);
-        sendTelegramNotification("🗑️ *Alat Dihapus*\nNama: " + deletedName + "\nID: `" + idAlat + "`\nOleh: " + actorEmail);
+        var actorInfo = getActorInfoString(actorEmail);
+        sendTelegramNotification("🗑️ *Alat Dihapus*\nNama: " + deletedName + "\nID: `" + idAlat + "`\n\nOleh: " + actorInfo);
         clearItemsCache();
         return jsonResponse(true, "Alat berhasil dihapus dari inventaris.");
       }
