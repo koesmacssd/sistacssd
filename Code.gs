@@ -1155,8 +1155,10 @@ function manageItems(postData, actorEmail) {
       masaAktif
     ]);
     writeLog(actorEmail, "Menambah alat baru: " + namaAlat + " (" + idAlat + ") dengan masa aktif " + masaAktif + " hari. Tanggal Steril: " + sterilDate);
+    var sisaHari = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    if (sisaHari < 0) sisaHari = 0;
     var actorInfo = getActorInfoString(actorEmail);
-    sendTelegramNotification("🆕 *Alat Baru Ditambahkan*\nNama: " + namaAlat + "\nID: `" + idAlat + "`\nDeskripsi: " + (deskripsi || '-') + "\nMasa Aktif: " + masaAktif + " hari\n\nOleh: " + actorInfo);
+    sendTelegramNotification("🆕 *Alat Baru Ditambahkan*\nNama: " + namaAlat + "\nID: `" + idAlat + "`\nDeskripsi: " + (deskripsi || '-') + "\nMasa Aktif: " + masaAktif + " hari\nSisa masa aktif: " + sisaHari + " hari\n\nOleh: " + actorInfo);
     clearItemsCache();
     return jsonResponse(true, "Alat berhasil ditambahkan.");
     
@@ -1172,11 +1174,21 @@ function manageItems(postData, actorEmail) {
         
         sheet.getRange(row, 8).setValue(masaAktif);
         
-        // Jika statusnya saat ini 'Steril' dan ada tanggal sterilisasi, update tanggal kadaluwarsa
         var statusPosisi = data[j][4];
-        var tglSteril = data[j][5];
-        if (statusPosisi === 'Steril' && tglSteril) {
-          var sterilDate = new Date(tglSteril);
+        var sterilDate = data[j][5] ? new Date(data[j][5]) : new Date();
+        
+        if (postData.tanggal_steril) {
+          try {
+            var kustomSterilDate = new Date(postData.tanggal_steril);
+            if (!isNaN(kustomSterilDate.getTime())) {
+              sterilDate = kustomSterilDate;
+              sheet.getRange(row, 6).setValue(sterilDate);
+            }
+          } catch(err) {}
+        }
+        
+        // Jika statusnya saat ini 'Steril', update tanggal kadaluwarsa
+        if (statusPosisi === 'Steril') {
           var newExpiryDate = new Date(sterilDate.getTime());
           newExpiryDate.setDate(sterilDate.getDate() + masaAktif);
           sheet.getRange(row, 7).setValue(newExpiryDate);

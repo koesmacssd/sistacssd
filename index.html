@@ -3740,11 +3740,35 @@
         const btnHapus = document.getElementById('modal-btn-hapus');
         if (btnHapus) btnHapus.classList.remove('hidden');
 
-        const dateContainer = document.getElementById('modal-tanggal-steril-container');
-        if (dateContainer) dateContainer.classList.add('hidden');
-
         const item = this.items.find(i => i.id_alat === id);
         if (!item) return;
+
+        const dateContainer = document.getElementById('modal-tanggal-steril-container');
+        if (dateContainer) dateContainer.classList.remove('hidden');
+
+        const dateInput = document.getElementById('modal-tanggal-steril');
+        if (dateInput) {
+          let sterilDateStr = '';
+          if (item.tanggal_sterilisasi) {
+            let rawStr = item.tanggal_sterilisasi.toString().trim();
+            if (rawStr.includes(' ')) {
+              rawStr = rawStr.replace(' ', 'T');
+            }
+            const parsedDate = new Date(rawStr);
+            if (!isNaN(parsedDate.getTime())) {
+              const tzOffset = parsedDate.getTimezoneOffset() * 60000;
+              sterilDateStr = (new Date(parsedDate.getTime() - tzOffset)).toISOString().slice(0, 16);
+            }
+          }
+          
+          if (!sterilDateStr) {
+            const now = new Date();
+            const tzOffset = now.getTimezoneOffset() * 60000;
+            sterilDateStr = (new Date(now.getTime() - tzOffset)).toISOString().slice(0, 16);
+          }
+          
+          dateInput.value = sterilDateStr;
+        }
 
         document.getElementById('modal-id-alat').value = item.id_alat;
         document.getElementById('modal-nama-alat').value = item.nama_alat;
@@ -4054,7 +4078,7 @@
         
         let tanggalSteril = '';
         const dateInput = document.getElementById('modal-tanggal-steril');
-        if (this.modalOperation === 'add' && dateInput) {
+        if (dateInput) {
           tanggalSteril = dateInput.value;
         }
 
