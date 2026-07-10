@@ -2724,7 +2724,24 @@
         }
 
         const filtered = this.items.filter(item => {
-          return item.nama_alat.toLowerCase().includes(query) || item.id_alat.toLowerCase().includes(query);
+          const name = (item.nama_alat || '').toLowerCase();
+          const id = (item.id_alat || '').toLowerCase();
+          const desc = (item.deskripsi || '').toLowerCase();
+          
+          const statusPos = (item.status_posisi || '');
+          let statusText = statusPos.toLowerCase();
+          let posisiText = 'cssd';
+          
+          if (statusPos.startsWith('Dipinjam')) {
+            statusText = 'dipinjam';
+            posisiText = statusPos.substring(8).trim().toLowerCase();
+          }
+          
+          return name.includes(query) || 
+                 id.includes(query) || 
+                 desc.includes(query) || 
+                 statusText.includes(query) || 
+                 posisiText.includes(query);
         });
 
         // Sort items before slicing for pagination
