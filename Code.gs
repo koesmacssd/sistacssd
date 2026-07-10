@@ -895,6 +895,11 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
     ordersSheet.getRange(orderRow, 4).setValue('Selesai');
     ordersSheet.getRange(orderRow, 7).setValue(now);
     
+    var namaPengembali = postData.nama_pengembali || '';
+    if (namaPengembali) {
+      ordersSheet.getRange(orderRow, 12).setValue(namaPengembali);
+    }
+    
     // Jika dari 'Tidak Lengkap', simpan bukti pelengkap
     if (currentStatus === 'Tidak Lengkap') {
       var catatanLengkap = postData.catatan_lengkap || '';
@@ -939,12 +944,16 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
     
     var catatan = postData.catatan_kembali || '';
     var fotoUrl = postData.foto_kembali || '';
+    var namaPengembali = postData.nama_pengembali || '';
     
     // Update order (Set status, tanggal_kembali, catatan, dan foto)
     ordersSheet.getRange(orderRow, 4).setValue('Tidak Lengkap');
     ordersSheet.getRange(orderRow, 7).setValue(now);
     ordersSheet.getRange(orderRow, 8).setValue(catatan);
     ordersSheet.getRange(orderRow, 9).setValue(fotoUrl);
+    if (namaPengembali) {
+      ordersSheet.getRange(orderRow, 12).setValue(namaPengembali);
+    }
     
     // Update items -> 'Kotor' (agar returned parts bisa disterilkan kembali)
     for (var c = 0; c < orderItemIds.length; c++) {
@@ -1796,6 +1805,7 @@ function getItemHistory(idAlat) {
       var pickupDate = ordersData[o][5];
       var returnDate = ordersData[o][6];
       var catatanKembali = ordersData[o][7] || '';
+      var namaPengembali = ordersData[o][11] || '';
       
       if (reqDate) {
         historyEvents.push({
@@ -1817,6 +1827,9 @@ function getItemHistory(idAlat) {
       
       if (returnDate) {
         var descStr = "Alat dikembalikan ke CSSD";
+        if (namaPengembali) {
+          descStr += " oleh " + namaPengembali;
+        }
         if (catatanKembali) {
           descStr += " dengan catatan: " + catatanKembali;
         }

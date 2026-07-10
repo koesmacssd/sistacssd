@@ -2117,7 +2117,7 @@
                 <span class="text-slate-400 font-bold uppercase tracking-wider block">Timeline Logs</span>
                 <p>Diajukan: <span class="font-medium text-slate-700">${order.tanggal_request || '-'}</span></p>
                 <p>Serah Terima: <span class="font-medium text-slate-700">${order.tanggal_diambil || '-'}</span></p>
-                <p>Kembali CSSD: <span class="font-medium text-slate-700">${order.tanggal_kembali || '-'}</span></p>
+                <p>Kembali CSSD: <span class="font-medium text-slate-700">${order.tanggal_kembali || '-'} ${order.nama_pengembali ? `(Oleh: ${order.nama_pengembali})` : ''}</span></p>
                 ${catatanMasalahHtml}
                 ${catatanLengkapHtml}
               </div>
@@ -2211,7 +2211,35 @@
             });
 
             if (result.isConfirmed) {
-              await this.processUpdateOrderStatus(orderId, 'Selesai');
+              const { value: namaPengembali } = await Swal.fire({
+                title: 'Nama Petugas Pengembali',
+                input: 'text',
+                inputValue: order.nama_peminjam || '',
+                inputLabel: 'Tulis nama petugas ruangan yang mengembalikan alat:',
+                inputPlaceholder: 'Nama Staf / Perawat...',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Simpan & Selesaikan 💾',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#64748b',
+                customClass: {
+                  popup: 'rounded-2xl font-sans',
+                  title: 'font-bold text-slate-900',
+                  confirmButton: 'rounded-xl px-4 py-2.5 text-xs font-semibold shadow-md',
+                  cancelButton: 'rounded-xl px-4 py-2.5 text-xs font-semibold'
+                },
+                preConfirm: (val) => {
+                  if (!val.trim()) {
+                    Swal.showValidationMessage('Nama pengembali wajib diisi!');
+                    return false;
+                  }
+                  return val.trim();
+                }
+              });
+              if (namaPengembali) {
+                await this.processUpdateOrderStatus(orderId, 'Selesai', { nama_pengembali: namaPengembali });
+              }
             } else if (result.isDenied) {
               await this.handleIncompleteReturn(orderId);
             }
@@ -2287,6 +2315,7 @@
       }
 
       async handleIncompleteReturn(orderId) {
+        const order = this.orders.find(o => o.id_order === orderId);
         let fileInput = document.getElementById('swal-foto-file');
         let cameraInput = document.getElementById('swal-foto-camera');
         
@@ -2317,6 +2346,10 @@
           title: 'Laporan Barang Kurang / Rusak',
           html: `
             <div class="text-left space-y-3 font-sans">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Petugas Pengembali</label>
+                <input type="text" id="swal-nama-pengembali" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Nama petugas yang mengembalikan..." value="${order.nama_peminjam || ''}" required>
+              </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">Deskripsi Kerusakan / Kekurangan</label>
                 <textarea id="swal-catatan-kembali" rows="3" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Contoh: Gunting Bedah kurang 1 buah / Pinset bengkok" required></textarea>
@@ -2359,17 +2392,23 @@
           },
           preConfirm: () => {
             const catatan = document.getElementById('swal-catatan-kembali').value.trim();
+            const namaPengembali = document.getElementById('swal-nama-pengembali').value.trim();
+            if (!namaPengembali) {
+              Swal.showValidationMessage('Nama pengembali wajib diisi!');
+              return false;
+            }
             if (!catatan) {
               Swal.showValidationMessage('Keterangan kekurangan/kerusakan wajib diisi!');
               return false;
             }
-            return { catatan };
+            return { catatan, namaPengembali };
           }
         });
 
         if (!formValues) return;
 
         const catatan = formValues.catatan;
+        const namaPengembali = formValues.namaPengembali;
         let fotoUrl = '';
 
         let activeFileInput = fileInput;
@@ -2405,7 +2444,8 @@
 
           await this.processUpdateOrderStatus(orderId, 'Tidak Lengkap', {
             catatan_kembali: catatan,
-            foto_kembali: fotoUrl
+            foto_kembali: fotoUrl,
+            nama_pengembali: namaPengembali
           });
 
         } catch (err) {
@@ -2476,6 +2516,10 @@
           html: `
             <div class="text-left space-y-3 font-sans">
               <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Petugas Pengembali</label>
+                <input type="text" id="swal-nama-pengembali-resolve" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Nama petugas yang mengembalikan..." value="${order.nama_peminjam || ''}" required>
+              </div>
+              <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">Catatan Serah Terima Kekurangan</label>
                 <textarea id="swal-catatan-lengkap" rows="3" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Contoh: Barang kekurangan berupa 1 gunting bedah sudah diserahkan oleh perawat Ruangan A." required></textarea>
               </div>
@@ -2517,17 +2561,23 @@
           },
           preConfirm: () => {
             const catatan = document.getElementById('swal-catatan-lengkap').value.trim();
+            const namaPengembali = document.getElementById('swal-nama-pengembali-resolve').value.trim();
+            if (!namaPengembali) {
+              Swal.showValidationMessage('Nama petugas pengembali wajib diisi!');
+              return false;
+            }
             if (!catatan) {
               Swal.showValidationMessage('Keterangan penyerahan wajib diisi!');
               return false;
             }
-            return { catatan };
+            return { catatan, namaPengembali };
           }
         });
 
         if (!formValues) return;
 
         const catatan = formValues.catatan;
+        const namaPengembali = formValues.namaPengembali;
         let fotoUrl = '';
 
         let activeFileInput = fileInput;
