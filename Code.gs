@@ -1924,9 +1924,81 @@ function getFullBackupData(actorEmail) {
       backupData[sheetName] = formattedValues;
     }
     
+    try {
+      copySpreadsheetToDrive(actorEmail);
+    } catch (driveErr) {
+      Logger.log("Gagal menyimpan backup ke Drive saat tombol ditekan: " + driveErr.toString());
+    }
+    
     writeLog(actorEmail, "Mengunduh full backup database");
     return jsonResponse(true, "Data backup berhasil dimuat.", backupData);
   } catch (err) {
     return jsonResponse(false, "Gagal memuat backup database: " + err.toString());
+  }
+}
+
+// Get or Create Folder dynamically YYYY / MM_NamaBulan
+function getOrCreateBackupFolder() {
+  var rootName = "SISTA_CSSD_Backup";
+  var now = new Date();
+  
+  var yearName = Utilities.formatDate(now, "Asia/Jakarta", "yyyy");
+  
+  var monthNum = Utilities.formatDate(now, "Asia/Jakarta", "MM");
+  var monthNames = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+  ];
+  var monthIdx = parseInt(monthNum) - 1;
+  var monthName = monthNum + "_" + monthNames[monthIdx];
+  
+  var rootFolder;
+  var folders = DriveApp.getFoldersByName(rootName);
+  if (folders.hasNext()) {
+    rootFolder = folders.next();
+  } else {
+    rootFolder = DriveApp.createFolder(rootName);
+  }
+  
+  var yearFolder;
+  var yearFolders = rootFolder.getFoldersByName(yearName);
+  if (yearFolders.hasNext()) {
+    yearFolder = yearFolders.next();
+  } else {
+    yearFolder = rootFolder.createFolder(yearName);
+  }
+  
+  var monthFolder;
+  var monthFolders = yearFolder.getFoldersByName(monthName);
+  if (monthFolders.hasNext()) {
+    monthFolder = monthFolders.next();
+  } else {
+    monthFolder = yearFolder.createFolder(monthName);
+  }
+  
+  return monthFolder;
+}
+
+// Copy active spreadsheet to Google Drive backup folder
+function copySpreadsheetToDrive(actorEmail) {
+  var ss = getSpreadsheet();
+  var ssFile = DriveApp.getFileById(ss.getId());
+  
+  var now = new Date();
+  var dateStr = Utilities.formatDate(now, "Asia/Jakarta", "yyyy-MM-dd_HH-mm");
+  var backupName = "SISTA_CSSD_Backup_Database_" + dateStr;
+  
+  var targetFolder = getOrCreateBackupFolder();
+  ssFile.makeCopy(backupName, targetFolder);
+  
+  writeLog(actorEmail, "Menyimpan salinan backup database ke Google Drive: " + backupName);
+}
+
+// Time-driven trigger target for daily automated backup (24:00 WIB)
+function triggerDailyBackup() {
+  try {
+    copySpreadsheetToDrive("SYSTEM_AUTOMATION");
+  } catch(e) {
+    Logger.log("Daily backup trigger failed: " + e.toString());
   }
 }
