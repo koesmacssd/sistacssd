@@ -1628,10 +1628,17 @@ function archiveOldData() {
       }
     }
     
+    // Buat map indeks untuk pencarian O(1)
+    var archivedOrdersMap = {};
+    for (var a = 0; a < archivedOrderIds.length; a++) {
+      archivedOrdersMap[archivedOrderIds[a]] = true;
+    }
+    
     // Arsipkan detail terkait
     var detailRowsToDelete = [];
     for (var dt = detailsData.length - 1; dt >= 1; dt--) {
-      if (archivedOrderIds.indexOf(detailsData[dt][1]) !== -1) {
+      var orderId = detailsData[dt][1];
+      if (archivedOrdersMap[orderId]) {
         detailsArchive.appendRow(detailsData[dt]);
         detailRowsToDelete.push(dt + 1);
       }
