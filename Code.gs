@@ -1183,7 +1183,7 @@ function manageItems(postData, actorEmail) {
 
 // --- NOTIFICATION UTILITIES ---
 var TELEGRAM_BOT_TOKEN = '7799138005:AAHYqmBkBWLMvUJbaAG5vH7rEb1HtazX2CU';
-var TELEGRAM_CHAT_ID = '@koesmasurat';
+var TELEGRAM_CHAT_ID = '@sistacssd';
 
 function sendTelegramNotification(message) {
   var url = "https://api.telegram.org/bot" + TELEGRAM_BOT_TOKEN + "/sendMessage";
