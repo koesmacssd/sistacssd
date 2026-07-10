@@ -1900,7 +1900,7 @@
               <div>
                 <span class="text-xs font-bold text-slate-400 uppercase">ID Transaksi</span>
                 <span class="inline-block text-[10px] bg-brand-50 text-brand-700 border border-brand-100 font-bold px-2 py-0.5 rounded-md uppercase tracking-wider ml-1">${order.items.length} Alat</span>
-                <h4 class="text-base font-extrabold text-slate-900">${order.id_order}</h4>
+                <h4 class="text-base font-extrabold text-slate-900">${order.id_order} <span class="text-xs font-medium text-slate-500">(${order.nama_peminjam || order.email_peminjam})</span></h4>
               </div>
               <span class="inline-block text-xs font-bold px-3 py-1 rounded-full border ${statusBadgeClass}">
                 ${order.status_order}
@@ -2102,7 +2102,7 @@
               <div>
                 <span class="inline-block text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded-md uppercase tracking-wider mb-1">${order.id_order}</span>
                 <span class="inline-block text-[10px] bg-brand-50 text-brand-700 border border-brand-100 font-bold px-2 py-0.5 rounded-md uppercase tracking-wider mb-1 ml-1">${order.items.length} Alat</span>
-                <h4 class="text-base font-extrabold text-slate-900">${order.ruangan_peminjam} <span class="text-xs font-medium text-slate-500">(${order.email_peminjam})</span></h4>
+                <h4 class="text-base font-extrabold text-slate-900">${order.ruangan_peminjam} <span class="text-xs font-medium text-slate-500">(${order.nama_peminjam ? order.nama_peminjam + ' / ' : ''}${order.email_peminjam})</span></h4>
               </div>
               <div class="flex items-center space-x-2">
                 <span class="inline-block text-xs font-bold px-3 py-1 rounded-full border ${statusBadgeClass}">
