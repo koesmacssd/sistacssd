@@ -811,6 +811,11 @@
                 </select>
                 <input type="number" id="modal-masa-aktif-custom" class="hidden mt-2 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Tulis jumlah hari kustom (misal: 45)" min="1">
               </div>
+              <div id="modal-tanggal-steril-container">
+                <label class="block text-sm font-medium text-slate-700">Tanggal & Waktu Sterilisasi</label>
+                <input type="datetime-local" id="modal-tanggal-steril" class="mt-1 w-full border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <p class="text-[10px] text-slate-400 mt-1">Secara default terisi waktu sekarang. Ubah jika alat sebenarnya telah disterilkan sebelumnya.</p>
+              </div>
               <div>
                 <label class="block text-sm font-medium text-slate-700">Foto Alat Medis (Upload)</label>
                 <div class="mt-1.5 flex flex-wrap gap-2">
@@ -3692,6 +3697,17 @@
         const btnHapus = document.getElementById('modal-btn-hapus');
         if (btnHapus) btnHapus.classList.add('hidden');
         
+        const dateContainer = document.getElementById('modal-tanggal-steril-container');
+        if (dateContainer) dateContainer.classList.remove('hidden');
+        
+        const dateInput = document.getElementById('modal-tanggal-steril');
+        if (dateInput) {
+          const now = new Date();
+          const tzOffset = now.getTimezoneOffset() * 60000;
+          const localISOTime = (new Date(now - tzOffset)).toISOString().slice(0, 16);
+          dateInput.value = localISOTime;
+        }
+        
         // Reset fields
         document.getElementById('modal-id-alat').value = '';
         document.getElementById('modal-nama-alat').value = '';
@@ -3722,6 +3738,9 @@
 
         const btnHapus = document.getElementById('modal-btn-hapus');
         if (btnHapus) btnHapus.classList.remove('hidden');
+
+        const dateContainer = document.getElementById('modal-tanggal-steril-container');
+        if (dateContainer) dateContainer.classList.add('hidden');
 
         const item = this.items.find(i => i.id_alat === id);
         if (!item) return;
@@ -4031,6 +4050,12 @@
         }
 
         let fotoUrl = document.getElementById('modal-foto-url').value;
+        
+        let tanggalSteril = '';
+        const dateInput = document.getElementById('modal-tanggal-steril');
+        if (this.modalOperation === 'add' && dateInput) {
+          tanggalSteril = dateInput.value;
+        }
 
         // Show loading state
         const saveBtn = e.submitter || document.querySelector('#tool-modal button[type="submit"]');
@@ -4075,7 +4100,8 @@
             nama_alat: namaAlat,
             deskripsi: deskripsi,
             foto_drive_url: fotoUrl,
-            masa_aktif_hari: masaAktif
+            masa_aktif_hari: masaAktif,
+            tanggal_steril: tanggalSteril
           });
 
           if (res.success) {

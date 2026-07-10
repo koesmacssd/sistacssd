@@ -1129,8 +1129,20 @@ function manageItems(postData, actorEmail) {
     }
     
     var now = new Date();
-    var expiryDate = new Date();
-    expiryDate.setDate(now.getDate() + masaAktif);
+    var sterilDate = now;
+    if (postData.tanggal_steril) {
+      try {
+        sterilDate = new Date(postData.tanggal_steril);
+        if (isNaN(sterilDate.getTime())) {
+          sterilDate = now;
+        }
+      } catch (err) {
+        sterilDate = now;
+      }
+    }
+    
+    var expiryDate = new Date(sterilDate.getTime());
+    expiryDate.setDate(sterilDate.getDate() + masaAktif);
 
     sheet.appendRow([
       idAlat.toString().trim(), 
@@ -1138,11 +1150,11 @@ function manageItems(postData, actorEmail) {
       deskripsi, 
       fotoUrl, 
       'Steril', 
-      now, 
+      sterilDate, 
       expiryDate, 
       masaAktif
     ]);
-    writeLog(actorEmail, "Menambah alat baru: " + namaAlat + " (" + idAlat + ") dengan masa aktif " + masaAktif + " hari");
+    writeLog(actorEmail, "Menambah alat baru: " + namaAlat + " (" + idAlat + ") dengan masa aktif " + masaAktif + " hari. Tanggal Steril: " + sterilDate);
     var actorInfo = getActorInfoString(actorEmail);
     sendTelegramNotification("🆕 *Alat Baru Ditambahkan*\nNama: " + namaAlat + "\nID: `" + idAlat + "`\nDeskripsi: " + (deskripsi || '-') + "\nMasa Aktif: " + masaAktif + " hari\n\nOleh: " + actorInfo);
     clearItemsCache();
