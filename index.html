@@ -65,6 +65,13 @@
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
+    .sticky-table-header th {
+      position: sticky;
+      top: 0;
+      background-color: #f8fafc; /* bg-slate-50 */
+      z-index: 10;
+      box-shadow: inset 0 -1px 0 #e2e8f0; /* border-b border-slate-200 */
+    }
   </style>
 </head>
 <body class="h-full text-slate-800 antialiased custom-scrollbar">
@@ -601,8 +608,8 @@
 
             <!-- Table Inventaris -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-              <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-sm">
+              <div class="overflow-x-auto custom-scrollbar max-h-[650px] overflow-y-auto">
+                <table class="w-full text-left border-collapse text-sm sticky-table-header">
                   <thead>
                     <tr class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 select-none">
                       <th onclick="app.sortInventaris('id_alat')" class="p-4 cursor-pointer hover:bg-slate-100 hover:text-slate-700 transition duration-150 group">
