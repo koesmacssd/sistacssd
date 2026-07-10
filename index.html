@@ -3994,6 +3994,24 @@
           });
           return;
         }
+
+        // Cek duplikasi ID Alat secara lokal (jika menambah alat baru)
+        if (this.modalOperation === 'add') {
+          const isDuplicate = this.items.some(item => item.id_alat.toLowerCase().trim() === idAlat.toLowerCase().trim());
+          if (isDuplicate) {
+            Swal.fire({
+              title: 'ID Alat Sudah Ada!',
+              text: `Alat dengan ID "${idAlat}" sudah terdaftar di sistem. Harap gunakan ID Alat/QR Code yang unik.`,
+              icon: 'error',
+              confirmButtonColor: '#ef4444',
+              customClass: {
+                popup: 'rounded-2xl font-sans',
+                confirmButton: 'rounded-xl px-4 py-2.5 text-sm font-semibold'
+              }
+            });
+            return;
+          }
+        }
         const namaAlat = document.getElementById('modal-nama-alat').value.trim();
         const deskripsi = document.getElementById('modal-deskripsi').value.trim();
         
