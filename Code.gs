@@ -208,6 +208,9 @@ function doGet(e) {
       case 'getAdminContacts':
         return getAdminContacts();
         
+      case 'getItemHistory':
+        return getItemHistory(e.parameter.id_alat);
+        
       default:
         return jsonResponse(false, "Action GET '" + action + "' tidak dikenali.");
     }
@@ -1721,4 +1724,95 @@ function saveAdminContacts(postData, actorEmail, actorRole) {
   
   writeLog(actorEmail, "Memperbarui daftar kontak admin. Total: " + contacts.length);
   return jsonResponse(true, "Pengaturan kontak admin berhasil disimpan.");
+}
+
+function getItemHistory(idAlat) {
+  if (!idAlat) {
+    return jsonResponse(false, "Parameter 'id_alat' diperlukan.");
+  }
+  
+  var ss = getSpreadsheet();
+  var ordersSheet = ss.getSheetByName(ORDERS_SHEET_NAME);
+  var detailsSheet = ss.getSheetByName(DETAILS_SHEET_NAME);
+  var logsSheet = ss.getSheetByName(LOGS_SHEET_NAME);
+  
+  var searchId = idAlat.toString().trim().toLowerCase();
+  
+  var logsData = logsSheet.getDataRange().getValues();
+  var historyEvents = [];
+  
+  for (var i = 1; i < logsData.length; i++) {
+    var timestamp = logsData[i][0];
+    var actor = logsData[i][1];
+    var activity = logsData[i][2] ? logsData[i][2].toString() : '';
+    
+    if (activity.toLowerCase().indexOf(searchId) !== -1) {
+      historyEvents.push({
+        tanggal: timestamp ? Utilities.formatDate(new Date(timestamp), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") : '',
+        tipe: 'log',
+        aktor: actor,
+        deskripsi: activity
+      });
+    }
+  }
+  
+  var detailsData = detailsSheet.getDataRange().getValues();
+  var orderIdsMap = {};
+  for (var d = 1; d < detailsData.length; d++) {
+    if (detailsData[d][2] && detailsData[d][2].toString().trim().toLowerCase() === searchId) {
+      var orderId = detailsData[d][1];
+      orderIdsMap[orderId] = detailsData[d][3] || '';
+    }
+  }
+  
+  var ordersData = ordersSheet.getDataRange().getValues();
+  for (var o = 1; o < ordersData.length; o++) {
+    var orderId = ordersData[o][0];
+    if (orderIdsMap.hasOwnProperty(orderId)) {
+      var emailPeminjam = ordersData[o][1];
+      var ruangan = ordersData[o][2];
+      var status = ordersData[o][3];
+      var reqDate = ordersData[o][4];
+      var pickupDate = ordersData[o][5];
+      var returnDate = ordersData[o][6];
+      var catatanKembali = ordersData[o][7] || '';
+      
+      if (reqDate) {
+        historyEvents.push({
+          tanggal: Utilities.formatDate(new Date(reqDate), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss"),
+          tipe: 'order_request',
+          aktor: emailPeminjam,
+          deskripsi: "Diajukan peminjaman oleh ruangan " + ruangan + " (ID Order: " + orderId + ")"
+        });
+      }
+      
+      if (pickupDate) {
+        historyEvents.push({
+          tanggal: Utilities.formatDate(new Date(pickupDate), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss"),
+          tipe: 'order_pickup',
+          aktor: emailPeminjam,
+          deskripsi: "Alat diserahterimakan / diambil oleh ruangan " + ruangan
+        });
+      }
+      
+      if (returnDate) {
+        var descStr = "Alat dikembalikan ke CSSD";
+        if (catatanKembali) {
+          descStr += " dengan catatan: " + catatanKembali;
+        }
+        historyEvents.push({
+          tanggal: Utilities.formatDate(new Date(returnDate), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss"),
+          tipe: 'order_return',
+          aktor: 'Petugas CSSD',
+          deskripsi: descStr
+        });
+      }
+    }
+  }
+  
+  historyEvents.sort(function(a, b) {
+    return new Date(b.tanggal) - new Date(a.tanggal);
+  });
+  
+  return jsonResponse(true, "Riwayat alat berhasil diambil.", historyEvents);
 }
