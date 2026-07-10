@@ -1840,13 +1840,13 @@
           if (order.status_order === 'Tidak Lengkap') statusBadgeClass = 'bg-red-100 text-red-700 border-red-200';
 
           let timelineHtml = `
-            <span class="block">Diajukan: <span class="font-medium text-slate-700">${order.tanggal_request || '-'}</span></span>
+            <span class="block">Diajukan: <span class="font-medium text-slate-700">${this.formatDateTime(order.tanggal_request)}</span></span>
           `;
           if (order.tanggal_diambil) {
-            timelineHtml += `<span class="block">Diambil: <span class="font-medium text-slate-700">${order.tanggal_diambil}</span></span>`;
+            timelineHtml += `<span class="block">Diambil: <span class="font-medium text-slate-700">${this.formatDateTime(order.tanggal_diambil)}</span></span>`;
           }
           if (order.tanggal_kembali) {
-            timelineHtml += `<span class="block">Kembali: <span class="font-medium text-slate-700">${order.tanggal_kembali}</span></span>`;
+            timelineHtml += `<span class="block">Kembali: <span class="font-medium text-slate-700">${this.formatDateTime(order.tanggal_kembali)}</span></span>`;
           }
           
           let catatanMasalahHtml = '';
@@ -2126,9 +2126,9 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
               <div class="space-y-1">
                 <span class="text-slate-400 font-bold uppercase tracking-wider block">Timeline Logs</span>
-                <p>Diajukan: <span class="font-medium text-slate-700">${order.tanggal_request || '-'}</span></p>
-                <p>Serah Terima: <span class="font-medium text-slate-700">${order.tanggal_diambil || '-'}</span></p>
-                <p>Kembali CSSD: <span class="font-medium text-slate-700">${order.tanggal_kembali || '-'} ${order.nama_pengembali ? `(Oleh: ${order.nama_pengembali})` : ''}</span></p>
+                <p>Diajukan: <span class="font-medium text-slate-700">${this.formatDateTime(order.tanggal_request)}</span></p>
+                <p>Serah Terima: <span class="font-medium text-slate-700">${this.formatDateTime(order.tanggal_diambil)}</span></p>
+                <p>Kembali CSSD: <span class="font-medium text-slate-700">${this.formatDateTime(order.tanggal_kembali)} ${order.nama_pengembali ? `(Oleh: ${order.nama_pengembali})` : ''}</span></p>
                 ${catatanMasalahHtml}
                 ${catatanLengkapHtml}
               </div>
@@ -2794,7 +2794,7 @@
             <td class="p-4">
               ${posisiHtml}
             </td>
-            <td class="p-4 text-xs text-slate-500">${item.tanggal_sterilisasi || '-'}</td>
+            <td class="p-4 text-xs text-slate-500">${this.formatDateTime(item.tanggal_sterilisasi)}</td>
             <td class="p-4 text-xs">
               ${this.getRemainingDaysHtml(item.tanggal_kadaluwarsa_steril)}
             </td>
@@ -3261,8 +3261,8 @@
           `Kami menginformasikan bahwa instrumen medis berikut terdeteksi masih dalam status peminjaman (*Sedang Dipinjam*) oleh unit Anda:\n\n` +
           `📋 *Detail Transaksi:*\n` +
           `• *ID Transaksi:* \`${order.id_order}\`\n` +
-          `• *Tanggal Diajukan:* ${order.tanggal_request || '-'}\n` +
-          `• *Tanggal Serah Terima:* ${order.tanggal_diambil || '-'}\n\n` +
+          `• *Tanggal Diajukan:* ${this.formatDateTime(order.tanggal_request)}\n` +
+          `• *Tanggal Serah Terima:* ${this.formatDateTime(order.tanggal_diambil)}\n\n` +
           `📦 *Daftar Alat Medis:*\n${listAlat}\n` +
           `Mohon kerja samanya untuk segera memproses pengembalian alat medis di atas ke Instalasi CSSD jika tindakan medis telah selesai, guna proses dekontaminasi dan sterilisasi ulang.\n\n` +
           `Terima kasih atas kerja samanya.\n` +
@@ -3825,8 +3825,8 @@
         document.getElementById('detail-id').innerText = item.id_alat;
         document.getElementById('detail-nama').innerText = item.nama_alat;
         document.getElementById('detail-deskripsi').innerText = item.deskripsi || 'Tidak ada deskripsi.';
-        document.getElementById('detail-sterilisasi').innerText = item.tanggal_sterilisasi || '-';
-        document.getElementById('detail-kadaluwarsa').innerText = item.tanggal_kadaluwarsa_steril || '-';
+        document.getElementById('detail-sterilisasi').innerText = this.formatDateTime(item.tanggal_sterilisasi);
+        document.getElementById('detail-kadaluwarsa').innerText = this.formatDateTime(item.tanggal_kadaluwarsa_steril);
         
         // Status badge styling
         const statusEl = document.getElementById('detail-status');
@@ -3956,7 +3956,8 @@
         const diffTime = d1 - d2;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        const formattedDate = dateStr.split(' ')[0]; // Ambil YYYY-MM-DD
+        const parts = dateStr.split(' ')[0].split('-');
+        const formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
         
         if (diffDays < 0) {
           return `
@@ -3995,6 +3996,19 @@
             </div>
           `;
         }
+      }
+
+      formatDateTime(dateStr) {
+        if (!dateStr) return '-';
+        const parts = dateStr.toString().trim().split(' ');
+        if (parts.length >= 1) {
+          const dateParts = parts[0].split('-');
+          if (dateParts.length === 3) {
+            const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+            return parts[1] ? `${formattedDate} ${parts[1]}` : formattedDate;
+          }
+        }
+        return dateStr;
       }
 
       getDirectImageUrl(url) {
