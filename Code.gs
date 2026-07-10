@@ -629,11 +629,23 @@ function updateUserStatus(postData, actorEmail) {
     if (data[i][1].toLowerCase() === targetEmail.toLowerCase()) {
       var row = i + 1;
       
-      // Keamanan: Hanya Super Admin yang bisa mengubah user dengan peran Super Admin / Admin
+      // Keamanan
       var actorProfile = getUserProfile(actorEmail);
       var targetCurrentRole = data[i][3];
+      
+      // 1. Perlindungan Root Super Admin (syamsul18782@gmail.com)
+      if (targetEmail.toLowerCase() === 'syamsul18782@gmail.com' && actorEmail.toLowerCase() !== 'syamsul18782@gmail.com') {
+        return jsonResponse(false, "Akses ditolak. Akun Super Admin Utama tidak dapat diubah oleh pengguna lain.");
+      }
+      
+      // 2. Jika target saat ini adalah Super Admin, hanya Super Admin yang boleh mengubahnya
       if (targetCurrentRole === 'Super Admin' && actorProfile.peran !== 'Super Admin') {
         return jsonResponse(false, "Akses ditolak. Hanya Super Admin yang bisa mengubah akun Super Admin lain.");
+      }
+      
+      // 3. Hanya Super Admin yang boleh mempromosikan seseorang menjadi Super Admin
+      if (newRole === 'Super Admin' && actorProfile.peran !== 'Super Admin') {
+        return jsonResponse(false, "Akses ditolak. Hanya Super Admin yang bisa menunjuk atau mempromosikan pengguna menjadi Super Admin.");
       }
       
       if (newStatus) {
