@@ -3781,6 +3781,19 @@
         e.preventDefault();
         
         const idAlat = document.getElementById('modal-id-alat').value.trim();
+        if (/\s/.test(idAlat)) {
+          Swal.fire({
+            title: 'Format Kode Salah!',
+            text: 'Kode Alat (ID Alat) tidak boleh mengandung spasi. Silakan gunakan tanda hubung (-) atau garis bawah (_) jika ingin memisahkan kata.',
+            icon: 'warning',
+            confirmButtonColor: '#eab308',
+            customClass: {
+              popup: 'rounded-2xl font-sans',
+              confirmButton: 'rounded-xl px-4 py-2.5 text-sm font-semibold'
+            }
+          });
+          return;
+        }
         const namaAlat = document.getElementById('modal-nama-alat').value.trim();
         const deskripsi = document.getElementById('modal-deskripsi').value.trim();
         

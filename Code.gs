@@ -1067,6 +1067,9 @@ function manageItems(postData, actorEmail) {
     if (!idAlat || !namaAlat) {
       return jsonResponse(false, "ID Alat (QR) dan Nama Alat diperlukan.");
     }
+    if (/\s/.test(idAlat)) {
+      return jsonResponse(false, "Kode Alat (ID) tidak boleh mengandung spasi.");
+    }
     // Cek jika ID sudah ada
     var searchId = idAlat.toString().trim().toLowerCase();
     for (var i = 1; i < data.length; i++) {
