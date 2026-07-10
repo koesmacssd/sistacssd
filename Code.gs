@@ -455,6 +455,22 @@ function getOrdersData(filterRoom, filterEmail) {
     });
   }
 
+  // Map user names and phone numbers
+  var usersSheet = ss.getSheetByName(USERS_SHEET_NAME);
+  var usersData = usersSheet.getDataRange().getValues();
+  var userMap = {};
+  for (var u = 1; u < usersData.length; u++) {
+    var email = usersData[u][1];
+    var nama = usersData[u][2];
+    var phone = usersData[u][6];
+    if (email) {
+      userMap[email.toString().trim().toLowerCase()] = {
+        nama: nama || '',
+        phone: phone || ''
+      };
+    }
+  }
+
   // Compile orders
   var orders = [];
   for (var o = 1; o < ordersData.length; o++) {
@@ -465,9 +481,13 @@ function getOrdersData(filterRoom, filterEmail) {
     if (filterRoom && ruanganPeminjam !== filterRoom) continue;
 
     var orderId = ordersData[o][0];
+    var borrowerInfo = userMap[emailPeminjam.toLowerCase()] || { nama: '', phone: '' };
+
     orders.push({
       id_order: orderId,
       email_peminjam: emailPeminjam,
+      nama_peminjam: borrowerInfo.nama,
+      no_hp_peminjam: borrowerInfo.phone,
       ruangan_peminjam: ruanganPeminjam,
       status_order: ordersData[o][3],
       tanggal_request: ordersData[o][4] ? Utilities.formatDate(new Date(ordersData[o][4]), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") : '',

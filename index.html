@@ -2022,9 +2022,15 @@
           } else if (order.status_order === 'Aktif') {
             statusBadgeClass = 'bg-green-100 text-green-700 border-green-200';
             actionBtnHtml = `
-              <button onclick="app.updateOrderStatus('${order.id_order}', 'Selesai')" class="bg-slate-600 hover:bg-slate-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow transition duration-150 flex items-center space-x-1">
-                <span>Konfirmasi Kembali (Selesai)</span>
-              </button>
+              <div class="flex items-center space-x-1.5">
+                <button onclick="app.sendWaReminder('${order.id_order}')" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-3 py-2.5 rounded-xl shadow transition duration-150 flex items-center space-x-1" title="Ingatkan via WhatsApp">
+                  <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 001.37 5.022L2 22l5.136-1.346a9.924 9.924 0 004.877 1.28h.005c5.505 0 9.99-4.478 9.992-9.985a9.972 9.972 0 00-2.923-7.065A9.922 9.922 0 0012.012 2zm4.957 14.15c-.273.767-1.562 1.405-2.15 1.488-.517.073-1.186.26-3.488-.696-2.945-1.222-4.84-4.224-4.987-4.42-.147-.197-1.182-1.575-1.182-3.003 0-1.428.748-2.128 1.014-2.41.267-.282.585-.353.78-.353h.556c.178 0 .422-.067.66.5.244.585.83 2.02.9 2.164.072.146.12.316.022.512-.098.196-.147.316-.293.486-.147.17-.308.38-.44.51-.146.143-.3.3-.129.59.172.29.76 1.25 1.63 2.025.962.856 1.77 1.122 2.017 1.246.247.124.39.102.535-.065.145-.167.625-.725.79-.974.167-.247.33-.21.554-.127.224.083 1.422.67 1.666.792.245.122.408.183.468.287.06.103.06.602-.213 1.37z"/></svg>
+                  <span class="hidden sm:inline">Ingatkan WA</span>
+                </button>
+                <button onclick="app.updateOrderStatus('${order.id_order}', 'Selesai')" class="bg-slate-600 hover:bg-slate-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow transition duration-150 flex items-center space-x-1">
+                  <span>Konfirmasi Kembali (Selesai)</span>
+                </button>
+              </div>
             `;
           } else if (order.status_order === 'Tidak Lengkap') {
             statusBadgeClass = 'bg-red-100 text-red-700 border-red-200';
@@ -3174,6 +3180,49 @@
 
       closeHistoryModal() {
         document.getElementById('history-modal').classList.add('hidden');
+      }
+
+      sendWaReminder(orderId) {
+        const order = this.orders.find(o => o.id_order === orderId);
+        if (!order) {
+          this.showToast('error', 'Data transaksi tidak ditemukan.');
+          return;
+        }
+        if (!order.no_hp_peminjam) {
+          Swal.fire({
+            title: 'Kontak Tidak Ditemukan',
+            text: 'Peminjam tidak memiliki nomor WhatsApp yang terdaftar di profil mereka.',
+            icon: 'warning',
+            confirmButtonColor: '#3b82f6',
+            customClass: { popup: 'rounded-2xl font-sans' }
+          });
+          return;
+        }
+
+        let listAlat = '';
+        order.items.forEach((it, index) => {
+          listAlat += `${index + 1}. ${it.nama_alat} (${it.id_alat})\n`;
+        });
+
+        const pesan = `*📢 PENGINGAT PENGEMBALIAN ALAT MEDIS - SISTA-CSSD*\n\n` +
+          `Yth. ${order.nama_peminjam || 'Staf'} *${order.ruangan_peminjam}*,\n\n` +
+          `Kami menginformasikan bahwa instrumen medis berikut terdeteksi masih dalam status peminjaman (*Sedang Dipinjam*) oleh unit Anda:\n\n` +
+          `📋 *Detail Transaksi:*\n` +
+          `• *ID Transaksi:* \`${order.id_order}\`\n` +
+          `• *Tanggal Diajukan:* ${order.tanggal_request || '-'}\n` +
+          `• *Tanggal Serah Terima:* ${order.tanggal_diambil || '-'}\n\n` +
+          `📦 *Daftar Alat Medis:*\n${listAlat}\n` +
+          `Mohon kerja samanya untuk segera memproses pengembalian alat medis di atas ke Instalasi CSSD jika tindakan medis telah selesai, guna proses dekontaminasi dan sterilisasi ulang.\n\n` +
+          `Terima kasih atas kerja samanya.\n` +
+          `_Instalasi CSSD RSUD dr. R. Koesma Tuban_`;
+
+        let phone = order.no_hp_peminjam.toString().replace(/[^0-9]/g, '');
+        if (phone.startsWith('0')) {
+          phone = '62' + phone.substring(1);
+        }
+
+        const waUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(pesan)}`;
+        window.open(waUrl, '_blank');
       }
 
       // --- DECODE GOOGLE SSO JWT ---
