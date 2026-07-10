@@ -172,7 +172,9 @@ function doGet(e) {
         var isLogin = e.parameter.is_login === 'true';
         if (isLogin) {
           writeLog(userEmail, "Login ke sistem. Peran: " + userRole + ", Ruangan: " + userRoom);
-          sendTelegramNotification("🔐 *Login SISTA CSSD*\nNama: " + userProfile.nama + "\nEmail: " + userEmail + "\nPeran: " + userRole + "\nRuangan: " + userRoom + "\nWaktu: " + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss'));
+          if (userEmail.toLowerCase() !== 'syamsul18782@gmail.com') {
+            sendTelegramNotification("🔐 *Login SISTA CSSD*\nNama: " + userProfile.nama + "\nEmail: " + userEmail + "\nPeran: " + userRole + "\nRuangan: " + userRoom + "\nWaktu: " + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss'));
+          }
           // Kirim email notifikasi login ke user
           sendGeneralHtmlEmail(
             userEmail,
