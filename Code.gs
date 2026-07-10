@@ -1577,37 +1577,7 @@ function updateSelfProfile(postData, userEmail) {
  */
 function dailyBackup() {
   try {
-    var ss = getSpreadsheet();
-    var file = DriveApp.getFileById(ss.getId());
-    
-    // Buat/cari folder backup
-    var parentFolder = file.getParents().next();
-    var backupFolderName = 'SISTA-CSSD_Backup';
-    var backupFolders = parentFolder.getFoldersByName(backupFolderName);
-    var backupFolder;
-    if (backupFolders.hasNext()) {
-      backupFolder = backupFolders.next();
-    } else {
-      backupFolder = parentFolder.createFolder(backupFolderName);
-    }
-    
-    // Hapus backup yang lebih dari 30 hari
-    var cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - 30);
-    var oldFiles = backupFolder.getFiles();
-    while (oldFiles.hasNext()) {
-      var oldFile = oldFiles.next();
-      if (oldFile.getDateCreated() < cutoffDate) {
-        oldFile.setTrashed(true);
-      }
-    }
-    
-    // Buat salinan baru
-    var dateStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd_HHmm');
-    var backupName = 'BACKUP_SISTA-CSSD_' + dateStr;
-    file.makeCopy(backupName, backupFolder);
-    
-    Logger.log('Backup harian berhasil: ' + backupName);
+    copySpreadsheetToDrive("SYSTEM_AUTOMATION");
   } catch (e) {
     Logger.log('Backup harian gagal: ' + e.toString());
   }
@@ -1992,13 +1962,4 @@ function copySpreadsheetToDrive(actorEmail) {
   ssFile.makeCopy(backupName, targetFolder);
   
   writeLog(actorEmail, "Menyimpan salinan backup database ke Google Drive: " + backupName);
-}
-
-// Time-driven trigger target for daily automated backup (24:00 WIB)
-function triggerDailyBackup() {
-  try {
-    copySpreadsheetToDrive("SYSTEM_AUTOMATION");
-  } catch(e) {
-    Logger.log("Daily backup trigger failed: " + e.toString());
-  }
 }
