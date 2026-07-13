@@ -315,6 +315,9 @@ function doPost(e) {
       case 'updateSelfProfile':
         return updateSelfProfile(postData, userEmail);
         
+      case 'getAchievementsData':
+        return getAchievementsData(userEmail);
+        
       case 'saveAdminContacts':
         if (userRole !== 'Admin' && userRole !== 'Super Admin') {
           return jsonResponse(false, "Akses ditolak.");
@@ -356,7 +359,8 @@ function getUserProfile(email) {
         peran: data[i][3],
         nama_ruangan: data[i][4],
         status_aktif: data[i][5],
-        no_hp: data[i][6] || ''
+        no_hp: data[i][6] || '',
+        foto_profil_url: data[i][7] || ''
       };
     }
   }
@@ -648,8 +652,13 @@ function updateUserStatus(postData, actorEmail) {
         return jsonResponse(false, "Akses ditolak. Hanya Super Admin yang bisa menunjuk atau mempromosikan pengguna menjadi Super Admin.");
       }
       
+      var previousStatus = data[i][5];
+      
       if (newStatus) {
         sheet.getRange(row, 6).setValue(newStatus);
+        if (newStatus === 'Aktif' && previousStatus !== 'Aktif') {
+          addPoints(actorEmail, "Verifikasi Pengguna Baru", 1);
+        }
       }
       if (newRole) {
         sheet.getRange(row, 4).setValue(newRole);
@@ -916,6 +925,7 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
     }
     
     writeLog(actorEmail, "Konfirmasi serah terima alat untuk " + orderId + ". Penerima: " + penerima + ". Status: Aktif.");
+    addPoints(actorEmail, "Serah Terima/Penyerahan", 1);
     var actorInfo = getActorInfoString(actorEmail);
     
     // Notifikasi Telegram
@@ -1096,6 +1106,7 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
         orderItemDetails,
         "Transaksi peminjaman ini telah resmi dinyatakan SELESAI dan lengkap."
       );
+      addPoints(actorEmail, "Penerimaan Pengembalian", 1);
     }
 
   } else if (nextStatus === 'Tidak Lengkap') {
@@ -1176,6 +1187,7 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
       orderItemDetails,
       "Harap segera melengkapi kekurangan alat medis tersebut ke pihak CSSD."
     );
+    addPoints(actorEmail, "Penerimaan Pengembalian", 1);
 
   } else {
     return jsonResponse(false, "Status tujuan '" + nextStatus + "' tidak didukung.");
@@ -1202,8 +1214,31 @@ function updateItemCycle(postData, actorEmail) {
   for (var i = 1; i < data.length; i++) {
     if (data[i][0] && data[i][0].toString().trim().toLowerCase() === searchId) {
       var row = i + 1;
-      var currentStatus = data[i][4];
+      var currentStatus = data[i][4] || '';
       
+      // Validasi Alur Transisi CSSD yang Logis
+      if (currentStatus === 'Kotor') {
+        if (nextCycle !== 'Pencucian') {
+          return jsonResponse(false, "Alat kotor harus melalui proses 'Pencucian' terlebih dahulu.");
+        }
+      } else if (currentStatus === 'Pencucian') {
+        if (nextCycle !== 'Proses Steril' && nextCycle !== 'Kotor') {
+          return jsonResponse(false, "Alat yang sedang dicuci hanya bisa dipindahkan ke 'Proses Steril' atau kembali ke 'Kotor'.");
+        }
+      } else if (currentStatus === 'Proses Steril') {
+        if (nextCycle !== 'Steril' && nextCycle !== 'Kotor') {
+          return jsonResponse(false, "Alat dalam proses steril hanya bisa diselesaikan ke 'Steril' atau kembali ke 'Kotor'.");
+        }
+      } else if (currentStatus === 'Steril') {
+        if (nextCycle !== 'Kotor') {
+          return jsonResponse(false, "Alat steril hanya bisa diturunkan statusnya ke 'Kotor'.");
+        }
+      } else if (currentStatus.indexOf('Dipinjam') === 0 || currentStatus === 'Ready for Pickup') {
+        if (nextCycle !== 'Kotor') {
+          return jsonResponse(false, "Alat sedang dipinjam/siap diambil. Status hanya bisa diubah melalui pengembalian atau diturunkan ke 'Kotor'.");
+        }
+      }
+
       var actorInfo = getActorInfoString(actorEmail);
       if (nextCycle === 'Proses Steril') {
         sheet.getRange(row, 5).setValue('Proses Steril');
@@ -1217,20 +1252,20 @@ function updateItemCycle(postData, actorEmail) {
         writeLog(actorEmail, "Mengubah status " + itemId + " ke Pencucian.");
         sendTelegramNotification("🧼 *Proses Pencucian Dimulai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\n\nOleh: " + actorInfo);
         clearItemsCache();
+        addPoints(actorEmail, "Proses Pencucian (Washing)", 3);
         return jsonResponse(true, "Status alat berhasil diubah ke Pencucian.", { id_alat: itemId, status: 'Pencucian' });
         
       } else if (nextCycle === 'Kotor') {
         sheet.getRange(row, 5).setValue('Kotor');
+        sheet.getRange(row, 6).setValue(''); // Hapus tanggal sterilisasi
+        sheet.getRange(row, 7).setValue(''); // Hapus tanggal kadaluwarsa
         writeLog(actorEmail, "Mengubah status " + itemId + " ke Kotor.");
         sendTelegramNotification("🔴 *Status Alat Diubah ke Kotor*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\n\nOleh: " + actorInfo);
         clearItemsCache();
+        addPoints(actorEmail, "Penerimaan Barang Kotor", 1);
         return jsonResponse(true, "Status alat berhasil diubah ke Kotor.", { id_alat: itemId, status: 'Kotor' });
         
       } else if (nextCycle === 'Steril') {
-        if (currentStatus !== 'Proses Steril' && currentStatus !== 'Pencucian' && currentStatus !== 'Kotor') {
-          return jsonResponse(false, "Alat harus berstatus 'Proses Steril', 'Pencucian', atau 'Kotor' untuk selesai disterilkan.");
-        }
-        
         var now = new Date();
         var itemExpiryDays = data[i][7];
         var expiryDays = 30;
@@ -1251,20 +1286,13 @@ function updateItemCycle(postData, actorEmail) {
         var actorInfo = getActorInfoString(actorEmail);
         sendTelegramNotification("💎 *Sterilisasi Selesai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\nStatus: Steril ✔\nKadaluwarsa: " + Utilities.formatDate(expiryDate, Session.getScriptTimeZone(), 'dd/MM/yyyy') + "\n\nOleh: " + actorInfo);
         clearItemsCache();
+        addPoints(actorEmail, "Proses Sterilisasi", 3);
         return jsonResponse(true, "Alat berhasil disterilkan dan siap dipinjam kembali.", { 
           id_alat: itemId, 
           status: 'Steril',
           tanggal_sterilisasi: now,
           tanggal_kadaluwarsa: expiryDate
         });
-      } else if (nextCycle === 'Kotor') {
-        sheet.getRange(row, 5).setValue('Kotor');
-        sheet.getRange(row, 6).setValue(''); // Hapus tanggal sterilisasi
-        sheet.getRange(row, 7).setValue(''); // Hapus tanggal kadaluwarsa
-        
-        writeLog(actorEmail, "Mengubah status " + itemId + " ke Kotor.");
-        clearItemsCache();
-        return jsonResponse(true, "Status alat berhasil diubah ke Kotor.", { id_alat: itemId, status: 'Kotor' });
       } else {
         return jsonResponse(false, "Status siklus '" + nextCycle + "' tidak valid.");
       }
@@ -1338,6 +1366,7 @@ function manageItems(postData, actorEmail) {
     var actorInfo = getActorInfoString(actorEmail);
     sendTelegramNotification("🆕 *Alat Baru Ditambahkan*\nNama: " + namaAlat + "\nID: `" + idAlat + "`\nDeskripsi: " + (deskripsi || '-') + "\nMasa Aktif: " + masaAktif + " hari\nSisa masa aktif: " + sisaHari + " hari\n\nOleh: " + actorInfo);
     clearItemsCache();
+    addPoints(actorEmail, "Input Alat Baru", 1);
     return jsonResponse(true, "Alat berhasil ditambahkan.");
     
   } else if (operation === 'edit') {
@@ -1713,13 +1742,14 @@ function triggerAuthorization() {
   }
 }
 
-// User memperbarui profil mandiri (Nama, Ruangan, dan Nomor HP)
+// User memperbarui profil mandiri (Nama, Ruangan, Nomor HP, dan Foto Profil)
 function updateSelfProfile(postData, userEmail) {
   var ss = getSpreadsheet();
   var sheet = ss.getSheetByName(USERS_SHEET_NAME);
   var nama = postData.nama;
   var namaRuangan = postData.nama_ruangan;
   var noHp = postData.no_hp;
+  var fotoProfilUrl = postData.foto_profil_url || '';
   
   if (!nama || !namaRuangan || !noHp) {
     return jsonResponse(false, "Nama, Ruangan, dan Nomor HP tidak boleh kosong.");
@@ -1733,12 +1763,146 @@ function updateSelfProfile(postData, userEmail) {
       sheet.getRange(row, 3).setValue(nama.toString().trim());
       sheet.getRange(row, 5).setValue(namaRuangan.toString().trim());
       sheet.getRange(row, 7).setValue(noHp.toString().trim());
-      writeLog(userEmail, "Memperbarui profil mandiri: Nama=" + nama + ", Ruangan=" + namaRuangan + ", No HP=" + noHp);
+      
+      // Simpan foto profil di kolom H (index 8)
+      sheet.getRange(row, 8).setValue(fotoProfilUrl.toString().trim());
+      
+      writeLog(userEmail, "Memperbarui profil mandiri: Nama=" + nama + ", Ruangan=" + namaRuangan + ", No HP=" + noHp + ", Foto=" + fotoProfilUrl);
       sendTelegramNotification("📝 *Profil Diperbarui*\nEmail: " + userEmail + "\nNama: " + nama + "\nRuangan: " + namaRuangan + "\nNo HP: " + noHp);
       return jsonResponse(true, "Profil berhasil diperbarui.");
     }
   }
   return jsonResponse(false, "User tidak ditemukan.");
+}
+
+// Tambah Poin Gamifikasi ke Sheet LogPoin
+function addPoints(email, activity, points) {
+  if (!email) return;
+  try {
+    var ss = getSpreadsheet();
+    var sheetName = "LogPoin";
+    var sheet = ss.getSheetByName(sheetName);
+    if (!sheet) {
+      sheet = ss.insertSheet(sheetName);
+      sheet.appendRow(["Timestamp", "Email", "Nama Staf", "Aktivitas", "Poin", "Bulan_Tahun"]);
+      // Format header
+      sheet.getRange("A1:F1").setFontWeight("bold").setBackground("#e2e8f0");
+    }
+    
+    var actorProfile = getUserProfile(email);
+    var namaStaf = (actorProfile && actorProfile.nama) ? actorProfile.nama : email;
+    var now = new Date();
+    
+    // Format Bulan_Tahun (MM-YYYY)
+    var mm = (now.getMonth() + 1).toString();
+    if (mm.length === 1) mm = "0" + mm;
+    var yyyy = now.getFullYear();
+    var bulanTahun = mm + "-" + yyyy;
+    
+    sheet.appendRow([now, email, namaStaf, activity, points, bulanTahun]);
+  } catch (e) {
+    console.error("Gagal menambahkan poin: " + e.toString());
+  }
+}
+
+// Get Achievements and Leaderboard Data
+function getAchievementsData(userEmail) {
+  var ss = getSpreadsheet();
+  var logSheet = ss.getSheetByName("LogPoin");
+  var userProfile = getUserProfile(userEmail);
+  
+  var leaderboard = [];
+  var myPointsMonth = 0;
+  var myPointsAllTime = 0;
+  var myActivities = [];
+  
+  var now = new Date();
+  var mm = (now.getMonth() + 1).toString();
+  if (mm.length === 1) mm = "0" + mm;
+  var yyyy = now.getFullYear();
+  var currentMonthYear = mm + "-" + yyyy;
+  
+  if (logSheet) {
+    var data = logSheet.getDataRange().getValues();
+    var staffMap = {};
+    var staffAllTimeMap = {};
+    
+    for (var i = 1; i < data.length; i++) {
+      var rowDate = data[i][0];
+      var email = data[i][1].toString().trim().toLowerCase();
+      var name = data[i][2] || email;
+      var activity = data[i][3];
+      var pts = parseInt(data[i][4]) || 0;
+      var monthYear = data[i][5];
+      
+      // All-time points
+      staffAllTimeMap[email] = (staffAllTimeMap[email] || 0) + pts;
+      if (email === userEmail.toLowerCase()) {
+        myPointsAllTime += pts;
+        myActivities.push({
+          timestamp: rowDate,
+          activity: activity,
+          points: pts
+        });
+      }
+      
+      // Current month points
+      if (monthYear === currentMonthYear) {
+        if (!staffMap[email]) {
+          staffMap[email] = {
+            email: email,
+            nama: name,
+            points: 0,
+            foto_profil_url: ""
+          };
+        }
+        staffMap[email].points += pts;
+        
+        if (email === userEmail.toLowerCase()) {
+          myPointsMonth += pts;
+        }
+      }
+    }
+    
+    // Map user avatars
+    var usersSheet = ss.getSheetByName(USERS_SHEET_NAME);
+    if (usersSheet) {
+      var usersData = usersSheet.getDataRange().getValues();
+      var avatarsMap = {};
+      for (var u = 1; u < usersData.length; u++) {
+        var uEmail = usersData[u][1].toString().trim().toLowerCase();
+        var uAvatar = usersData[u][7] || ""; // Column H is foto_profil_url
+        avatarsMap[uEmail] = uAvatar;
+      }
+      
+      // Apply avatars to leaderboard
+      for (var key in staffMap) {
+        staffMap[key].foto_profil_url = avatarsMap[key] || "";
+      }
+    }
+    
+    // Convert to array and sort
+    for (var key in staffMap) {
+      leaderboard.push(staffMap[key]);
+    }
+    leaderboard.sort(function(a, b) {
+      return b.points - a.points;
+    });
+  }
+  
+  // Sort my activities by date desc, limit to last 20
+  myActivities.sort(function(a, b) {
+    return new Date(b.timestamp) - new Date(a.timestamp);
+  });
+  myActivities = myActivities.slice(0, 20);
+  
+  return jsonResponse(true, "Data pencapaian berhasil diambil.", {
+    my_points_month: myPointsMonth,
+    my_points_alltime: myPointsAllTime,
+    my_activities: myActivities,
+    leaderboard: leaderboard,
+    current_month_year: currentMonthYear
+  });
 }
 
 // --- BACKUP & ARSIP OTOMATIS ---

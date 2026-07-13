@@ -325,6 +325,12 @@
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                 <span>Log Audit</span>
               </button>
+              <button onclick="app.setTab('admin-achievements')" id="btn-tab-admin-achievements" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition duration-150 hover:bg-slate-800 hover:text-white">
+                <svg class="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 01-4.438 0" />
+                </svg>
+                <span>Prestasi Staf 🏆</span>
+              </button>
               <button onclick="app.setTab('admin-settings')" id="btn-tab-admin-settings" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition duration-150 hover:bg-slate-800 hover:text-white">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 <span>Pengaturan</span>
@@ -898,6 +904,120 @@
             </div>
           </div>
 
+          <!-- TAB 10: PRESTASI STAF (ADMIN/GAMIFIKASI) -->
+          <div id="tab-admin-achievements" class="tab-content hidden space-y-6">
+            <div class="flex justify-between items-center">
+              <div>
+                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Prestasi & Gamifikasi Staf 🏆</h1>
+                <p class="text-sm text-slate-500">Apresiasi kinerja dan kontribusi staf CSSD bulan ini.</p>
+              </div>
+              <div class="flex space-x-2">
+                <button onclick="app.showPointsRules()" class="bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 font-semibold px-4 py-2.5 rounded-xl text-sm transition duration-150 flex items-center space-x-1.5 shadow-sm">
+                  <svg class="h-4 w-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <span>Cara Dapat Poin</span>
+                </button>
+                <button onclick="app.loadAchievementsData()" class="bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 px-4 py-2.5 rounded-xl shadow-sm transition duration-150 flex items-center space-x-1.5">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.25" /></svg>
+                  <span>Refresh</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- TIGA BESAR BULAN INI (PODIUM) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end pt-8 pb-4">
+              <!-- JUARA 2 (SILVER) -->
+              <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-center shadow-sm flex flex-col items-center order-2 md:order-1 min-h-[220px] justify-between">
+                <div class="relative">
+                  <img id="podium-2-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80" class="h-16 w-16 rounded-full object-cover border-4 border-slate-300 bg-white">
+                  <span class="absolute -bottom-2 -right-2 h-7 w-7 rounded-full bg-slate-300 border-2 border-white flex items-center justify-center text-xs font-bold text-slate-800">2</span>
+                </div>
+                <div class="mt-4">
+                  <h3 id="podium-2-name" class="font-bold text-slate-800 truncate max-w-[150px]">-</h3>
+                  <p class="text-xs text-slate-500">Runner Up</p>
+                </div>
+                <div class="mt-3 bg-slate-200 text-slate-800 px-3 py-1 rounded-full text-xs font-bold" id="podium-2-points">0 Pts</div>
+              </div>
+
+              <!-- JUARA 1 (GOLD) -->
+              <div class="bg-amber-50/50 border border-amber-200 rounded-2xl p-6 text-center shadow-md flex flex-col items-center order-1 md:order-2 min-h-[250px] justify-between relative overflow-hidden">
+                <div class="absolute top-0 right-0 transform translate-x-4 -translate-y-4 bg-amber-400/20 h-20 w-20 rounded-full blur-xl"></div>
+                <div class="relative">
+                  <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 animate-bounce text-xl">👑</div>
+                  <img id="podium-1-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80" class="h-20 w-20 rounded-full object-cover border-4 border-amber-400 bg-white ring-4 ring-amber-400/20 shadow-md">
+                  <span class="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-amber-400 border-2 border-white flex items-center justify-center text-sm font-bold text-amber-950">1</span>
+                </div>
+                <div class="mt-4">
+                  <h3 id="podium-1-name" class="font-extrabold text-slate-900 truncate max-w-[180px]">-</h3>
+                  <p class="text-xs text-amber-600 font-semibold tracking-wider uppercase">Staf Teraktif Bulan Ini</p>
+                </div>
+                <div class="mt-3 bg-amber-500 text-white px-4 py-1.5 rounded-full text-xs font-extrabold shadow-sm" id="podium-1-points">0 Pts</div>
+              </div>
+
+              <!-- JUARA 3 (BRONZE) -->
+              <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-center shadow-sm flex flex-col items-center order-3 md:order-3 min-h-[200px] justify-between">
+                <div class="relative">
+                  <img id="podium-3-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80" class="h-14 w-14 rounded-full object-cover border-4 border-amber-600/50 bg-white">
+                  <span class="absolute -bottom-2 -right-2 h-7 w-7 rounded-full bg-amber-600 border-2 border-white flex items-center justify-center text-xs font-bold text-amber-950">3</span>
+                </div>
+                <div class="mt-4">
+                  <h3 id="podium-3-name" class="font-bold text-slate-800 truncate max-w-[150px]">-</h3>
+                  <p class="text-xs text-slate-500">Peringkat 3</p>
+                </div>
+                <div class="mt-3 bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-bold" id="podium-3-points">0 Pts</div>
+              </div>
+            </div>
+
+            <!-- DETAIL PRESTASI SAYA & LEADERBOARD -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <!-- KARTU PRESTASI SAYA (1 COL) -->
+              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
+                <div>
+                  <h3 class="text-lg font-bold text-slate-900">Prestasi Saya Bulan Ini</h3>
+                  <p class="text-xs text-slate-500 mt-1">Status perolehan poin individu Anda.</p>
+                </div>
+                
+                <div class="flex items-center space-x-4 bg-slate-50 border border-slate-100 p-4 rounded-2xl">
+                  <div class="h-12 w-12 bg-brand-500 text-white rounded-xl flex items-center justify-center font-black text-xl shadow-md">⭐</div>
+                  <div>
+                    <span class="text-xs font-bold text-slate-400 block uppercase tracking-wider">Total Poin</span>
+                    <span class="text-2xl font-black text-slate-900" id="my-points-month-val">0 Poin</span>
+                  </div>
+                </div>
+
+                <div class="border-t border-slate-100 pt-4 space-y-4">
+                  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Aktivitas Terakhir Saya</h4>
+                  <div id="my-activities-container" class="space-y-3 max-h-60 overflow-y-auto custom-scrollbar text-xs">
+                    <!-- Dinamis -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- LEADERBOARD LENGKAP (2 COLS) -->
+              <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+                <div>
+                  <h3 class="text-lg font-bold text-slate-900">Peringkat Staf Teraktif</h3>
+                  <p class="text-xs text-slate-500 mt-1">Peringkat kinerja staf CSSD berdasarkan aksi bulan ini.</p>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                  <table class="w-full min-w-[500px] table-auto">
+                    <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-bold text-[10px] text-left">
+                      <tr>
+                        <th class="px-4 py-3 whitespace-nowrap text-center">Peringkat</th>
+                        <th class="px-4 py-3 whitespace-nowrap">Staf CSSD</th>
+                        <th class="px-4 py-3 whitespace-nowrap">Peran / Posisi</th>
+                        <th class="px-4 py-3 whitespace-nowrap text-right">Poin</th>
+                      </tr>
+                    </thead>
+                    <tbody id="leaderboard-tbody" class="text-slate-800 text-xs">
+                      <!-- Dinamis -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </main>
       </div>
     </div>
@@ -1092,6 +1212,17 @@
           <div class="p-6">
             <h3 class="text-lg font-bold text-slate-900 mb-4">Ubah Profil Pengguna</h3>
             <form onsubmit="app.submitProfileEditForm(event)" class="space-y-4">
+              <!-- Avatar Upload Widget -->
+              <div class="flex flex-col items-center space-y-2 mb-4">
+                <div class="relative group cursor-pointer" onclick="document.getElementById('profile-pic-file').click()" title="Klik untuk mengubah foto profil">
+                  <img id="profile-pic-preview" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150" class="h-20 w-20 rounded-full object-cover border-2 border-brand-500 shadow-md group-hover:opacity-75 transition duration-150">
+                  <div class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition duration-150">
+                    <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                  </div>
+                </div>
+                <input type="file" id="profile-pic-file" accept="image/*" class="hidden" onchange="app.handleProfilePicUpload(event)">
+                <span class="text-xs text-slate-500 hover:text-brand-500 transition cursor-pointer" onclick="document.getElementById('profile-pic-file').click()">Ganti Foto Profil</span>
+              </div>
               <div>
                 <label class="block text-sm font-medium text-slate-700">Email Akun (Google)</label>
                 <input type="email" id="profile-email" disabled class="mt-1 w-full border border-slate-200 bg-slate-50 text-slate-500 rounded-xl px-4 py-2 text-sm cursor-not-allowed">
@@ -1374,17 +1505,27 @@
             document.getElementById('nav-user-name').innerText = this.user.nama;
             document.getElementById('nav-user-role').innerText = `${this.user.peran} (${this.user.nama_ruangan})`;
             
-            // Render Google profile picture
-            if (this.credential) {
-              const jwtPayload = this.decodeJwt(this.credential);
-              if (jwtPayload && jwtPayload.picture) {
-                const picEl = document.getElementById('nav-user-pic');
-                const placeholderEl = document.getElementById('nav-user-pic-placeholder');
-                if (picEl && placeholderEl) {
+            // Render profile picture (Prioritize custom upload, fallback to Google pic)
+            const picEl = document.getElementById('nav-user-pic');
+            const placeholderEl = document.getElementById('nav-user-pic-placeholder');
+            if (picEl && placeholderEl) {
+              if (this.user.foto_profil_url) {
+                picEl.src = this.user.foto_profil_url;
+                picEl.classList.remove('hidden');
+                placeholderEl.classList.add('hidden');
+              } else if (this.credential) {
+                const jwtPayload = this.decodeJwt(this.credential);
+                if (jwtPayload && jwtPayload.picture) {
                   picEl.src = jwtPayload.picture;
                   picEl.classList.remove('hidden');
                   placeholderEl.classList.add('hidden');
+                } else {
+                  picEl.classList.add('hidden');
+                  placeholderEl.classList.remove('hidden');
                 }
+              } else {
+                picEl.classList.add('hidden');
+                placeholderEl.classList.remove('hidden');
               }
             }
             
@@ -1393,7 +1534,7 @@
             
             // Restore active tab using Hash routing fallback
             let initialTab = window.location.hash.substring(1);
-            const allowedTabs = this.user.peran === 'Ruangan' ? ['katalog', 'keranjang', 'riwayat'] : ['admin-dashboard', 'admin-peminjaman', 'admin-inventaris', 'admin-user-mgmt', 'admin-logs', 'admin-settings'];
+            const allowedTabs = this.user.peran === 'Ruangan' ? ['katalog', 'keranjang', 'riwayat'] : ['admin-dashboard', 'admin-peminjaman', 'admin-inventaris', 'admin-user-mgmt', 'admin-logs', 'admin-achievements', 'admin-settings'];
             if (!initialTab || !allowedTabs.includes(initialTab)) {
               initialTab = localStorage.getItem('sista_current_tab') || (this.user.peran === 'Ruangan' ? 'katalog' : 'admin-dashboard');
               if (!allowedTabs.includes(initialTab)) {
@@ -1530,6 +1671,8 @@
               if (res.success) this.adminContacts = res.data;
             }
             this.renderAdminContactsSettings();
+          } else if (tabName === 'admin-achievements') {
+            this.loadAchievementsData();
           }
         } catch (e) {
           this.showToast('error', 'Gagal memproses pemuatan data.');
@@ -4102,6 +4245,19 @@
       openProfileEditModal() {
         if (!this.user) return;
         
+        this.tempProfilePicUrl = this.user.foto_profil_url || '';
+        const previewEl = document.getElementById('profile-pic-preview');
+        if (previewEl) {
+          if (this.tempProfilePicUrl) {
+            previewEl.src = this.tempProfilePicUrl;
+          } else if (this.credential) {
+            const jwtPayload = this.decodeJwt(this.credential);
+            previewEl.src = (jwtPayload && jwtPayload.picture) ? jwtPayload.picture : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150';
+          } else {
+            previewEl.src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150';
+          }
+        }
+        
         document.getElementById('profile-email').value = this.user.email;
         document.getElementById('profile-nama').value = this.user.nama;
         document.getElementById('profile-phone').value = this.user.no_hp || '';
@@ -4162,7 +4318,8 @@
 
         try {
           this.showToast('info', 'Memperbarui profil Anda...');
-          const res = await this.callApiPost('updateSelfProfile', { nama, nama_ruangan, no_hp });
+          const foto_profil_url = this.tempProfilePicUrl || '';
+          const res = await this.callApiPost('updateSelfProfile', { nama, nama_ruangan, no_hp, foto_profil_url });
           if (res.success) {
             this.showToast('success', res.message);
             this.closeProfileEditModal();
@@ -4178,6 +4335,54 @@
             saveBtn.innerHTML = originalBtnText;
           }
         }
+      }
+
+      async handleProfilePicUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        // Batasi ukuran file (maksimal 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+          this.showToast('warning', 'Ukuran foto maksimal adalah 2MB.');
+          return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const base64Data = e.target.result.split(',')[1];
+          const fileName = `AVATAR_${this.user.email}_${Date.now()}.png`;
+          
+          try {
+            this.showToast('info', 'Mengunggah foto profil...');
+            // Tampilkan loading spinner / opacity di preview
+            const previewEl = document.getElementById('profile-pic-preview');
+            if (previewEl) {
+              previewEl.style.opacity = '0.5';
+            }
+            
+            const uploadRes = await this.callApiPost('uploadImage', {
+              file_data: base64Data,
+              file_name: fileName
+            });
+            
+            if (uploadRes.success) {
+              this.tempProfilePicUrl = uploadRes.data.url;
+              if (previewEl) {
+                previewEl.src = this.tempProfilePicUrl;
+                previewEl.style.opacity = '1';
+              }
+              this.showToast('success', 'Foto profil berhasil diunggah.');
+            } else {
+              this.showToast('error', 'Gagal mengunggah foto profil: ' + uploadRes.message);
+              if (previewEl) previewEl.style.opacity = '1';
+            }
+          } catch (err) {
+            this.showToast('error', 'Gagal mengunggah foto profil.');
+            const previewEl = document.getElementById('profile-pic-preview');
+            if (previewEl) previewEl.style.opacity = '1';
+          }
+        };
+        reader.readAsDataURL(file);
       }
 
       // --- ADMIN EDIT USER MODAL ---
@@ -4875,6 +5080,195 @@
             }
           });
         }
+      }
+
+      // --- GAMIFIKASI & PRESTASI STAF ---
+      async loadAchievementsData() {
+        try {
+          // Tampilkan state loading
+          const container = document.getElementById('my-activities-container');
+          if (container) container.innerHTML = '<div class="text-slate-500 py-4 text-center">Memuat riwayat poin...</div>';
+          
+          const leaderboardTbody = document.getElementById('leaderboard-tbody');
+          if (leaderboardTbody) leaderboardTbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">Memuat peringkat staf...</td></tr>';
+
+          const res = await this.callApi('getAchievementsData');
+          if (res.success) {
+            const data = res.data;
+            
+            // Poin pribadi
+            document.getElementById('my-points-month-val').innerText = `${data.my_points_month || 0} Poin`;
+            
+            // Aktivitas terakhir
+            if (data.my_activities && data.my_activities.length > 0) {
+              container.innerHTML = data.my_activities.map(act => {
+                const actDate = new Date(act.timestamp);
+                const timeStr = `${actDate.getDate()}/${actDate.getMonth()+1} ${actDate.getHours().toString().padStart(2,'0')}:${actDate.getMinutes().toString().padStart(2,'0')}`;
+                return `
+                  <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <div>
+                      <span class="font-bold text-slate-800">${act.activity}</span>
+                      <span class="text-[10px] text-slate-400 block">${timeStr}</span>
+                    </div>
+                    <span class="font-black text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">+${act.points}</span>
+                  </div>
+                `;
+              }).join('');
+            } else {
+              container.innerHTML = '<div class="text-slate-400 py-4 text-center">Belum ada perolehan poin bulan ini.</div>';
+            }
+            
+            // Leaderboard & Podium
+            const top3 = data.leaderboard ? data.leaderboard.slice(0, 3) : [];
+            
+            // Podium Juara 1
+            if (top3[0]) {
+              document.getElementById('podium-1-name').innerText = top3[0].nama;
+              document.getElementById('podium-1-points').innerText = `${top3[0].points} Pts`;
+              document.getElementById('podium-1-avatar').src = top3[0].foto_profil_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
+            } else {
+              document.getElementById('podium-1-name').innerText = '-';
+              document.getElementById('podium-1-points').innerText = '0 Pts';
+              document.getElementById('podium-1-avatar').src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
+            }
+            
+            // Podium Juara 2
+            if (top3[1]) {
+              document.getElementById('podium-2-name').innerText = top3[1].nama;
+              document.getElementById('podium-2-points').innerText = `${top3[1].points} Pts`;
+              document.getElementById('podium-2-avatar').src = top3[1].foto_profil_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
+            } else {
+              document.getElementById('podium-2-name').innerText = '-';
+              document.getElementById('podium-2-points').innerText = '0 Pts';
+              document.getElementById('podium-2-avatar').src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
+            }
+            
+            // Podium Juara 3
+            if (top3[2]) {
+              document.getElementById('podium-3-name').innerText = top3[2].nama;
+              document.getElementById('podium-3-points').innerText = `${top3[2].points} Pts`;
+              document.getElementById('podium-3-avatar').src = top3[2].foto_profil_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
+            } else {
+              document.getElementById('podium-3-name').innerText = '-';
+              document.getElementById('podium-3-points').innerText = '0 Pts';
+              document.getElementById('podium-3-avatar').src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
+            }
+            
+            // Table
+            let tableHtml = '';
+            if (data.leaderboard && data.leaderboard.length > 0) {
+              tableHtml = data.leaderboard.map((staff, idx) => {
+                const rankNum = idx + 1;
+                const avatar = staff.foto_profil_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
+                
+                let rankBadge = `${rankNum}`;
+                if (rankNum === 1) rankBadge = '🥇';
+                else if (rankNum === 2) rankBadge = '🥈';
+                else if (rankNum === 3) rankBadge = '🥉';
+                
+                return `
+                  <tr class="border-b border-slate-100 hover:bg-slate-50 transition duration-150">
+                    <td class="px-4 py-3 text-center font-bold text-slate-700">${rankBadge}</td>
+                    <td class="px-4 py-3 flex items-center space-x-3">
+                      <img src="${avatar}" class="h-8 w-8 rounded-full object-cover border border-slate-200">
+                      <div>
+                        <span class="font-bold text-slate-900 block">${staff.nama}</span>
+                        <span class="text-[10px] text-slate-400 block">${staff.email}</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 text-slate-500 font-semibold">Staf CSSD</td>
+                    <td class="px-4 py-3 text-right font-black text-slate-900 text-sm">${staff.points} Pts</td>
+                  </tr>
+                `;
+              }).join('');
+            } else {
+              tableHtml = '<tr><td colspan="4" class="p-8 text-center text-slate-400">Belum ada peringkat staf untuk bulan ini.</td></tr>';
+            }
+            
+            if (leaderboardTbody) leaderboardTbody.innerHTML = tableHtml;
+            
+          } else {
+            this.showToast('error', 'Gagal memuat data prestasi staf.');
+          }
+        } catch (err) {
+          this.showToast('error', 'Gagal menghubungi server untuk data prestasi.');
+        }
+      }
+
+      showPointsRules() {
+        Swal.fire({
+          title: '🏆 Cara Mendapatkan Poin',
+          html: `
+            <div class="text-left space-y-3.5 text-xs font-medium text-slate-600 font-sans p-1">
+              <p class="text-slate-500 leading-relaxed">Poin dihitung setiap bulan untuk mengapresiasi keaktifan, ketelitian, dan integritas staf CSSD/Admin dalam pengelolaan instrumen medis steril.</p>
+              
+              <div class="space-y-2.5">
+                <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                  <div class="flex items-center space-x-2">
+                    <span class="text-lg">🧼</span>
+                    <span class="font-bold text-slate-800">Proses Pencucian (Washing)</span>
+                  </div>
+                  <span class="bg-brand-100 text-brand-800 font-bold px-2 py-1 rounded-lg">+3 Poin</span>
+                </div>
+                
+                <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                  <div class="flex items-center space-x-2">
+                    <span class="text-lg">🧪</span>
+                    <span class="font-bold text-slate-800">Proses Sterilisasi Selesai</span>
+                  </div>
+                  <span class="bg-brand-100 text-brand-800 font-bold px-2 py-1 rounded-lg">+3 Poin</span>
+                </div>
+                
+                <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                  <div class="flex items-center space-x-2">
+                    <span class="text-lg">🆕</span>
+                    <span class="font-bold text-slate-800">Input Alat Baru ke Inventaris</span>
+                  </div>
+                  <span class="bg-brand-100 text-brand-800 font-bold px-2 py-1 rounded-lg">+1 Poin</span>
+                </div>
+
+                <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                  <div class="flex items-center space-x-2">
+                    <span class="text-lg">🤝</span>
+                    <span class="font-bold text-slate-800">Serah Terima/Penyerahan Alat</span>
+                  </div>
+                  <span class="bg-brand-100 text-brand-800 font-bold px-2 py-1 rounded-lg">+1 Poin</span>
+                </div>
+                
+                <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                  <div class="flex items-center space-x-2">
+                    <span class="text-lg">📦</span>
+                    <span class="font-bold text-slate-800">Penerimaan Pengembalian</span>
+                  </div>
+                  <span class="bg-brand-100 text-brand-800 font-bold px-2 py-1 rounded-lg">+1 Poin</span>
+                </div>
+                
+                <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                  <div class="flex items-center space-x-2">
+                    <span class="text-lg">🔴</span>
+                    <span class="font-bold text-slate-800">Penerimaan Barang Kotor</span>
+                  </div>
+                  <span class="bg-brand-100 text-brand-800 font-bold px-2 py-1 rounded-lg">+1 Poin</span>
+                </div>
+                
+                <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                  <div class="flex items-center space-x-2">
+                    <span class="text-lg">✅</span>
+                    <span class="font-bold text-slate-800">Verifikasi Pengguna Baru</span>
+                  </div>
+                  <span class="bg-brand-100 text-brand-800 font-bold px-2 py-1 rounded-lg">+1 Poin</span>
+                </div>
+              </div>
+              <p class="text-[10px] text-slate-400 text-center italic mt-4">“Ketelitian dan kebersihan adalah keselamatan pasien.” - Tim CSSD</p>
+            </div>
+          `,
+          confirmButtonText: 'Mengerti, Siap Berprestasi!',
+          confirmButtonColor: '#0f172a',
+          customClass: {
+            popup: 'rounded-2xl font-sans max-w-sm',
+            confirmButton: 'rounded-xl px-5 py-3 text-sm font-semibold'
+          }
+        });
       }
 
       // --- TOAST NOTIFICATIONS UTILS ---
