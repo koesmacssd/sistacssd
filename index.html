@@ -2448,6 +2448,17 @@
         fileInput.value = '';
         cameraInput.value = '';
 
+        // Generate checklist HTML
+        let itemsChecklistHtml = '';
+        order.items.forEach(it => {
+          itemsChecklistHtml += `
+            <div class="flex items-center space-x-2 py-1 select-none text-left">
+              <input type="checkbox" id="chk-item-${it.id_alat}" value="${it.id_alat}" checked class="rounded border-slate-300 text-brand-500 focus:ring-brand-500">
+              <label for="chk-item-${it.id_alat}" class="text-xs font-semibold text-slate-700 cursor-pointer">${it.nama_alat} (${it.id_alat})</label>
+            </div>
+          `;
+        });
+
         const { value: formValues } = await Swal.fire({
           title: 'Laporan Barang Kurang / Rusak',
           html: `
@@ -2457,8 +2468,14 @@
                 <input type="text" id="swal-nama-pengembali" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Nama petugas yang mengembalikan..." value="${order.nama_peminjam || ''}" required>
               </div>
               <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Alat yang Dikembalikan (Centang yang Diterima)</label>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 max-h-32 overflow-y-auto custom-scrollbar">
+                  ${itemsChecklistHtml}
+                </div>
+              </div>
+              <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">Deskripsi Kerusakan / Kekurangan</label>
-                <textarea id="swal-catatan-kembali" rows="3" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Contoh: Gunting Bedah kurang 1 buah / Pinset bengkok" required></textarea>
+                <textarea id="swal-catatan-kembali" rows="2" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Contoh: Gunting Bedah kurang 1 buah / Pinset bengkok" required></textarea>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">Foto Bukti Fisik</label>
@@ -2507,7 +2524,16 @@
               Swal.showValidationMessage('Keterangan kekurangan/kerusakan wajib diisi!');
               return false;
             }
-            return { catatan, namaPengembali };
+
+            const returnedItemIds = [];
+            order.items.forEach(it => {
+              const chk = document.getElementById(`chk-item-${it.id_alat}`);
+              if (chk && chk.checked) {
+                returnedItemIds.push(it.id_alat);
+              }
+            });
+
+            return { catatan, namaPengembali, returnedItemIds };
           }
         });
 
@@ -2515,6 +2541,7 @@
 
         const catatan = formValues.catatan;
         const namaPengembali = formValues.namaPengembali;
+        const returnedItemIds = formValues.returnedItemIds;
         let fotoUrl = '';
 
         let activeFileInput = fileInput;
@@ -2551,7 +2578,8 @@
           await this.processUpdateOrderStatus(orderId, 'Tidak Lengkap', {
             catatan_kembali: catatan,
             foto_kembali: fotoUrl,
-            nama_pengembali: namaPengembali
+            nama_pengembali: namaPengembali,
+            returned_item_ids: JSON.stringify(returnedItemIds)
           });
 
         } catch (err) {
@@ -2591,6 +2619,9 @@
       }
 
       async handleCompleteResolve(orderId) {
+        const order = this.orders.find(o => o.id_order === orderId);
+        if (!order) return;
+
         let fileInput = document.getElementById('swal-foto-file-resolve');
         let cameraInput = document.getElementById('swal-foto-camera-resolve');
         
@@ -2617,6 +2648,23 @@
         fileInput.value = '';
         cameraInput.value = '';
 
+        // Saring item mana saja yang statusnya masih Dipinjam
+        const missingItems = order.items.filter(it => {
+          const itemInInventory = this.items.find(i => i.id_alat === it.id_alat);
+          return itemInInventory && itemInInventory.status_posisi.startsWith('Dipinjam');
+        });
+
+        // Generate checklist HTML
+        let missingItemsHtml = '';
+        missingItems.forEach(it => {
+          missingItemsHtml += `
+            <div class="flex items-center space-x-2 py-1 select-none text-left">
+              <input type="checkbox" id="chk-resolve-item-${it.id_alat}" value="${it.id_alat}" checked class="rounded border-slate-300 text-brand-500 focus:ring-brand-500">
+              <label for="chk-resolve-item-${it.id_alat}" class="text-xs font-semibold text-slate-700 cursor-pointer">${it.nama_alat} (${it.id_alat})</label>
+            </div>
+          `;
+        });
+
         const { value: formValues } = await Swal.fire({
           title: 'Kekurangan Barang Dilengkapi',
           html: `
@@ -2626,8 +2674,14 @@
                 <input type="text" id="swal-nama-pengembali-resolve" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Nama petugas yang mengembalikan..." value="${order.nama_peminjam || ''}" required>
               </div>
               <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Alat yang Dikembalikan Sekarang</label>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 max-h-32 overflow-y-auto custom-scrollbar">
+                  ${missingItemsHtml || '<p class="text-xs text-slate-500 italic">Semua alat sudah dikembalikan.</p>'}
+                </div>
+              </div>
+              <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">Catatan Serah Terima Kekurangan</label>
-                <textarea id="swal-catatan-lengkap" rows="3" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Contoh: Barang kekurangan berupa 1 gunting bedah sudah diserahkan oleh perawat Ruangan A." required></textarea>
+                <textarea id="swal-catatan-lengkap" rows="2" class="w-full border border-slate-300 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Contoh: Barang kekurangan berupa 1 gunting bedah sudah diserahkan oleh perawat Ruangan A." required></textarea>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">Foto Bukti Penyerahan</label>
@@ -2676,7 +2730,20 @@
               Swal.showValidationMessage('Keterangan penyerahan wajib diisi!');
               return false;
             }
-            return { catatan, namaPengembali };
+            
+            const resolvedItemIds = [];
+            missingItems.forEach(it => {
+              const chk = document.getElementById(`chk-resolve-item-${it.id_alat}`);
+              if (chk && chk.checked) {
+                resolvedItemIds.push(it.id_alat);
+              }
+            });
+            if (missingItems.length > 0 && resolvedItemIds.length === 0) {
+              Swal.showValidationMessage('Centang minimal 1 alat yang dikembalikan!');
+              return false;
+            }
+
+            return { catatan, namaPengembali, resolvedItemIds };
           }
         });
 
@@ -2684,6 +2751,7 @@
 
         const catatan = formValues.catatan;
         const namaPengembali = formValues.namaPengembali;
+        const resolvedItemIds = formValues.resolvedItemIds;
         let fotoUrl = '';
 
         let activeFileInput = fileInput;
@@ -2719,7 +2787,9 @@
 
           await this.processUpdateOrderStatus(orderId, 'Selesai', {
             catatan_lengkap: catatan,
-            foto_lengkap: fotoUrl
+            foto_lengkap: fotoUrl,
+            nama_pengembali: namaPengembali,
+            resolved_item_ids: JSON.stringify(resolvedItemIds)
           });
 
         } catch (err) {

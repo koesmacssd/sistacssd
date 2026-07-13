@@ -944,25 +944,61 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
       return jsonResponse(false, "Status transisi tidak valid. Status saat ini: " + currentStatus);
     }
     
-    // Update order (Set status & tanggal_kembali)
-    ordersSheet.getRange(orderRow, 4).setValue('Selesai');
-    ordersSheet.getRange(orderRow, 7).setValue(now);
-    
     var namaPengembali = postData.nama_pengembali || '';
     if (namaPengembali) {
       ordersSheet.getRange(orderRow, 12).setValue(namaPengembali);
     }
     
-    // Jika dari 'Tidak Lengkap', simpan bukti pelengkap
+    var finalOrderStatus = 'Selesai';
+    
     if (currentStatus === 'Tidak Lengkap') {
       var catatanLengkap = postData.catatan_lengkap || '';
       var fotoLengkap = postData.foto_lengkap || '';
       ordersSheet.getRange(orderRow, 10).setValue(catatanLengkap);
       ordersSheet.getRange(orderRow, 11).setValue(fotoLengkap);
-    }
-    
-    // Update items -> 'Kotor' (Hanya jika sebelumnya dari 'Aktif')
-    if (currentStatus === 'Aktif') {
+      
+      // Parse resolved_item_ids
+      var resolvedItemIds = [];
+      if (postData.resolved_item_ids) {
+        try {
+          resolvedItemIds = JSON.parse(postData.resolved_item_ids);
+        } catch(e) {
+          Logger.log("Error parsing resolved_item_ids: " + e.toString());
+        }
+      }
+      
+      // Update resolved items -> 'Kotor'
+      for (var c = 0; c < orderItemIds.length; c++) {
+        var itemId = orderItemIds[c];
+        var itemRow = itemRowsMap[itemId];
+        if (itemRow) {
+          if (resolvedItemIds.length === 0 || resolvedItemIds.indexOf(itemId) !== -1) {
+            itemsSheet.getRange(itemRow, 5).setValue('Kotor');
+          }
+        }
+      }
+      
+      // Cek apakah masih ada barang yang belum dikembalikan (masih berstatus 'Dipinjam [Ruangan]')
+      var stillHasMissingItems = false;
+      var updatedItemsData = itemsSheet.getDataRange().getValues();
+      var updatedItemsStatusMap = {};
+      for (var i = 1; i < updatedItemsData.length; i++) {
+        updatedItemsStatusMap[updatedItemsData[i][0]] = updatedItemsData[i][4];
+      }
+      
+      for (var c = 0; c < orderItemIds.length; c++) {
+        var itemId = orderItemIds[c];
+        var currentStatusVal = updatedItemsStatusMap[itemId] || '';
+        if (currentStatusVal.startsWith('Dipinjam')) {
+          stillHasMissingItems = true;
+        }
+      }
+      
+      if (stillHasMissingItems) {
+        finalOrderStatus = 'Tidak Lengkap';
+      }
+    } else {
+      // Jika langsung lengkap dari Aktif
       for (var c = 0; c < orderItemIds.length; c++) {
         var itemRow = itemRowsMap[orderItemIds[c]];
         if (itemRow) {
@@ -971,26 +1007,96 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
       }
     }
     
+    // Update order status & tanggal_kembali
+    ordersSheet.getRange(orderRow, 4).setValue(finalOrderStatus);
+    ordersSheet.getRange(orderRow, 7).setValue(now);
+    
     var actorInfo = getActorInfoString(actorEmail);
     if (currentStatus === 'Tidak Lengkap') {
       var catatanLengkap = postData.catatan_lengkap || '';
-      writeLog(actorEmail, "Konfirmasi pemenuhan kekurangan untuk " + orderId + ". Catatan: " + catatanLengkap);
-      sendTelegramNotification("✅ *Kekurangan Alat Dilengkapi*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nCatatan: " + catatanLengkap + "\nStatus Transaksi: Selesai ✔\n\nAdmin CSSD: " + actorInfo);
+      
+      // Rangkai status item untuk info detail Telegram
+      var returnedList = [];
+      var missingList = [];
+      var updatedItemsData = itemsSheet.getDataRange().getValues();
+      var updatedItemsStatusMap = {};
+      for (var i = 1; i < updatedItemsData.length; i++) {
+        updatedItemsStatusMap[updatedItemsData[i][0]] = updatedItemsData[i][4];
+      }
+      
+      for (var c = 0; c < orderItemDetails.length; c++) {
+        var it = orderItemDetails[c];
+        var currentStatusVal = updatedItemsStatusMap[it.id] || '';
+        if (currentStatusVal.startsWith('Dipinjam')) {
+          missingList.push("• [ ] " + it.nama + " (" + it.id + ") - Belum Kembali");
+        } else {
+          returnedList.push("• [x] " + it.nama + " (" + it.id + ") - Sudah Kembali");
+        }
+      }
+      
+      if (finalOrderStatus === 'Selesai') {
+        writeLog(actorEmail, "Konfirmasi pemenuhan kekurangan untuk " + orderId + ". Semua kekurangan dilengkapi. Catatan: " + catatanLengkap);
+        
+        var telegramMsg = "✅ *Kekurangan Alat Dilengkapi (Selesai)*\n" +
+                          "ID Order: `" + orderId + "`\n" +
+                          "Ruangan: " + borrowerRoom + "\n" +
+                          "Catatan: " + catatanLengkap + "\n\n" +
+                          "📋 *Status Seluruh Alat Medis:*\n" +
+                          returnedList.join("\n") + "\n\n" +
+                          "Status Transaksi: Selesai ✔\n\n" +
+                          "Admin CSSD: " + actorInfo;
+        sendTelegramNotification(telegramMsg);
+        
+        sendHtmlEmail(
+          borrowerEmail,
+          "Peminjaman Selesai - SISTA-CSSD [" + orderId + "]",
+          "Pengembalian Alat Medis Berhasil",
+          "Halo,<br><br>Terima kasih, alat-alat medis steril yang Anda pinjam telah resmi dikembalikan secara lengkap ke CSSD RSUD dr. R. Koesma Tuban.<br><br><strong>Catatan Penyelesaian:</strong> " + catatanLengkap,
+          orderId,
+          borrowerRoom,
+          orderItemDetails,
+          "Seluruh siklus peminjaman selesai."
+        );
+      } else {
+        writeLog(actorEmail, "Konfirmasi pemenuhan sebagian kekurangan untuk " + orderId + ". Catatan: " + catatanLengkap);
+        
+        var telegramMsg = "🔄 *Kekurangan Alat Dilengkapi Sebagian*\n" +
+                          "ID Order: `" + orderId + "`\n" +
+                          "Ruangan: " + borrowerRoom + "\n" +
+                          "Catatan: " + catatanLengkap + "\n\n" +
+                          "✅ *Alat Sudah Kembali (" + returnedList.length + "/" + orderItemDetails.length + "):*\n" +
+                          returnedList.join("\n") + "\n\n" +
+                          "❌ *Alat Masih Belum Kembali (" + missingList.length + "/" + orderItemDetails.length + "):*\n" +
+                          missingList.join("\n") + "\n\n" +
+                          "Status Transaksi: Tetap Tidak Lengkap ⚠️\n\n" +
+                          "Admin CSSD: " + actorInfo;
+        sendTelegramNotification(telegramMsg);
+        
+        sendHtmlEmail(
+          borrowerEmail,
+          "Pemenuhan Sebagian Alat - SISTA-CSSD [" + orderId + "]",
+          "Pengembalian Sebagian Kekurangan Alat Medis",
+          "Halo,<br><br>Sebagian dari kekurangan alat medis untuk transaksi di bawah ini telah dikembalikan ke CSSD.<br><br><strong>Catatan CSSD:</strong> " + catatanLengkap,
+          orderId,
+          borrowerRoom,
+          orderItemDetails,
+          "Harap pastikan sisa kekurangan alat medis segera dilengkapi."
+        );
+      }
     } else {
       writeLog(actorEmail, "Konfirmasi pengembalian lengkap untuk " + orderId + ". Status: Selesai.");
       sendTelegramNotification("✅ *Alat Berhasil Dikembalikan Lengkap*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nStatus Transaksi: Selesai. Semua alat diposisikan sebagai 'Kotor' untuk masuk ke siklus sterilisasi.\n\nAdmin CSSD: " + actorInfo);
+      sendHtmlEmail(
+        borrowerEmail,
+        "Peminjaman Selesai - SISTA-CSSD [" + orderId + "]",
+        "Pengembalian Alat Medis Berhasil",
+        "Halo,<br><br>Terima kasih, alat-alat medis steril yang Anda pinjam telah resmi dikembalikan secara lengkap ke CSSD RSUD dr. R. Koesma Tuban.",
+        orderId,
+        borrowerRoom,
+        orderItemDetails,
+        "Transaksi peminjaman ini telah resmi dinyatakan SELESAI dan lengkap."
+      );
     }
-
-    sendHtmlEmail(
-      borrowerEmail,
-      "Peminjaman Selesai - SISTA-CSSD [" + orderId + "]",
-      "Pengembalian Alat Medis Berhasil",
-      "Halo,<br><br>Terima kasih, alat-alat medis steril yang Anda pinjam telah resmi dikembalikan secara lengkap ke CSSD RSUD dr. R. Koesma Tuban." + (currentStatus === 'Tidak Lengkap' ? "<br><br><strong>Catatan Penyelesaian:</strong> " + postData.catatan_lengkap : ""),
-      orderId,
-      borrowerRoom,
-      orderItemDetails,
-      "Transaksi peminjaman ini telah resmi dinyatakan SELESAI dan lengkap."
-    );
 
   } else if (nextStatus === 'Tidak Lengkap') {
     if (actorRole !== 'Admin' && actorRole !== 'Super Admin') return jsonResponse(false, "Akses ditolak.");
@@ -999,6 +1105,16 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
     var catatan = postData.catatan_kembali || '';
     var fotoUrl = postData.foto_kembali || '';
     var namaPengembali = postData.nama_pengembali || '';
+    
+    // Parse returned_item_ids
+    var returnedItemIds = [];
+    if (postData.returned_item_ids) {
+      try {
+        returnedItemIds = JSON.parse(postData.returned_item_ids);
+      } catch(e) {
+        Logger.log("Error parsing returned_item_ids: " + e.toString());
+      }
+    }
     
     // Update order (Set status, tanggal_kembali, catatan, dan foto)
     ordersSheet.getRange(orderRow, 4).setValue('Tidak Lengkap');
@@ -1009,17 +1125,47 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
       ordersSheet.getRange(orderRow, 12).setValue(namaPengembali);
     }
     
-    // Update items -> 'Kotor' (agar returned parts bisa disterilkan kembali)
+    // Update items -> 'Kotor' (Hanya yang dicentang / jika kosong set semua)
     for (var c = 0; c < orderItemIds.length; c++) {
-      var itemRow = itemRowsMap[orderItemIds[c]];
+      var itemId = orderItemIds[c];
+      var itemRow = itemRowsMap[itemId];
       if (itemRow) {
-        itemsSheet.getRange(itemRow, 5).setValue('Kotor');
+        if (returnedItemIds.length === 0 || returnedItemIds.indexOf(itemId) !== -1) {
+          itemsSheet.getRange(itemRow, 5).setValue('Kotor');
+        }
       }
     }
     
-    writeLog(actorEmail, "Konfirmasi pengembalian tidak lengkap untuk " + orderId + ". Catatan: " + catatan);
+    // Saring dan kelompokkan untuk notifikasi Telegram
+    var returnedList = [];
+    var missingList = [];
+    for (var c = 0; c < orderItemDetails.length; c++) {
+      var it = orderItemDetails[c];
+      if (returnedItemIds.length === 0 || returnedItemIds.indexOf(it.id) !== -1) {
+        returnedList.push("• [x] " + it.nama + " (" + it.id + ") - Kotor (Dicuci)");
+      } else {
+        missingList.push("• [ ] " + it.nama + " (" + it.id + ") - Tertinggal di " + borrowerRoom);
+      }
+    }
+    
+    writeLog(actorEmail, "Konfirmasi pengembalian tidak lengkap untuk " + orderId + ". Diterima: " + returnedItemIds.length + " item. Catatan: " + catatan);
     var actorInfo = getActorInfoString(actorEmail);
-    sendTelegramNotification("⚠️ *Pengembalian Tidak Lengkap*\nID Order: `" + orderId + "`\nRuangan: " + borrowerRoom + "\nCatatan: " + catatan + "\n\nAdmin CSSD: " + actorInfo);
+    
+    var telegramMsg = "⚠️ *Pengembalian Tidak Lengkap*\n" +
+                      "ID Order: `" + orderId + "`\n" +
+                      "Ruangan: " + borrowerRoom + "\n" +
+                      "Catatan: " + catatan + "\n\n" +
+                      "✅ *Alat Dikembalikan (" + returnedList.length + "/" + orderItemDetails.length + "):*\n" +
+                      returnedList.join("\n") + "\n\n";
+                      
+    if (missingList.length > 0) {
+      telegramMsg += "❌ *Alat Belum Kembali (" + missingList.length + "/" + orderItemDetails.length + "):*\n" +
+                     missingList.join("\n") + "\n\n";
+    }
+    
+    telegramMsg += "Admin CSSD: " + actorInfo;
+    sendTelegramNotification(telegramMsg);
+    
     sendHtmlEmail(
       borrowerEmail,
       "Pengembalian Bermasalah/Tidak Lengkap - SISTA-CSSD [" + orderId + "]",
