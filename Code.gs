@@ -1219,13 +1219,6 @@ function updateItemCycle(postData, actorEmail) {
         clearItemsCache();
         return jsonResponse(true, "Status alat berhasil diubah ke Pencucian.", { id_alat: itemId, status: 'Pencucian' });
         
-      } else if (nextCycle === 'Penyimpanan') {
-        sheet.getRange(row, 5).setValue('Penyimpanan');
-        writeLog(actorEmail, "Mengubah status " + itemId + " ke Penyimpanan.");
-        sendTelegramNotification("📦 *Alat Masuk Penyimpanan*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\n\nOleh: " + actorInfo);
-        clearItemsCache();
-        return jsonResponse(true, "Status alat berhasil diubah ke Penyimpanan.", { id_alat: itemId, status: 'Penyimpanan' });
-        
       } else if (nextCycle === 'Kotor') {
         sheet.getRange(row, 5).setValue('Kotor');
         writeLog(actorEmail, "Mengubah status " + itemId + " ke Kotor.");
@@ -1234,8 +1227,8 @@ function updateItemCycle(postData, actorEmail) {
         return jsonResponse(true, "Status alat berhasil diubah ke Kotor.", { id_alat: itemId, status: 'Kotor' });
         
       } else if (nextCycle === 'Steril') {
-        if (currentStatus !== 'Proses Steril' && currentStatus !== 'Penyimpanan' && currentStatus !== 'Pencucian' && currentStatus !== 'Kotor') {
-          return jsonResponse(false, "Alat harus berstatus 'Proses Steril', 'Penyimpanan', 'Pencucian', atau 'Kotor' untuk selesai disterilkan.");
+        if (currentStatus !== 'Proses Steril' && currentStatus !== 'Pencucian' && currentStatus !== 'Kotor') {
+          return jsonResponse(false, "Alat harus berstatus 'Proses Steril', 'Pencucian', atau 'Kotor' untuk selesai disterilkan.");
         }
         
         var now = new Date();
@@ -1392,7 +1385,7 @@ function manageItems(postData, actorEmail) {
     for (var k = 1; k < data.length; k++) {
       if (data[k][0] && data[k][0].toString().trim().toLowerCase() === searchId) {
         var status = data[k][4];
-        if (status !== 'Steril' && status !== 'Kotor' && status !== 'Proses Steril' && status !== 'Pencucian' && status !== 'Penyimpanan') {
+        if (status !== 'Steril' && status !== 'Kotor' && status !== 'Proses Steril' && status !== 'Pencucian') {
           return jsonResponse(false, "Alat sedang dalam status transaksi (" + status + ") sehingga tidak bisa dihapus.");
         }
         var deletedName = data[k][1];
