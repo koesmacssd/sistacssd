@@ -1835,6 +1835,26 @@ function getAchievementsData(userEmail) {
       var pts = parseInt(data[i][4]) || 0;
       var monthYear = data[i][5];
       
+      // Hitung Bulan_Tahun dari rowDate (Timestamp) secara dinamis agar presisi
+      var monthYearFromDate = "";
+      if (rowDate instanceof Date) {
+        var m = (rowDate.getMonth() + 1).toString();
+        if (m.length === 1) m = "0" + m;
+        monthYearFromDate = m + "-" + rowDate.getFullYear();
+      } else if (rowDate) {
+        var parsedDate = new Date(rowDate);
+        if (!isNaN(parsedDate.getTime())) {
+          var m = (parsedDate.getMonth() + 1).toString();
+          if (m.length === 1) m = "0" + m;
+          monthYearFromDate = m + "-" + parsedDate.getFullYear();
+        }
+      }
+      
+      // Fallback ke kolom F jika parsing gagal
+      if (!monthYearFromDate && monthYear) {
+        monthYearFromDate = monthYear.toString().trim();
+      }
+      
       // All-time points
       staffAllTimeMap[email] = (staffAllTimeMap[email] || 0) + pts;
       if (email === userEmail.toLowerCase()) {
@@ -1847,7 +1867,7 @@ function getAchievementsData(userEmail) {
       }
       
       // Current month points
-      if (monthYear === currentMonthYear) {
+      if (monthYearFromDate === currentMonthYear) {
         if (!staffMap[email]) {
           staffMap[email] = {
             email: email,
