@@ -2236,13 +2236,50 @@
             cancelButtonText: 'Batal'
           };
         } else if (nextStatus === 'Aktif') {
-          confirmConfig = {
-            title: 'Konfirmasi Serah Terima?',
-            text: 'Apakah Anda yakin ingin menyerahkan alat medis ke perwakilan ruangan?',
-            icon: 'warning',
-            confirmButtonText: 'Ya, Serahkan!',
-            cancelButtonText: 'Batal'
-          };
+          const result = await Swal.fire({
+            title: 'Konfirmasi Serah Terima',
+            html: `
+              <div class="text-left space-y-3">
+                <p class="text-xs text-slate-500 mb-3">Tulis identitas petugas ruangan yang datang mengambil alat steril di CSSD:</p>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Penerima Alat</label>
+                  <input id="swal-penerima-nama" type="text" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" value="${order.nama_peminjam || ''}" placeholder="Nama staf...">
+                </div>
+                <div class="mt-2">
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Email / Kontak (Opsional)</label>
+                  <input id="swal-penerima-email" type="email" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" value="${order.email_peminjam || ''}" placeholder="email@gmail.com...">
+                </div>
+              </div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Serahkan! 🤝',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#64748b',
+            customClass: {
+              popup: 'rounded-2xl font-sans',
+              title: 'font-bold text-slate-900',
+              confirmButton: 'rounded-xl px-4 py-2.5 text-xs font-semibold shadow-md',
+              cancelButton: 'rounded-xl px-4 py-2.5 text-xs font-semibold'
+            },
+            preConfirm: () => {
+              const nama = document.getElementById('swal-penerima-nama').value.trim();
+              const email = document.getElementById('swal-penerima-email').value.trim();
+              if (!nama) {
+                Swal.showValidationMessage('Nama penerima wajib diisi!');
+                return false;
+              }
+              return { nama, email };
+            }
+          });
+
+          if (result.isConfirmed) {
+            const { nama, email } = result.value;
+            const formattedPenerima = nama + (email ? ' (' + email + ')' : '');
+            await this.processUpdateOrderStatus(orderId, 'Aktif', { penerima: formattedPenerima });
+          }
+          return;
         } else if (nextStatus === 'Selesai') {
           if (currentStatus === 'Tidak Lengkap') {
             await this.handleCompleteResolve(orderId);

@@ -893,6 +893,16 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
     if (actorRole !== 'Admin' && actorRole !== 'Super Admin') return jsonResponse(false, "Akses ditolak.");
     if (currentStatus !== 'Ready for Pickup') return jsonResponse(false, "Status transisi tidak valid. Status saat ini: " + currentStatus);
     
+    // 1. Ambil data penerima (gunakan profile peminjam sebagai fallback)
+    var borrowerProfile = getUserProfile(borrowerEmail);
+    var defaultPenerima = (borrowerProfile ? borrowerProfile.nama : "Staf Ruangan") + " (" + borrowerEmail + ")";
+    var penerima = postData.penerima || defaultPenerima;
+    
+    // 2. Ambil daftar nama alat
+    var itemNames = orderItemDetails.map(function(item) {
+      return item.nama;
+    }).join(", ");
+    
     // Update order (Set status & tanggal_diambil)
     ordersSheet.getRange(orderRow, 4).setValue('Aktif');
     ordersSheet.getRange(orderRow, 6).setValue(now);
@@ -905,14 +915,23 @@ function updateOrderStatus(postData, actorEmail, actorRole) {
       }
     }
     
-    writeLog(actorEmail, "Konfirmasi serah terima alat untuk " + orderId + ". Status: Aktif.");
+    writeLog(actorEmail, "Konfirmasi serah terima alat untuk " + orderId + ". Penerima: " + penerima + ". Status: Aktif.");
     var actorInfo = getActorInfoString(actorEmail);
-    sendTelegramNotification("🤝 *Serah Terima Selesai*\nID Order: `" + orderId + "`\nStatus: Aktif (Alat sedang dipinjam oleh " + borrowerRoom + ").\n\nAdmin CSSD: " + actorInfo);
+    
+    // Notifikasi Telegram
+    var telegramMsg = "🤝 *Serah Terima Selesai*\n" +
+                      "Nama Alat : " + itemNames + "\n" +
+                      "ID Order : `" + orderId + "`\n" +
+                      "Status: Aktif (Alat sedang dipinjam oleh " + borrowerRoom + ").\n" +
+                      "Admin CSSD: " + actorInfo + "\n" +
+                      "Penerima : " + penerima;
+    sendTelegramNotification(telegramMsg);
+    
     sendHtmlEmail(
       borrowerEmail,
       "Serah Terima Alat Selesai - SISTA-CSSD [" + orderId + "]",
       "Serah Terima Alat Medis Selesai",
-      "Halo,<br><br>Proses serah terima alat medis steril dengan ID Transaksi di bawah ini telah selesai dilakukan. Status transaksi saat ini aktif (sedang dipinjam).",
+      "Halo,<br><br>Proses serah terima alat medis steril dengan ID Transaksi di bawah ini telah selesai dilakukan. Status transaksi saat ini aktif (sedang dipinjam). Alat medis telah diambil oleh: <strong>" + penerima + "</strong>.",
       orderId,
       borrowerRoom,
       orderItemDetails,
