@@ -213,6 +213,9 @@ function doGet(e) {
       case 'getItemHistory':
         return getItemHistory(e.parameter.id_alat);
         
+      case 'getAchievementsData':
+        return getAchievementsData(userEmail);
+        
       default:
         return jsonResponse(false, "Action GET '" + action + "' tidak dikenali.");
     }
@@ -314,9 +317,6 @@ function doPost(e) {
         
       case 'updateSelfProfile':
         return updateSelfProfile(postData, userEmail);
-        
-      case 'getAchievementsData':
-        return getAchievementsData(userEmail);
         
       case 'saveAdminContacts':
         if (userRole !== 'Admin' && userRole !== 'Super Admin') {
