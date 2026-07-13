@@ -2097,7 +2097,7 @@
         let rowsHtml = '';
         filteredItems.forEach((it) => {
           const expInfo = it.tanggal_kadaluwarsa_steril 
-            ? this.formatDate(it.tanggal_kadaluwarsa_steril).split(' ')[0] 
+            ? this.formatDateTime(it.tanggal_kadaluwarsa_steril).split(' ')[0] 
             : '-';
           
           rowsHtml += `
@@ -4607,6 +4607,7 @@
 
     // Inisialisasi Aplikasi
     const app = new SistaCSSD();
+    window.app = app;
     app.init();
   </script>
 </body>
