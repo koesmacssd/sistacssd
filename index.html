@@ -1024,12 +1024,12 @@
                     <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Status Posisi</span>
                     <span id="detail-status" class="inline-block text-[11px] font-bold px-2 py-0.5 rounded-md uppercase mt-1"></span>
                   </div>
-                  <div>
+                  <div id="detail-kadaluwarsa-container">
                     <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Kadaluwarsa Steril</span>
                     <span id="detail-kadaluwarsa" class="text-slate-700 font-semibold block mt-1"></span>
                   </div>
                 </div>
-                <div>
+                <div id="detail-sterilisasi-container">
                   <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Tanggal Sterilisasi</span>
                   <span id="detail-sterilisasi" class="text-slate-500 block mt-0.5"></span>
                 </div>
@@ -1899,7 +1899,7 @@
                 <p class="text-xs text-slate-500 line-clamp-2 mt-1 min-h-[32px]">${item.deskripsi || 'Tidak ada deskripsi.'}</p>
               </div>
               <div class="border-t border-slate-100 pt-3 text-[11px] text-slate-400">
-                <p>Kadaluwarsa Steril: <span class="font-medium text-slate-600">${item.tanggal_kadaluwarsa_steril || '-'}</span></p>
+                <p>Kadaluwarsa Steril: <span class="font-medium text-slate-600">${isSteril ? (item.tanggal_kadaluwarsa_steril || '-') : '-'}</span></p>
               </div>
             </div>
             <div class="mt-4 pt-3 border-t border-slate-100">
@@ -3309,9 +3309,9 @@
             <td class="p-4">
               ${posisiHtml}
             </td>
-            <td class="p-4 text-xs text-slate-500">${this.formatDateTime(item.tanggal_sterilisasi)}</td>
+            <td class="p-4 text-xs text-slate-500">${item.status_posisi === 'Steril' ? this.formatDateTime(item.tanggal_sterilisasi) : '-'}</td>
             <td class="p-4 text-xs">
-              ${this.getRemainingDaysHtml(item.tanggal_kadaluwarsa_steril)}
+              ${item.status_posisi === 'Steril' ? this.getRemainingDaysHtml(item.tanggal_kadaluwarsa_steril) : '-'}
             </td>
             <td class="p-4 text-right space-x-1.5 whitespace-nowrap">
               <button onclick="app.openEditToolModal('${item.id_alat}')" class="text-slate-400 hover:text-slate-600 inline-block align-middle" title="Ubah Info Alat">
@@ -4397,8 +4397,21 @@
         document.getElementById('detail-id').innerText = item.id_alat;
         document.getElementById('detail-nama').innerText = item.nama_alat;
         document.getElementById('detail-deskripsi').innerText = item.deskripsi || 'Tidak ada deskripsi.';
-        document.getElementById('detail-sterilisasi').innerText = this.formatDateTime(item.tanggal_sterilisasi);
-        document.getElementById('detail-kadaluwarsa').innerText = this.formatDateTime(item.tanggal_kadaluwarsa_steril);
+
+        // Tampilkan tanggal sterilisasi & kadaluwarsa hanya jika statusnya adalah Steril
+        const isSteril = item.status_posisi === 'Steril';
+        const kadaluwarsaContainer = document.getElementById('detail-kadaluwarsa-container');
+        const sterilisasiContainer = document.getElementById('detail-sterilisasi-container');
+
+        if (isSteril) {
+          if (kadaluwarsaContainer) kadaluwarsaContainer.classList.remove('hidden');
+          if (sterilisasiContainer) sterilisasiContainer.classList.remove('hidden');
+          document.getElementById('detail-sterilisasi').innerText = this.formatDateTime(item.tanggal_sterilisasi);
+          document.getElementById('detail-kadaluwarsa').innerText = this.formatDateTime(item.tanggal_kadaluwarsa_steril);
+        } else {
+          if (kadaluwarsaContainer) kadaluwarsaContainer.classList.add('hidden');
+          if (sterilisasiContainer) sterilisasiContainer.classList.add('hidden');
+        }
         
         // Status badge styling
         const statusEl = document.getElementById('detail-status');
