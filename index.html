@@ -507,8 +507,14 @@
                   <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </div>
                 <div>
-                  <p class="text-sm font-medium text-slate-500">Alat Kotor</p>
-                  <p id="stat-kotor" class="text-2xl font-extrabold text-slate-900">0</p>
+                  <p class="text-xs font-semibold text-slate-500">Siklus CSSD (Kotor)</p>
+                  <p class="text-xs mt-0.5 whitespace-nowrap select-none">
+                    <span onclick="app.showDashboardDetails('Kotor')" class="hover:underline cursor-pointer"><span id="stat-kotor-only" class="text-red-600 font-extrabold text-lg">0</span> <span class="text-slate-400 font-bold text-[9px] mr-1.5">Kotor</span></span>
+                    <span class="text-slate-200 font-light">|</span>
+                    <span onclick="app.showDashboardDetails('Pencucian')" class="hover:underline cursor-pointer"><span id="stat-cuci-only" class="text-blue-600 font-extrabold text-lg ml-1.5">0</span> <span class="text-slate-400 font-bold text-[9px] mr-1.5">Cuci</span></span>
+                    <span class="text-slate-200 font-light">|</span>
+                    <span onclick="app.showDashboardDetails('Proses Steril')" class="hover:underline cursor-pointer"><span id="stat-proses-only" class="text-amber-500 font-extrabold text-lg ml-1.5">0</span> <span class="text-slate-400 font-bold text-[9px]">Steril</span></span>
+                  </p>
                 </div>
               </div>
               <!-- Kedaluwarsa Steril -->
@@ -518,10 +524,10 @@
                 </div>
                 <div>
                   <p class="text-sm font-medium text-slate-500">Kedaluwarsa Steril</p>
-                  <p class="text-xs mt-0.5 whitespace-nowrap">
-                    <span id="stat-expired-red" class="text-red-600 font-extrabold text-lg">0</span> <span class="text-slate-400 font-bold text-[9px] mr-1">EXP</span> 
-                    <span class="text-slate-300">|</span>
-                    <span id="stat-expired-orange" class="text-amber-600 font-extrabold text-lg ml-1">0</span> <span class="text-slate-400 font-bold text-[9px]">&lt;7H</span>
+                  <p class="text-xs mt-0.5 whitespace-nowrap select-none">
+                    <span onclick="app.showDashboardDetails('EXP')" class="hover:underline cursor-pointer"><span id="stat-expired-red" class="text-red-600 font-extrabold text-lg">0</span> <span class="text-slate-400 font-bold text-[9px] mr-1.5">EXP</span></span>
+                    <span class="text-slate-200 font-light">|</span>
+                    <span onclick="app.showDashboardDetails('<7H')" class="hover:underline cursor-pointer"><span id="stat-expired-orange" class="text-amber-600 font-extrabold text-lg ml-1.5">0</span> <span class="text-slate-400 font-bold text-[9px]">&lt;7H</span></span>
                   </p>
                 </div>
               </div>
@@ -1994,7 +2000,10 @@
         let countPending = 0;
         let countReady = 0;
         let countActive = 0;
-        let countKotor = 0;
+        
+        let countKotorOnly = 0;
+        let countCuciOnly = 0;
+        let countProsesOnly = 0;
 
         let countExpired = 0;
         let countSoonExpired = 0;
@@ -2006,7 +2015,9 @@
         });
 
         this.items.forEach(i => {
-          if (['Kotor', 'Pencucian', 'Proses Steril'].includes(i.status_posisi)) countKotor++;
+          if (i.status_posisi === 'Kotor') countKotorOnly++;
+          else if (i.status_posisi === 'Pencucian') countCuciOnly++;
+          else if (i.status_posisi === 'Proses Steril') countProsesOnly++;
           
           if (i.status_posisi === 'Steril' && i.tanggal_kadaluwarsa_steril) {
             const expDate = new Date(i.tanggal_kadaluwarsa_steril);
@@ -2028,9 +2039,119 @@
         document.getElementById('stat-pending').innerText = countPending;
         document.getElementById('stat-ready').innerText = countReady;
         document.getElementById('stat-aktif').innerText = countActive;
-        document.getElementById('stat-kotor').innerText = countKotor;
+        
+        document.getElementById('stat-kotor-only').innerText = countKotorOnly;
+        document.getElementById('stat-cuci-only').innerText = countCuciOnly;
+        document.getElementById('stat-proses-only').innerText = countProsesOnly;
+        
         document.getElementById('stat-expired-red').innerText = countExpired;
         document.getElementById('stat-expired-orange').innerText = countSoonExpired;
+      }
+
+      showDashboardDetails(type) {
+        let title = '';
+        let filteredItems = [];
+        
+        if (type === 'Kotor' || type === 'Pencucian' || type === 'Proses Steril') {
+          title = `Daftar Alat Berstatus: ${type}`;
+          filteredItems = this.items.filter(i => i.status_posisi === type);
+        } else if (type === 'EXP') {
+          title = 'Daftar Alat Steril KADALUWARSA (EXP)';
+          filteredItems = this.items.filter(i => {
+            if (i.status_posisi !== 'Steril' || !i.tanggal_kadaluwarsa_steril) return false;
+            const expDate = new Date(i.tanggal_kadaluwarsa_steril);
+            const today = new Date();
+            expDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            return expDate <= today;
+          });
+        } else if (type === '<7H') {
+          title = 'Daftar Alat Steril HAMPIR KADALUWARSA (<7 Hari)';
+          filteredItems = this.items.filter(i => {
+            if (i.status_posisi !== 'Steril' || !i.tanggal_kadaluwarsa_steril) return false;
+            const expDate = new Date(i.tanggal_kadaluwarsa_steril);
+            const today = new Date();
+            expDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            const diffTime = expDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays > 0 && diffDays <= 7;
+          });
+        }
+
+        if (filteredItems.length === 0) {
+          Swal.fire({
+            title: title,
+            text: 'Tidak ada alat medis dengan kriteria ini saat ini.',
+            icon: 'info',
+            confirmButtonColor: '#3b82f6',
+            customClass: {
+              popup: 'rounded-2xl font-sans',
+              confirmButton: 'rounded-xl px-4 py-2 text-xs font-semibold'
+            }
+          });
+          return;
+        }
+
+        // Render table list inside Swal
+        let rowsHtml = '';
+        filteredItems.forEach((it) => {
+          const expInfo = it.tanggal_kadaluwarsa_steril 
+            ? this.formatDate(it.tanggal_kadaluwarsa_steril).split(' ')[0] 
+            : '-';
+          
+          rowsHtml += `
+            <tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0 text-left">
+              <td class="px-3 py-2.5 font-bold text-slate-800">${it.id_alat}</td>
+              <td class="px-3 py-2.5 font-semibold text-slate-700">${it.nama_alat}</td>
+              <td class="px-3 py-2.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                  it.status_posisi === 'Kotor' ? 'bg-red-100 text-red-700' :
+                  it.status_posisi === 'Pencucian' ? 'bg-blue-100 text-blue-700' :
+                  it.status_posisi === 'Proses Steril' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'
+                }">${it.status_posisi}</span>
+              </td>
+              <td class="px-3 py-2.5 text-slate-500 font-medium">${expInfo}</td>
+              <td class="px-3 py-2.5 text-center">
+                <button onclick="Swal.close(); app.openDetailModal('${it.id_alat}')" class="text-brand-600 hover:text-brand-700 hover:underline font-bold text-xs">Detail</button>
+              </td>
+            </tr>
+          `;
+        });
+
+        Swal.fire({
+          title: title,
+          html: `
+            <div class="font-sans text-xs">
+              <div class="overflow-x-auto rounded-xl border border-slate-200 mt-2 max-h-80 overflow-y-auto custom-scrollbar">
+                <table class="min-w-full table-auto">
+                  <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase font-bold text-[10px] text-left">
+                    <tr>
+                      <th class="px-3 py-2">ID</th>
+                      <th class="px-3 py-2">Nama Alat</th>
+                      <th class="px-3 py-2">Status</th>
+                      <th class="px-3 py-2">Kadaluwarsa</th>
+                      <th class="px-3 py-2 text-center">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${rowsHtml}
+                  </tbody>
+                </table>
+              </div>
+              <div class="mt-4 flex justify-end">
+                <button onclick="Swal.close(); app.setTab('admin-inventaris'); const input = document.getElementById('inventaris-search'); if (input) { input.value = '${type === 'EXP' || type === '<7H' ? 'Steril' : type}'; app.renderInventaris(); }" class="bg-brand-50 hover:bg-brand-100 border border-brand-200 text-brand-700 font-semibold px-3 py-2 rounded-xl transition duration-150 shadow-sm text-xs">Buka di Tab Inventaris 📂</button>
+              </div>
+            </div>
+          `,
+          width: '650px',
+          showConfirmButton: false,
+          showCloseButton: true,
+          customClass: {
+            popup: 'rounded-2xl font-sans max-w-full',
+            title: 'font-bold text-slate-900 text-base text-left px-3 pt-2'
+          }
+        });
       }
 
       // E. Monitor Peminjaman (Admin)
