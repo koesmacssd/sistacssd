@@ -5093,65 +5093,81 @@
           if (leaderboardTbody) leaderboardTbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">Memuat peringkat staf...</td></tr>';
 
           const res = await this.callApi('getAchievementsData');
-          if (res.success) {
+          if (res.success && res.data) {
             const data = res.data;
             
             // Poin pribadi
-            document.getElementById('my-points-month-val').innerText = `${data.my_points_month || 0} Poin`;
+            const pointsEl = document.getElementById('my-points-month-val');
+            if (pointsEl) pointsEl.innerText = `${data.my_points_month || 0} Poin`;
             
             // Aktivitas terakhir
-            if (data.my_activities && data.my_activities.length > 0) {
-              container.innerHTML = data.my_activities.map(act => {
-                const actDate = new Date(act.timestamp);
-                const timeStr = `${actDate.getDate()}/${actDate.getMonth()+1} ${actDate.getHours().toString().padStart(2,'0')}:${actDate.getMinutes().toString().padStart(2,'0')}`;
-                return `
-                  <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-                    <div>
-                      <span class="font-bold text-slate-800">${act.activity}</span>
-                      <span class="text-[10px] text-slate-400 block">${timeStr}</span>
+            if (container) {
+              if (data.my_activities && data.my_activities.length > 0) {
+                container.innerHTML = data.my_activities.map(act => {
+                  const actDate = new Date(act.timestamp);
+                  const timeStr = `${actDate.getDate()}/${actDate.getMonth()+1} ${actDate.getHours().toString().padStart(2,'0')}:${actDate.getMinutes().toString().padStart(2,'0')}`;
+                  return `
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                      <div>
+                        <span class="font-bold text-slate-800">${act.activity}</span>
+                        <span class="text-[10px] text-slate-400 block">${timeStr}</span>
+                      </div>
+                      <span class="font-black text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">+${act.points}</span>
                     </div>
-                    <span class="font-black text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">+${act.points}</span>
-                  </div>
-                `;
-              }).join('');
-            } else {
-              container.innerHTML = '<div class="text-slate-400 py-4 text-center">Belum ada perolehan poin bulan ini.</div>';
+                  `;
+                }).join('');
+              } else {
+                container.innerHTML = '<div class="text-slate-400 py-4 text-center">Belum ada perolehan poin bulan ini.</div>';
+              }
             }
             
             // Leaderboard & Podium
             const top3 = data.leaderboard ? data.leaderboard.slice(0, 3) : [];
             
+            // Elements
+            const p1Name = document.getElementById('podium-1-name');
+            const p1Points = document.getElementById('podium-1-points');
+            const p1Avatar = document.getElementById('podium-1-avatar');
+            
+            const p2Name = document.getElementById('podium-2-name');
+            const p2Points = document.getElementById('podium-2-points');
+            const p2Avatar = document.getElementById('podium-2-avatar');
+            
+            const p3Name = document.getElementById('podium-3-name');
+            const p3Points = document.getElementById('podium-3-points');
+            const p3Avatar = document.getElementById('podium-3-avatar');
+
             // Podium Juara 1
             if (top3[0]) {
-              document.getElementById('podium-1-name').innerText = top3[0].nama;
-              document.getElementById('podium-1-points').innerText = `${top3[0].points} Pts`;
-              document.getElementById('podium-1-avatar').src = top3[0].foto_profil_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
+              if (p1Name) p1Name.innerText = top3[0].nama || '-';
+              if (p1Points) p1Points.innerText = `${top3[0].points || 0} Pts`;
+              if (p1Avatar) p1Avatar.src = top3[0].foto_profil_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
             } else {
-              document.getElementById('podium-1-name').innerText = '-';
-              document.getElementById('podium-1-points').innerText = '0 Pts';
-              document.getElementById('podium-1-avatar').src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
+              if (p1Name) p1Name.innerText = '-';
+              if (p1Points) p1Points.innerText = '0 Pts';
+              if (p1Avatar) p1Avatar.src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
             }
             
             // Podium Juara 2
             if (top3[1]) {
-              document.getElementById('podium-2-name').innerText = top3[1].nama;
-              document.getElementById('podium-2-points').innerText = `${top3[1].points} Pts`;
-              document.getElementById('podium-2-avatar').src = top3[1].foto_profil_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
+              if (p2Name) p2Name.innerText = top3[1].nama || '-';
+              if (p2Points) p2Points.innerText = `${top3[1].points || 0} Pts`;
+              if (p2Avatar) p2Avatar.src = top3[1].foto_profil_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
             } else {
-              document.getElementById('podium-2-name').innerText = '-';
-              document.getElementById('podium-2-points').innerText = '0 Pts';
-              document.getElementById('podium-2-avatar').src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
+              if (p2Name) p2Name.innerText = '-';
+              if (p2Points) p2Points.innerText = '0 Pts';
+              if (p2Avatar) p2Avatar.src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
             }
             
             // Podium Juara 3
             if (top3[2]) {
-              document.getElementById('podium-3-name').innerText = top3[2].nama;
-              document.getElementById('podium-3-points').innerText = `${top3[2].points} Pts`;
-              document.getElementById('podium-3-avatar').src = top3[2].foto_profil_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
+              if (p3Name) p3Name.innerText = top3[2].nama || '-';
+              if (p3Points) p3Points.innerText = `${top3[2].points || 0} Pts`;
+              if (p3Avatar) p3Avatar.src = top3[2].foto_profil_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
             } else {
-              document.getElementById('podium-3-name').innerText = '-';
-              document.getElementById('podium-3-points').innerText = '0 Pts';
-              document.getElementById('podium-3-avatar').src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
+              if (p3Name) p3Name.innerText = '-';
+              if (p3Points) p3Points.innerText = '0 Pts';
+              if (p3Avatar) p3Avatar.src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80';
             }
             
             // Table
@@ -5172,12 +5188,12 @@
                     <td class="px-4 py-3 flex items-center space-x-3">
                       <img src="${avatar}" class="h-8 w-8 rounded-full object-cover border border-slate-200">
                       <div>
-                        <span class="font-bold text-slate-900 block">${staff.nama}</span>
-                        <span class="text-[10px] text-slate-400 block">${staff.email}</span>
+                        <span class="font-bold text-slate-900 block">${staff.nama || '-'}</span>
+                        <span class="text-[10px] text-slate-400 block">${staff.email || '-'}</span>
                       </div>
                     </td>
                     <td class="px-4 py-3 text-slate-500 font-semibold">Staf CSSD</td>
-                    <td class="px-4 py-3 text-right font-black text-slate-900 text-sm">${staff.points} Pts</td>
+                    <td class="px-4 py-3 text-right font-black text-slate-900 text-sm">${staff.points || 0} Pts</td>
                   </tr>
                 `;
               }).join('');
@@ -5188,10 +5204,11 @@
             if (leaderboardTbody) leaderboardTbody.innerHTML = tableHtml;
             
           } else {
-            this.showToast('error', 'Gagal memuat data prestasi staf.');
+            this.showToast('error', 'Gagal memuat data prestasi staf: ' + (res.message || 'Error tidak diketahui'));
           }
         } catch (err) {
-          this.showToast('error', 'Gagal menghubungi server untuk data prestasi.');
+          console.error(err);
+          this.showToast('error', 'Error: ' + err.message);
         }
       }
 
