@@ -514,7 +514,7 @@
                 </div>
               </div>
               <!-- Total Alat Kotor -->
-              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex items-start space-x-3 min-h-[112px]">
+              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex items-start space-x-3 min-h-[132px]">
                 <div class="p-3 bg-red-100 rounded-xl text-red-600 mt-0.5">
                   <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </div>
@@ -526,24 +526,28 @@
                       <span id="stat-kotor-only" class="font-extrabold text-red-600">0</span>
                     </div>
                     <div onclick="app.showDashboardDetails('Pencucian')" class="flex items-center justify-between text-[11px] hover:underline cursor-pointer hover:text-blue-600">
-                      <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-blue-500 mr-1.5"></span>Cuci</span>
+                      <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-blue-500 mr-1.5"></span>Pencucian</span>
                       <span id="stat-cuci-only" class="font-extrabold text-blue-600">0</span>
                     </div>
                     <div onclick="app.showDashboardDetails('Proses Steril')" class="flex items-center justify-between text-[11px] hover:underline cursor-pointer hover:text-amber-500">
-                      <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-amber-500 mr-1.5"></span>Steril</span>
+                      <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-amber-500 mr-1.5"></span>Proses Steril</span>
                       <span id="stat-proses-only" class="font-extrabold text-amber-500">0</span>
+                    </div>
+                    <div onclick="app.showDashboardDetails('Steril')" class="flex items-center justify-between text-[11px] hover:underline cursor-pointer hover:text-green-600">
+                      <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-green-500 mr-1.5"></span>Steril</span>
+                      <span id="stat-steril-only" class="font-extrabold text-green-600">0</span>
                     </div>
                   </div>
                 </div>
               </div>
               <!-- Kedaluwarsa Steril -->
-              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex items-start space-x-3 min-h-[112px]">
+              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex items-start space-x-3 min-h-[132px]">
                 <div class="p-3 bg-rose-100 rounded-xl text-rose-600 mt-0.5">
                   <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="text-xs font-semibold text-slate-500 mb-1">Kedaluwarsa</p>
-                  <div class="space-y-1 select-none">
+                  <div class="space-y-1.5 select-none">
                     <div onclick="app.showDashboardDetails('EXP')" class="flex items-center justify-between text-[11px] hover:underline cursor-pointer hover:text-red-600">
                       <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-red-500 mr-1.5"></span>Sudah EXP</span>
                       <span id="stat-expired-red" class="font-extrabold text-red-600">0</span>
@@ -2024,10 +2028,10 @@
         let countPending = 0;
         let countReady = 0;
         let countActive = 0;
-        
         let countKotorOnly = 0;
         let countCuciOnly = 0;
         let countProsesOnly = 0;
+        let countSterilOnly = 0;
 
         let countExpired = 0;
         let countSoonExpired = 0;
@@ -2042,6 +2046,7 @@
           if (i.status_posisi === 'Kotor') countKotorOnly++;
           else if (i.status_posisi === 'Pencucian') countCuciOnly++;
           else if (i.status_posisi === 'Proses Steril') countProsesOnly++;
+          else if (i.status_posisi === 'Steril') countSterilOnly++;
           
           if (i.status_posisi === 'Steril' && i.tanggal_kadaluwarsa_steril) {
             const expDate = new Date(i.tanggal_kadaluwarsa_steril);
@@ -2067,6 +2072,7 @@
         document.getElementById('stat-kotor-only').innerText = countKotorOnly;
         document.getElementById('stat-cuci-only').innerText = countCuciOnly;
         document.getElementById('stat-proses-only').innerText = countProsesOnly;
+        document.getElementById('stat-steril-only').innerText = countSterilOnly;
         
         document.getElementById('stat-expired-red').innerText = countExpired;
         document.getElementById('stat-expired-orange').innerText = countSoonExpired;
@@ -2081,7 +2087,7 @@
         let title = '';
         let filteredItems = [];
         
-        if (type === 'Kotor' || type === 'Pencucian' || type === 'Proses Steril') {
+        if (type === 'Kotor' || type === 'Pencucian' || type === 'Proses Steril' || type === 'Steril') {
           title = `Daftar Alat Berstatus: ${type}`;
           filteredItems = this.items.filter(i => i.status_posisi === type);
         } else if (type === 'EXP') {
