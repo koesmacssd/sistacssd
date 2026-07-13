@@ -1817,7 +1817,6 @@ function addPoints(email, activity, points) {
 function getAchievementsData(userEmail) {
   var ss = getSpreadsheet();
   var logSheet = ss.getSheetByName("LogPoin");
-  var userProfile = getUserProfile(userEmail);
   
   var leaderboard = [];
   var myPointsMonth = 0;
@@ -1832,6 +1831,21 @@ function getAchievementsData(userEmail) {
   
   if (logSheet) {
     var data = logSheet.getDataRange().getValues();
+    
+    // Buat daftar email Super Admin untuk dikecualikan dari perlombaan/leaderboard
+    var superAdmins = {};
+    var usersSheet = ss.getSheetByName(USERS_SHEET_NAME);
+    if (usersSheet) {
+      var usersData = usersSheet.getDataRange().getValues();
+      for (var u = 1; u < usersData.length; u++) {
+        var uEmail = usersData[u][1].toString().trim().toLowerCase();
+        var uRole = usersData[u][3];
+        if (uRole === 'Super Admin') {
+          superAdmins[uEmail] = true;
+        }
+      }
+    }
+
     var staffMap = {};
     var staffAllTimeMap = {};
     
@@ -1864,7 +1878,10 @@ function getAchievementsData(userEmail) {
       }
       
       // All-time points
-      staffAllTimeMap[email] = (staffAllTimeMap[email] || 0) + pts;
+      if (!superAdmins[email]) {
+        staffAllTimeMap[email] = (staffAllTimeMap[email] || 0) + pts;
+      }
+      
       if (email === userEmail.toLowerCase()) {
         myPointsAllTime += pts;
         myActivities.push({
@@ -1876,24 +1893,26 @@ function getAchievementsData(userEmail) {
       
       // Current month points
       if (monthYearFromDate === currentMonthYear) {
-        if (!staffMap[email]) {
-          staffMap[email] = {
-            email: email,
-            nama: name,
-            points: 0,
-            foto_profil_url: ""
-          };
-        }
-        staffMap[email].points += pts;
-        
         if (email === userEmail.toLowerCase()) {
           myPointsMonth += pts;
+        }
+
+        // Jangan masukkan Super Admin ke leaderboard
+        if (!superAdmins[email]) {
+          if (!staffMap[email]) {
+            staffMap[email] = {
+              email: email,
+              nama: name,
+              points: 0,
+              foto_profil_url: ""
+            };
+          }
+          staffMap[email].points += pts;
         }
       }
     }
     
     // Map user avatars
-    var usersSheet = ss.getSheetByName(USERS_SHEET_NAME);
     if (usersSheet) {
       var usersData = usersSheet.getDataRange().getValues();
       var avatarsMap = {};
