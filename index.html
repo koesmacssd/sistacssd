@@ -1112,6 +1112,7 @@
         this.currentTab = '';
         this.modalOperation = 'add'; // 'add' | 'edit'
         this.adminOrdersFilter = 'all';
+        this.isProcessingOrder = false;
         
         // State Paginasi
         this.katalogPage = 1;
@@ -2363,8 +2364,11 @@
         }
       }
 
-      async processUpdateOrderStatus(orderId, nextStatus, additionalData = {}) {
+       async processUpdateOrderStatus(orderId, nextStatus, additionalData = {}) {
+        if (this.isProcessingOrder) return;
+        
         try {
+          this.isProcessingOrder = true;
           this.showToast('info', 'Memperbarui status transaksi...');
           const res = await this.callApiPost('updateOrderStatus', {
             id_order: orderId,
@@ -2395,6 +2399,10 @@
                 confirmButton: 'rounded-xl px-4 py-2.5 text-sm font-semibold'
               }
             });
+            // Auto refresh if status transaction is invalid
+            if (res.message && res.message.includes('Status transisi tidak valid')) {
+              this.refreshData();
+            }
           }
         } catch (e) {
           Swal.fire({
@@ -2407,6 +2415,8 @@
               confirmButton: 'rounded-xl px-4 py-2.5 text-sm font-semibold'
             }
           });
+        } finally {
+          this.isProcessingOrder = false;
         }
       }
 
