@@ -887,6 +887,23 @@
               </div>
             </div>
 
+            <!-- Card Konfigurasi Prestasi Staf (Hanya untuk Super Admin) -->
+            <div id="config-achievements-card" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6 hidden">
+              <div>
+                <h3 class="text-lg font-bold text-slate-900">Konfigurasi Tampilan Prestasi Staf 🏆</h3>
+                <p class="text-xs text-slate-500 mt-1">Aktifkan atau nonaktifkan tampilan menu "Prestasi Staf" untuk Admin/Staf CSSD biasa. Super Admin akan selalu dapat mengakses halaman ini.</p>
+              </div>
+              <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-sm font-semibold text-slate-700">Status Menu Prestasi Staf:</span>
+                <div class="flex items-center space-x-3">
+                  <span id="label-config-achievements" class="text-xs font-bold px-2.5 py-1 rounded-full bg-green-100 text-green-800">ON</span>
+                  <button type="button" onclick="app.toggleAchievementsConfig()" id="btn-toggle-config-achievements" class="inline-flex items-center justify-center bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-sm transition duration-150">
+                    Matikan (OFF)
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <!-- Card Pencadangan Sistem (Database Backup) -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
               <div>
@@ -1577,11 +1594,33 @@
           document.getElementById('nav-ruangan-menu').classList.remove('hidden');
         } else {
           document.getElementById('nav-admin-menu').classList.remove('hidden');
+          
+          // Kontrol visibilitas tombol Prestasi Staf
+          const btnAchievements = document.getElementById('btn-tab-admin-achievements');
+          if (btnAchievements) {
+            const showConfig = this.user.show_achievements || 'ON';
+            if (showConfig === 'OFF') {
+              if (this.user.peran === 'Super Admin') {
+                btnAchievements.classList.remove('hidden');
+              } else {
+                btnAchievements.classList.add('hidden');
+              }
+            } else {
+              btnAchievements.classList.remove('hidden');
+            }
+          }
         }
       }
 
       // Set Active Tab di Dashboard (Asynchronous Lazy Load)
       async setTab(tabName, updateHash = true) {
+        if (tabName === 'admin-achievements') {
+          const showConfig = this.user.show_achievements || 'ON';
+          if (showConfig === 'OFF' && this.user.peran !== 'Super Admin') {
+            tabName = 'admin-dashboard';
+          }
+        }
+        
         this.currentTab = tabName;
         localStorage.setItem('sista_current_tab', tabName);
         
@@ -1671,6 +1710,32 @@
               if (res.success) this.adminContacts = res.data;
             }
             this.renderAdminContactsSettings();
+            
+            // Render achievements toggle card for Super Admin
+            const configCard = document.getElementById('config-achievements-card');
+            if (configCard) {
+              if (this.user.peran === 'Super Admin') {
+                configCard.classList.remove('hidden');
+                const showConfig = this.user.show_achievements || 'ON';
+                const label = document.getElementById('label-config-achievements');
+                const btn = document.getElementById('btn-toggle-config-achievements');
+                if (label && btn) {
+                  if (showConfig === 'ON') {
+                    label.innerText = 'ON (Aktif)';
+                    label.className = 'text-xs font-bold px-2.5 py-1 rounded-full bg-green-100 text-green-800';
+                    btn.innerText = 'Matikan (OFF)';
+                    btn.className = 'inline-flex items-center justify-center bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-sm transition duration-150';
+                  } else {
+                    label.innerText = 'OFF (Nonaktif)';
+                    label.className = 'text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-800';
+                    btn.innerText = 'Aktifkan (ON)';
+                    btn.className = 'inline-flex items-center justify-center bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-sm transition duration-150';
+                  }
+                }
+              } else {
+                configCard.classList.add('hidden');
+              }
+            }
           } else if (tabName === 'admin-achievements') {
             this.loadAchievementsData();
           }
@@ -5079,6 +5144,32 @@
               confirmButton: 'rounded-xl px-4 py-2.5 text-sm font-semibold'
             }
           });
+        }
+      }
+
+      async toggleAchievementsConfig() {
+        if (this.user.peran !== 'Super Admin') return;
+        
+        const currentVal = this.user.show_achievements || 'ON';
+        const newVal = currentVal === 'ON' ? 'OFF' : 'ON';
+        
+        try {
+          this.showToast('info', 'Mengubah konfigurasi...');
+          const res = await this.callApiPost('updateAchievementsConfig', { value: newVal });
+          if (res.success) {
+            this.showToast('success', 'Konfigurasi berhasil diperbarui.');
+            this.user.show_achievements = newVal;
+            
+            // Refresh settings view
+            this.setTab('admin-settings', false);
+            
+            // Refresh navigation
+            this.setupNavigation();
+          } else {
+            this.showToast('error', res.message);
+          }
+        } catch (err) {
+          this.showToast('error', 'Gagal mengubah konfigurasi.');
         }
       }
 

@@ -330,6 +330,12 @@ function doPost(e) {
         }
         return getFullBackupData(userEmail);
         
+      case 'updateAchievementsConfig':
+        if (userRole !== 'Super Admin') {
+          return jsonResponse(false, "Akses ditolak. Hanya untuk Super Admin.");
+        }
+        return updateAchievementsConfig(postData, userEmail);
+        
       default:
         return jsonResponse(false, "Action POST '" + action + "' tidak dikenali.");
     }
@@ -352,6 +358,7 @@ function getUserProfile(email) {
   var data = sheet.getDataRange().getValues();
   for (var i = 1; i < data.length; i++) {
     if (data[i][1] && data[i][1].toString().trim().toLowerCase() === trimmedEmail) {
+      var showAchievements = getConfig('SHOW_ACHIEVEMENTS', 'ON');
       return {
         id: data[i][0],
         email: data[i][1].toString().trim(),
@@ -360,7 +367,8 @@ function getUserProfile(email) {
         nama_ruangan: data[i][4],
         status_aktif: data[i][5],
         no_hp: data[i][6] || '',
-        foto_profil_url: data[i][7] || ''
+        foto_profil_url: data[i][7] || '',
+        show_achievements: showAchievements
       };
     }
   }
@@ -2318,4 +2326,37 @@ function copySpreadsheetToDrive(actorEmail) {
   ssFile.makeCopy(backupName, targetFolder);
   
   writeLog(actorEmail, "Menyimpan salinan backup database ke Google Drive: " + backupName);
+}
+
+// Mengubah konfigurasi tampilan prestasi staf (hanya untuk Super Admin)
+function updateAchievementsConfig(postData, actorEmail) {
+  var value = postData.value; // 'ON' or 'OFF'
+  if (value !== 'ON' && value !== 'OFF') {
+    return jsonResponse(false, "Value harus 'ON' atau 'OFF'.");
+  }
+  
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(CONFIG_SHEET_NAME);
+  if (!sheet) {
+    return jsonResponse(false, "Sheet config tidak ditemukan.");
+  }
+  
+  var data = sheet.getDataRange().getValues();
+  var foundRow = -1;
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] === 'SHOW_ACHIEVEMENTS') {
+      foundRow = i + 1;
+      break;
+    }
+  }
+  
+  if (foundRow !== -1) {
+    sheet.getRange(foundRow, 2).setValue(value);
+  } else {
+    sheet.appendRow(['SHOW_ACHIEVEMENTS', value]);
+  }
+  
+  writeLog(actorEmail, "Mengubah konfigurasi tampilan prestasi staf menjadi: " + value);
+  sendTelegramNotification("⚙️ *Konfigurasi Diubah*\nTampilan Prestasi Staf: " + value + "\nOleh: " + actorEmail);
+  return jsonResponse(true, "Konfigurasi berhasil disimpan.");
 }
