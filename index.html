@@ -484,7 +484,7 @@
                 </div>
               </div>
               <!-- Total Order Pending -->
-              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center space-x-4">
+              <div onclick="app.showDashboardDetails('Pending')" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center space-x-4 cursor-pointer hover:shadow-md hover:border-yellow-300 transition duration-150 select-none">
                 <div class="p-3 bg-yellow-100 rounded-xl text-yellow-600">
                   <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
@@ -494,7 +494,7 @@
                 </div>
               </div>
               <!-- Ready for Pickup -->
-              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center space-x-4">
+              <div onclick="app.showDashboardDetails('Ready for Pickup')" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center space-x-4 cursor-pointer hover:shadow-md hover:border-blue-300 transition duration-150 select-none">
                 <div class="p-3 bg-blue-100 rounded-xl text-blue-600">
                   <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                 </div>
@@ -504,7 +504,7 @@
                 </div>
               </div>
               <!-- Aktif Dipinjam -->
-              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center space-x-4">
+              <div onclick="app.showDashboardDetails('Aktif')" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center space-x-4 cursor-pointer hover:shadow-md hover:border-green-300 transition duration-150 select-none">
                 <div class="p-3 bg-green-100 rounded-xl text-green-600">
                   <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
                 </div>
@@ -2076,7 +2076,6 @@
         
         document.getElementById('stat-expired-red').innerText = countExpired;
         document.getElementById('stat-expired-orange').innerText = countSoonExpired;
-        
         const statTotal = document.getElementById('stat-total-items');
         if (statTotal) {
           statTotal.innerText = this.items.length;
@@ -2084,6 +2083,83 @@
       }
 
       showDashboardDetails(type) {
+        if (type === 'Pending' || type === 'Ready for Pickup' || type === 'Aktif') {
+          let title = '';
+          if (type === 'Pending') title = 'Daftar Peminjaman: Pending Request';
+          else if (type === 'Ready for Pickup') title = 'Daftar Peminjaman: Siap Ambil (Ready)';
+          else if (type === 'Aktif') title = 'Daftar Peminjaman: Aktif Dipinjam';
+
+          const filteredOrders = this.orders.filter(o => o.status_order === type);
+
+          if (filteredOrders.length === 0) {
+            Swal.fire({
+              title: title,
+              text: 'Tidak ada transaksi dengan kriteria ini saat ini.',
+              icon: 'info',
+              confirmButtonColor: '#3b82f6',
+              customClass: {
+                popup: 'rounded-2xl font-sans',
+                confirmButton: 'rounded-xl px-4 py-2 text-xs font-semibold'
+              }
+            });
+            return;
+          }
+
+          let rowsHtml = '';
+          filteredOrders.forEach(o => {
+            const dateStr = o.tanggal_request ? this.formatDateTime(o.tanggal_request) : '-';
+            const itemsCount = o.items ? o.items.length : 0;
+            const itemsText = o.items ? o.items.map(it => it.nama_alat).join(', ') : '';
+
+            rowsHtml += `
+              <tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0 text-left text-xs">
+                <td class="px-3 py-2.5 font-bold text-slate-800">${o.id_order}</td>
+                <td class="px-3 py-2.5 font-bold text-brand-600">${o.unit_peminta}</td>
+                <td class="px-3 py-2.5 font-semibold text-slate-700 max-w-[200px] truncate" title="${itemsText}">${itemsCount} item (${itemsText})</td>
+                <td class="px-3 py-2.5 text-slate-500 font-medium">${dateStr}</td>
+                <td class="px-3 py-2.5 text-center">
+                  <button onclick="Swal.close(); app.setTab('admin-peminjaman'); const filterSelect = document.getElementById('admin-orders-filter'); if (filterSelect) { filterSelect.value = '${type}'; app.adminOrdersFilter = '${type}'; app.adminOrdersPage = 1; app.renderAdminOrders(); }" class="text-brand-600 hover:text-brand-700 hover:underline font-bold text-xs">Buka</button>
+                </td>
+              </tr>
+            `;
+          });
+
+          Swal.fire({
+            title: title,
+            html: `
+              <div class="font-sans text-xs">
+                <div class="overflow-x-auto rounded-xl border border-slate-200 mt-2 max-h-80 overflow-y-auto custom-scrollbar">
+                  <table class="min-w-full table-auto">
+                    <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase font-bold text-[10px] text-left">
+                      <tr>
+                        <th class="px-3 py-2">ID Order</th>
+                        <th class="px-3 py-2">Ruangan</th>
+                        <th class="px-3 py-2">Daftar Alat</th>
+                        <th class="px-3 py-2">Tgl Request</th>
+                        <th class="px-3 py-2 text-center">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${rowsHtml}
+                    </tbody>
+                  </table>
+                </div>
+                <div class="mt-4 flex justify-end">
+                  <button onclick="Swal.close(); app.setTab('admin-peminjaman'); const filterSelect = document.getElementById('admin-orders-filter'); if (filterSelect) { filterSelect.value = '${type}'; app.adminOrdersFilter = '${type}'; app.adminOrdersPage = 1; app.renderAdminOrders(); }" class="bg-brand-50 hover:bg-brand-100 border border-brand-200 text-brand-700 font-semibold px-3 py-2 rounded-xl transition duration-150 shadow-sm text-xs">Buka di Tab Peminjaman 📂</button>
+                </div>
+              </div>
+            `,
+            width: '680px',
+            showConfirmButton: false,
+            showCloseButton: true,
+            customClass: {
+              popup: 'rounded-2xl font-sans max-w-full',
+              title: 'font-bold text-slate-900 text-base text-left px-3 pt-2'
+            }
+          });
+          return;
+        }
+
         let title = '';
         let filteredItems = [];
         
