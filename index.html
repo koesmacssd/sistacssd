@@ -747,8 +747,6 @@
               <!-- Inventaris Pagination Controls -->
               <div id="inventaris-pagination" class="border-t border-slate-100 bg-slate-50/50 px-4"></div>
             </div>
-
-            </div>
           </div>
 
           <!-- TAB 7: MANAJEMEN USER (ADMIN) -->
@@ -1776,8 +1774,8 @@
             }
             this.renderInventaris();
           } else if (tabName === 'admin-user-mgmt') {
-            const userTable = document.getElementById('users-table-body');
-            if (userTable) userTable.innerHTML = '<tr><td colspan="6" class="p-4 text-center">Memuat manajemen user...</td></tr>';
+            const userTable = document.getElementById('user-mgmt-table-body');
+            if (userTable) userTable.innerHTML = '<tr><td colspan="8" class="p-4 text-center">Memuat manajemen user...</td></tr>';
             const res = await this.callApi('getUsers');
             if (res.success) this.users = res.data;
             this.renderUserManagement();
