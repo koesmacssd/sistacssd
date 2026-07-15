@@ -1375,8 +1375,8 @@
             </svg>
           </button>
         </div>
-        <div class="p-5 flex flex-col items-center">
-          <div id="reader" class="w-full max-w-[280px] aspect-square bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800">
+        <div class="p-5 flex flex-col items-center justify-center">
+          <div id="reader" style="width: 280px; height: 280px; background: #000000; border-radius: 12px; overflow: hidden; position: relative; border: 1.5px solid #1e293b;">
             <!-- html5-qrcode will render here -->
           </div>
           <p class="text-xs text-slate-500 mt-4 text-center font-medium">Dekatkan QR Code stiker alat medis ke kamera.</p>
@@ -2376,59 +2376,62 @@
           this.closeScannerModal();
         }
 
-        this.html5QrCode = new Html5Qrcode("reader");
-        const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+        // Jalankan inisialisasi di frame berikutnya agar peramban sempat merender elemen reader
+        setTimeout(() => {
+          this.html5QrCode = new Html5Qrcode("reader");
+          const config = { fps: 10, qrbox: { width: 220, height: 220 } };
 
-        // Minta daftar kamera aktif untuk kompatibilitas HP (kamera belakang) & Laptop (kamera webcam)
-        Html5Qrcode.getCameras().then(devices => {
-          if (devices && devices.length > 0) {
-            // Default gunakan kamera pertama
-            let cameraId = devices[0].id;
-            
-            // Cari kamera belakang (back/rear/environment)
-            const backCamera = devices.find(device => {
-              const label = (device.label || '').toLowerCase();
-              return label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('belakang');
-            });
-            
-            if (backCamera) {
-              cameraId = backCamera.id;
-            }
-
-            this.html5QrCode.start(
-              cameraId,
-              config,
-              (decodedText) => {
-                // Suara beep pemindaian berhasil (menggunakan AudioContext agar tidak butuh file eksternal)
-                try {
-                  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                  const osc = audioCtx.createOscillator();
-                  osc.type = 'sine';
-                  osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
-                  osc.connect(audioCtx.destination);
-                  osc.start();
-                  osc.stop(audioCtx.currentTime + 0.1);
-                } catch (e) {}
-
-                this.closeScannerModal();
-                this.handleScannedCode(decodedText);
-              },
-              (errorMessage) => {
-                // Abaikan error pembacaan per frame
+          // Minta daftar kamera aktif untuk kompatibilitas HP (kamera belakang) & Laptop (kamera webcam)
+          Html5Qrcode.getCameras().then(devices => {
+            if (devices && devices.length > 0) {
+              // Default gunakan kamera pertama
+              let cameraId = devices[0].id;
+              
+              // Cari kamera belakang (back/rear/environment)
+              const backCamera = devices.find(device => {
+                const label = (device.label || '').toLowerCase();
+                return label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('belakang');
+              });
+              
+              if (backCamera) {
+                cameraId = backCamera.id;
               }
-            ).catch((err) => {
-              this.showToast('error', 'Gagal memulai kamera: ' + err);
-              this.closeScannerModal();
-            });
 
-          } else {
-            this.showToast('error', 'Tidak ada kamera yang terdeteksi pada perangkat ini.');
+              this.html5QrCode.start(
+                cameraId,
+                config,
+                (decodedText) => {
+                  // Suara beep pemindaian berhasil (menggunakan AudioContext agar tidak butuh file eksternal)
+                  try {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = audioCtx.createOscillator();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
+                    osc.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.1);
+                  } catch (e) {}
+
+                  this.closeScannerModal();
+                  this.handleScannedCode(decodedText);
+                },
+                (errorMessage) => {
+                  // Abaikan error pembacaan per frame
+                }
+              ).catch((err) => {
+                this.showToast('error', 'Gagal memulai kamera: ' + err);
+                this.closeScannerModal();
+              });
+
+            } else {
+              this.showToast('error', 'Tidak ada kamera yang terdeteksi pada perangkat ini.');
+              this.closeScannerModal();
+            }
+          }).catch(err => {
+            this.showToast('error', 'Gagal mendapatkan izin kamera: ' + err);
             this.closeScannerModal();
-          }
-        }).catch(err => {
-          this.showToast('error', 'Gagal mendapatkan izin kamera: ' + err);
-          this.closeScannerModal();
-        });
+          });
+        }, 200);
       }
 
       closeScannerModal() {
