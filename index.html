@@ -2500,13 +2500,13 @@
         if (actionType === 'SERAH_TERIMA') {
           actionBtnHtml = `
             <button onclick="Swal.close(); app.handleProcessSerahTerimaScanned('${activeOrder.id_order}')" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-extrabold py-3 px-4 rounded-xl text-sm shadow-md transition flex items-center justify-center space-x-2">
-              <span>🤝 Proses Serah Terima ke ${activeOrder.nama_ruangan}</span>
+              <span>🤝 Proses Serah Terima ke ${activeOrder.ruangan_peminjam}</span>
             </button>
           `;
         } else if (actionType === 'KEMBALI') {
           actionBtnHtml = `
             <button onclick="Swal.close(); app.handleProcessReturnScanned('${activeOrder.id_order}', '${item.id_alat}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 px-4 rounded-xl text-sm shadow-md transition flex items-center justify-center space-x-2">
-              <span>🔄 Proses Pengembalian dari ${activeOrder.nama_ruangan}</span>
+              <span>🔄 Proses Pengembalian dari ${activeOrder.ruangan_peminjam}</span>
             </button>
           `;
         } else {
