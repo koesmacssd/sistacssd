@@ -21,6 +21,9 @@
   <!-- SweetAlert2 for Aesthetic Alerts -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
+  <!-- HTML5 QR Code Library for Camera Scan -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  
   <script>
     tailwind.config = {
       theme: {
@@ -235,6 +238,13 @@
 
             <!-- Profile Info & Logout -->
             <div class="flex items-center space-x-4">
+              <!-- Scan QR Button for Admin/Super Admin (hidden by default, shown globally in script) -->
+              <button id="header-scan-btn" onclick="app.openScannerModal()" class="hidden bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-extrabold h-9 px-3.5 rounded-xl text-xs shadow-md transition-all flex items-center space-x-1.5" title="Scan QR Code Alat">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v-4m6 11h2m-6 0h-2v4m0-11v-4m6 11h2m-6 0h-2v4" />
+                </svg>
+                <span class="hidden md:inline">Scan QR Alat</span>
+              </button>
               <div onclick="app.openProfileEditModal()" class="flex items-center space-x-3 cursor-pointer hover:opacity-85 transition group" title="Ubah Nama / Ruangan Anda">
                 <div class="text-right hidden sm:block">
                   <p id="nav-user-name" class="text-sm font-semibold text-white group-hover:text-brand-300 transition"></p>
@@ -1352,6 +1362,26 @@
           </div>
         </div>
       </div>
+    <!-- 8. MODAL SCANNER QR CODE -->
+    <div id="scanner-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl flex flex-col border border-slate-200">
+        <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+          <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+            <span>📷 Pindai QR Code Alat</span>
+          </h3>
+          <button onclick="app.closeScannerModal()" class="text-slate-400 hover:text-slate-600 focus:outline-none">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-5 flex flex-col items-center">
+          <div id="reader" class="w-full max-w-[280px] aspect-square bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800">
+            <!-- html5-qrcode will render here -->
+          </div>
+          <p class="text-xs text-slate-500 mt-4 text-center font-medium">Dekatkan QR Code stiker alat medis ke kamera.</p>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -1613,6 +1643,15 @@
       setupNavigation() {
         document.getElementById('nav-ruangan-menu').classList.add('hidden');
         document.getElementById('nav-admin-menu').classList.add('hidden');
+
+        const scanBtn = document.getElementById('header-scan-btn');
+        if (scanBtn) {
+          if (this.user.peran === 'Ruangan') {
+            scanBtn.classList.add('hidden');
+          } else {
+            scanBtn.classList.remove('hidden');
+          }
+        }
 
         if (this.user.peran === 'Ruangan') {
           document.getElementById('nav-ruangan-menu').classList.remove('hidden');
@@ -2325,6 +2364,207 @@
           </html>
         `);
         printWindow.document.close();
+      }
+
+      openScannerModal() {
+        const modal = document.getElementById('scanner-modal');
+        if (!modal) return;
+        modal.classList.remove('hidden');
+
+        // Gunakan html5-qrcode
+        if (this.html5QrCode) {
+          this.closeScannerModal();
+        }
+
+        this.html5QrCode = new Html5Qrcode("reader");
+        const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+
+        this.html5QrCode.start(
+          { facingMode: "environment" },
+          config,
+          (decodedText) => {
+            // Suara beep pemindaian berhasil (menggunakan AudioContext agar tidak butuh file eksternal)
+            try {
+              const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+              const osc = audioCtx.createOscillator();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
+              osc.connect(audioCtx.destination);
+              osc.start();
+              osc.stop(audioCtx.currentTime + 0.1);
+            } catch (e) {}
+
+            this.closeScannerModal();
+            this.handleScannedCode(decodedText);
+          },
+          (errorMessage) => {
+            // Abaikan error pemindaian frame biasa
+          }
+        ).catch((err) => {
+          this.showToast('error', 'Gagal mengakses kamera: ' + err);
+          this.closeScannerModal();
+        });
+      }
+
+      closeScannerModal() {
+        const modal = document.getElementById('scanner-modal');
+        if (modal) {
+          modal.classList.add('hidden');
+        }
+
+        if (this.html5QrCode) {
+          try {
+            this.html5QrCode.stop().then(() => {
+              this.html5QrCode = null;
+            }).catch(e => {
+              this.html5QrCode = null;
+            });
+          } catch(e) {
+            this.html5QrCode = null;
+          }
+        }
+      }
+
+      handleScannedCode(itemId) {
+        itemId = decodeURIComponent(itemId).trim();
+        const item = this.items.find(it => it.id_alat === itemId);
+        if (!item) {
+          Swal.fire({
+            title: 'Alat Tidak Ditemukan',
+            text: `ID Alat "${itemId}" tidak terdaftar di sistem.`,
+            icon: 'error',
+            confirmButtonColor: '#ef4444'
+          });
+          return;
+        }
+
+        // Cari transaksi peminjaman aktif terkait alat ini
+        let activeOrder = null;
+        let actionType = null; // 'SERAH_TERIMA' | 'KEMBALI' | 'NONE'
+
+        // Cari di order 'Menunggu Serah Terima'
+        const pendingOrder = this.orders.find(o => o.status === 'Menunggu Serah Terima' && o.items.some(it => it.id_alat === itemId));
+        if (pendingOrder) {
+          activeOrder = pendingOrder;
+          actionType = 'SERAH_TERIMA';
+        } else {
+          // Cari di order 'Dipinjam' atau 'Tidak Lengkap'
+          const borrowedOrder = this.orders.find(o => (o.status === 'Dipinjam' || o.status === 'Tidak Lengkap') && o.items.some(it => it.id_alat === itemId));
+          if (borrowedOrder) {
+            activeOrder = borrowedOrder;
+            actionType = 'KEMBALI';
+          }
+        }
+
+        const cleanDesc = item.deskripsi ? item.deskripsi.replace(/"/g, '&quot;') : 'Tidak ada rincian deskripsi.';
+        
+        let actionBtnHtml = '';
+        if (actionType === 'SERAH_TERIMA') {
+          actionBtnHtml = `
+            <button onclick="Swal.close(); app.handleProcessSerahTerimaScanned('${activeOrder.id_order}')" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-extrabold py-3 px-4 rounded-xl text-sm shadow-md transition flex items-center justify-center space-x-2">
+              <span>🤝 Proses Serah Terima ke ${activeOrder.nama_ruangan}</span>
+            </button>
+          `;
+        } else if (actionType === 'KEMBALI') {
+          actionBtnHtml = `
+            <button onclick="Swal.close(); app.handleProcessReturnScanned('${activeOrder.id_order}', '${item.id_alat}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 px-4 rounded-xl text-sm shadow-md transition flex items-center justify-center space-x-2">
+              <span>🔄 Proses Pengembalian dari ${activeOrder.nama_ruangan}</span>
+            </button>
+          `;
+        } else {
+          // Jika tidak ada transaksi aktif, tampilkan pintasan cepat ganti status pemrosesan di CSSD
+          const isBorrowed = item.status_posisi.startsWith('Dipinjam');
+          if (isBorrowed) {
+            actionBtnHtml = `
+              <div class="text-xs font-semibold text-slate-500 text-center bg-slate-100 p-3 rounded-xl">
+                Alat sedang dipinjam secara mandiri/tanpa order aktif.
+              </div>
+            `;
+          } else {
+            actionBtnHtml = `
+              <div class="space-y-2">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Ubah Status Pemrosesan CSSD:</p>
+                <div class="grid grid-cols-2 gap-2">
+                  <button onclick="Swal.close(); app.updateSingleItemStatus('${item.id_alat}', 'Kotor')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2 px-3 rounded-lg text-xs transition border border-slate-200">Set Kotor</button>
+                  <button onclick="Swal.close(); app.updateSingleItemStatus('${item.id_alat}', 'Pencucian')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2 px-3 rounded-lg text-xs transition border border-slate-200">Set Pencucian</button>
+                  <button onclick="Swal.close(); app.updateSingleItemStatus('${item.id_alat}', 'Proses Steril')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2 px-3 rounded-lg text-xs transition border border-slate-200">Set Proses Steril</button>
+                  <button onclick="Swal.close(); app.updateSingleItemStatus('${item.id_alat}', 'Steril')" class="bg-brand-500 hover:bg-brand-600 text-white font-bold py-2 px-3 rounded-lg text-xs transition">Set Steril (Selesai)</button>
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        // Render dialog info alat
+        Swal.fire({
+          title: `<div class="text-lg font-extrabold text-slate-900 border-b border-slate-100 pb-2 flex items-center space-x-2"><span>🔍 Detail Hasil Scan</span></div>`,
+          html: `
+            <div class="text-left font-sans space-y-4">
+              <div>
+                <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded bg-sky-50 text-sky-800 border border-sky-200 mb-1">[${item.id_alat}]</span>
+                <h4 class="text-sm font-extrabold text-slate-800 leading-tight">${item.nama_alat}</h4>
+                <p class="text-xs text-slate-500 mt-1">Status Posisi: <span class="font-bold text-slate-700">${item.status_posisi}</span></p>
+              </div>
+              <div class="border-t border-slate-100 pt-3">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Rincian Deskripsi / Komponen:</span>
+                <p class="text-xs text-slate-800 bg-slate-50 p-3 rounded-xl border border-slate-100 max-h-32 overflow-y-auto whitespace-pre-line leading-relaxed">${cleanDesc}</p>
+              </div>
+              <div class="border-t border-slate-100 pt-3 mt-4">
+                ${actionBtnHtml}
+              </div>
+            </div>
+          `,
+          showConfirmButton: false,
+          showCloseButton: true,
+          customClass: {
+            popup: 'rounded-2xl max-w-sm'
+          }
+        });
+      }
+
+      handleProcessSerahTerimaScanned(orderId) {
+        this.openSerahTerimaModal(orderId);
+      }
+
+      handleProcessReturnScanned(orderId, scannedItemId) {
+        this.openReturnModal(orderId);
+        setTimeout(() => {
+          const chk = document.getElementById(`chk-item-${scannedItemId}`);
+          if (chk) {
+            chk.checked = true;
+          }
+        }, 300);
+      }
+
+      async updateSingleItemStatus(itemId, newStatus) {
+        try {
+          Swal.fire({
+            title: 'Memproses...',
+            text: 'Mengupdate status alat medis...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+          });
+
+          const res = await this.callApiPost('updateItemCycle', {
+            id_alat: itemId,
+            status_posisi: newStatus
+          });
+
+          if (res.success) {
+            this.showToast('success', `Status alat ${itemId} berhasil diubah ke ${newStatus}.`);
+            this.refreshData();
+            Swal.close();
+          } else {
+            throw new Error(res.message || 'Gagal mengubah status.');
+          }
+        } catch (e) {
+          Swal.fire({
+            title: 'Gagal!',
+            text: e.message || 'Terjadi kesalahan saat menghubungi server.',
+            icon: 'error',
+            confirmButtonColor: '#ef4444'
+          });
+        }
       }
 
       saveCart() {
