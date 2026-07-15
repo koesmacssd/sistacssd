@@ -2128,38 +2128,35 @@
 
         // Susun HTML stiker
         let stikerPagesHtml = '';
-        const stickersPerPage = 9;
+        const stickersPerPage = 18;
         
         for (let i = 0; i < selectedItems.length; i += stickersPerPage) {
           const pageItems = selectedItems.slice(i, i + stickersPerPage);
           let cardsHtml = '';
           
           pageItems.forEach(item => {
+            if (!item.id_alat) return;
             const qrData = encodeURIComponent(item.id_alat);
             const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${qrData}`;
             const cleanDesc = item.deskripsi ? item.deskripsi.replace(/"/g, '&quot;') : 'Tidak ada deskripsi.';
             
             cardsHtml += `
               <div class="sticker">
-                <div class="sticker-header">
-                  <div class="header-logo-container">
-                    <img class="logo-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 9.172V5L8 4z' /></svg>" alt="Logo">
+                <div class="qr-container">
+                  <img class="qr-code" src="${qrUrl}" alt="QR">
+                </div>
+                <div class="sticker-info">
+                  <div class="tool-header">
+                    <span class="tool-id">[${item.id_alat}]</span>
+                    <span class="tool-name">${item.nama_alat}</span>
                   </div>
-                  <div class="header-title">RSUD dr. R. Koesma</div>
-                </div>
-                <div class="sticker-body">
-                  <img class="qr-code" src="${qrUrl}" alt="QR Code">
-                  <div class="tool-id">[ ${item.id_alat} ]</div>
-                </div>
-                <div class="sticker-footer">
-                  <div class="tool-name">${item.nama_alat}</div>
                   <div class="tool-desc">${cleanDesc}</div>
                 </div>
               </div>
             `;
           });
           
-          // Mengisi stiker kosong jika jumlah alat kurang dari 9 agar grid tetap presisi dan kokoh
+          // Mengisi stiker kosong jika jumlah alat kurang dari 18 agar grid tetap presisi
           while (pageItems.length < stickersPerPage) {
             pageItems.push({});
             cardsHtml += `<div class="sticker empty-sticker"></div>`;
@@ -2179,7 +2176,7 @@
           <head>
             <title>Cetak Label Stiker SISTA-CSSD</title>
             <style>
-              /* CSS Pengaturan Kertas A4 & Grid Margin Presisi */
+              /* CSS Pengaturan Kertas A4 & Grid Margin Presisi (2x9 Grid) */
               @page {
                 size: A4 portrait;
                 margin: 0;
@@ -2196,29 +2193,28 @@
               .page {
                 width: 210mm;
                 height: 297mm;
-                padding: 15.1mm 19mm;
+                padding: 7.5mm 16mm;
                 box-sizing: border-box;
                 display: grid;
-                grid-template-columns: repeat(3, 54mm);
-                grid-template-rows: repeat(3, 85.6mm);
-                gap: 5mm 5mm;
+                grid-template-columns: repeat(2, 84mm);
+                grid-template-rows: repeat(9, 30mm);
+                gap: 1.5mm 10mm;
                 page-break-after: always;
                 background-color: #ffffff;
                 box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
                 margin: 20px auto;
               }
 
-              /* Desain Individual Stiker Portrait (KTP size: 54mm x 85.6mm) */
+              /* Desain Individual Stiker Landscape (84mm x 30mm) */
               .sticker {
-                width: 54mm;
-                height: 85.6mm;
+                width: 84mm;
+                height: 30mm;
                 box-sizing: border-box;
-                border: 1.5px solid #cbd5e1;
-                border-radius: 6mm;
-                padding: 3mm;
+                border: 1px solid #cbd5e1;
+                border-radius: 2mm;
+                padding: 1.5mm;
                 display: flex;
-                flex-direction: column;
-                justify-content: space-between;
+                align-items: center;
                 background-color: #ffffff;
                 overflow: hidden;
                 position: relative;
@@ -2229,102 +2225,73 @@
                 background-color: #fafbfd;
               }
 
-              /* Header Stiker */
-              .sticker-header {
-                display: flex;
-                align-items: center;
-                border-bottom: 1px solid #e2e8f0;
-                padding-bottom: 1.5mm;
-                margin-bottom: 1.5mm;
-              }
-
-              .header-logo-container {
-                width: 5.5mm;
-                height: 5.5mm;
-                border-radius: 1.2mm;
-                background: linear-gradient(135deg, #0284c7, #0369a1);
+              /* QR Code Container (Kiri) */
+              .qr-container {
+                width: 27mm;
+                height: 27mm;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                margin-right: 1.5mm;
                 flex-shrink: 0;
-              }
-
-              .logo-img {
-                width: 3.8mm;
-                height: 3.8mm;
-              }
-
-              .header-title {
-                font-size: 8.5px;
-                font-weight: 800;
-                color: #0f172a;
-                text-transform: uppercase;
-                letter-spacing: 0.2px;
-                white-space: nowrap;
-              }
-
-              /* Body Stiker (QR Code & ID) */
-              .sticker-body {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                flex-grow: 1;
-                margin-bottom: 1mm;
+                margin-right: 2.5mm;
               }
 
               .qr-code {
-                width: 34mm;
-                height: 34mm;
+                width: 27mm;
+                height: 27mm;
                 object-fit: contain;
               }
 
+              /* Info Panel (Kanan) */
+              .sticker-info {
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                flex-grow: 1;
+                height: 27mm;
+                overflow: hidden;
+              }
+
+              .tool-header {
+                display: flex;
+                align-items: center;
+                gap: 1mm;
+                border-bottom: 0.5px solid #e2e8f0;
+                padding-bottom: 0.5mm;
+                margin-bottom: 0.8mm;
+              }
+
               .tool-id {
-                font-size: 10px;
+                font-size: 8px;
                 font-weight: 800;
                 color: #0284c7;
                 background-color: #f0f9ff;
-                border: 1px solid #bae6fd;
-                border-radius: 1.5mm;
-                padding: 0.5mm 3mm;
-                margin-top: 1.5mm;
-                letter-spacing: 0.5px;
-              }
-
-              /* Footer Stiker (Nama & Detail) */
-              .sticker-footer {
-                border-top: 1px solid #e2e8f0;
-                padding-top: 1.5mm;
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-end;
+                border: 0.5px solid #bae6fd;
+                border-radius: 0.8mm;
+                padding: 0.2mm 1.2mm;
+                white-space: nowrap;
               }
 
               .tool-name {
-                font-size: 10px;
+                font-size: 8.5px;
                 font-weight: 800;
                 color: #1e293b;
-                line-clamp: 1;
-                -webkit-line-clamp: 1;
+                line-height: 1.1;
                 display: -webkit-box;
+                -webkit-line-clamp: 1;
                 -webkit-box-orient: vertical;
                 overflow: hidden;
-                text-align: center;
-                margin-bottom: 0.5mm;
               }
 
               .tool-desc {
-                font-size: 7.5px;
-                color: #64748b;
-                line-clamp: 2;
-                -webkit-line-clamp: 2;
+                font-size: 7px;
+                color: #475569;
+                line-height: 1.15;
                 display: -webkit-box;
+                -webkit-line-clamp: 4;
                 -webkit-box-orient: vertical;
                 overflow: hidden;
-                text-align: center;
-                line-height: 1.2;
-                min-h: 18px;
+                text-align: left;
               }
 
               /* CSS Cetak Khusus Browser */
