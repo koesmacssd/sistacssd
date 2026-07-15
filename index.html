@@ -2519,14 +2519,48 @@
               </div>
             `;
           } else {
+            const currentStatus = item.status_posisi || '';
+            const isAllowed = (targetStatus) => {
+              if (currentStatus === targetStatus) return false;
+              if (currentStatus === 'Kotor') {
+                return targetStatus === 'Pencucian';
+              }
+              if (currentStatus === 'Pencucian') {
+                return targetStatus === 'Proses Steril' || targetStatus === 'Kotor';
+              }
+              if (currentStatus === 'Proses Steril') {
+                return targetStatus === 'Steril' || targetStatus === 'Kotor';
+              }
+              if (currentStatus === 'Steril') {
+                return targetStatus === 'Kotor';
+              }
+              return false;
+            };
+
+            const kotorClass = isAllowed('Kotor') 
+              ? "bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2 px-3 rounded-lg text-xs transition border border-slate-200"
+              : "bg-slate-50 text-slate-400 font-medium py-2 px-3 rounded-lg text-xs border border-slate-100 opacity-40 cursor-not-allowed pointer-events-none";
+
+            const pencucianClass = isAllowed('Pencucian')
+              ? "bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2 px-3 rounded-lg text-xs transition border border-slate-200"
+              : "bg-slate-50 text-slate-400 font-medium py-2 px-3 rounded-lg text-xs border border-slate-100 opacity-40 cursor-not-allowed pointer-events-none";
+
+            const prosesClass = isAllowed('Proses Steril')
+              ? "bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2 px-3 rounded-lg text-xs transition border border-slate-200"
+              : "bg-slate-50 text-slate-400 font-medium py-2 px-3 rounded-lg text-xs border border-slate-100 opacity-40 cursor-not-allowed pointer-events-none";
+
+            const sterilClass = isAllowed('Steril')
+              ? "bg-brand-500 hover:bg-brand-600 text-white font-bold py-2 px-3 rounded-lg text-xs transition shadow-sm"
+              : "bg-slate-50 text-slate-400 font-medium py-2 px-3 rounded-lg text-xs border border-slate-100 opacity-40 cursor-not-allowed pointer-events-none";
+
             actionBtnHtml = `
               <div class="space-y-2">
                 <p class="text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Ubah Status Pemrosesan CSSD:</p>
                 <div class="grid grid-cols-2 gap-2">
-                  <button onclick="Swal.close(); app.updateSingleItemStatus('${item.id_alat}', 'Kotor')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2 px-3 rounded-lg text-xs transition border border-slate-200">Set Kotor</button>
-                  <button onclick="Swal.close(); app.updateSingleItemStatus('${item.id_alat}', 'Pencucian')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2 px-3 rounded-lg text-xs transition border border-slate-200">Set Pencucian</button>
-                  <button onclick="Swal.close(); app.updateSingleItemStatus('${item.id_alat}', 'Proses Steril')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2 px-3 rounded-lg text-xs transition border border-slate-200">Set Proses Steril</button>
-                  <button onclick="Swal.close(); app.updateSingleItemStatus('${item.id_alat}', 'Steril')" class="bg-brand-500 hover:bg-brand-600 text-white font-bold py-2 px-3 rounded-lg text-xs transition">Set Steril (Selesai)</button>
+                  <button onclick="Swal.close(); app.updateSingleItemStatus('${item.id_alat}', 'Kotor')" class="${kotorClass}">Set Kotor</button>
+                  <button onclick="Swal.close(); app.updateSingleItemStatus('${item.id_alat}', 'Pencucian')" class="${pencucianClass}">Set Pencucian</button>
+                  <button onclick="Swal.close(); app.updateSingleItemStatus('${item.id_alat}', 'Proses Steril')" class="${prosesClass}">Set Proses Steril</button>
+                  <button onclick="Swal.close(); app.updateSingleItemStatus('${item.id_alat}', 'Steril')" class="${sterilClass}">Set Steril (Selesai)</button>
                 </div>
               </div>
             `;
@@ -2541,7 +2575,10 @@
               <div>
                 <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded bg-sky-50 text-sky-800 border border-sky-200 mb-1">[${item.id_alat}]</span>
                 <h4 class="text-sm font-extrabold text-slate-800 leading-tight">${item.nama_alat}</h4>
-                <p class="text-xs text-slate-500 mt-1">Status Posisi: <span class="font-bold text-slate-700">${item.status_posisi}</span></p>
+                <div class="flex flex-col space-y-0.5 mt-2 text-xs text-slate-500 font-medium">
+                  <p>Status Posisi: <span class="font-bold text-slate-700">${item.status_posisi}</span></p>
+                  <p>Expired Steril: <span class="font-bold text-slate-700">${item.tanggal_kadaluarsa || '-'}</span></p>
+                </div>
               </div>
               <div class="border-t border-slate-100 pt-3">
                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Rincian Deskripsi / Komponen:</span>
