@@ -2379,29 +2379,54 @@
         this.html5QrCode = new Html5Qrcode("reader");
         const config = { fps: 10, qrbox: { width: 220, height: 220 } };
 
-        this.html5QrCode.start(
-          { facingMode: "environment" },
-          config,
-          (decodedText) => {
-            // Suara beep pemindaian berhasil (menggunakan AudioContext agar tidak butuh file eksternal)
-            try {
-              const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-              const osc = audioCtx.createOscillator();
-              osc.type = 'sine';
-              osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
-              osc.connect(audioCtx.destination);
-              osc.start();
-              osc.stop(audioCtx.currentTime + 0.1);
-            } catch (e) {}
+        // Minta daftar kamera aktif untuk kompatibilitas HP (kamera belakang) & Laptop (kamera webcam)
+        Html5Qrcode.getCameras().then(devices => {
+          if (devices && devices.length > 0) {
+            // Default gunakan kamera pertama
+            let cameraId = devices[0].id;
+            
+            // Cari kamera belakang (back/rear/environment)
+            const backCamera = devices.find(device => {
+              const label = (device.label || '').toLowerCase();
+              return label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('belakang');
+            });
+            
+            if (backCamera) {
+              cameraId = backCamera.id;
+            }
 
+            this.html5QrCode.start(
+              cameraId,
+              config,
+              (decodedText) => {
+                // Suara beep pemindaian berhasil (menggunakan AudioContext agar tidak butuh file eksternal)
+                try {
+                  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                  const osc = audioCtx.createOscillator();
+                  osc.type = 'sine';
+                  osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
+                  osc.connect(audioCtx.destination);
+                  osc.start();
+                  osc.stop(audioCtx.currentTime + 0.1);
+                } catch (e) {}
+
+                this.closeScannerModal();
+                this.handleScannedCode(decodedText);
+              },
+              (errorMessage) => {
+                // Abaikan error pembacaan per frame
+              }
+            ).catch((err) => {
+              this.showToast('error', 'Gagal memulai kamera: ' + err);
+              this.closeScannerModal();
+            });
+
+          } else {
+            this.showToast('error', 'Tidak ada kamera yang terdeteksi pada perangkat ini.');
             this.closeScannerModal();
-            this.handleScannedCode(decodedText);
-          },
-          (errorMessage) => {
-            // Abaikan error pemindaian frame biasa
           }
-        ).catch((err) => {
-          this.showToast('error', 'Gagal mengakses kamera: ' + err);
+        }).catch(err => {
+          this.showToast('error', 'Gagal mendapatkan izin kamera: ' + err);
           this.closeScannerModal();
         });
       }
