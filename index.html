@@ -687,6 +687,9 @@
                 <table class="w-full text-left border-collapse text-sm sticky-table-header">
                   <thead>
                     <tr class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 select-none">
+                      <th class="p-4 w-10 text-center">
+                        <input type="checkbox" id="check-all-inventaris" onclick="app.toggleSelectAllInventaris(this)" class="rounded text-brand-500 focus:ring-brand-500 h-4 w-4 border-slate-300">
+                      </th>
                       <th onclick="app.sortInventaris('id_alat')" class="p-4 cursor-pointer hover:bg-slate-100 hover:text-slate-700 transition duration-150 group">
                         <div class="flex items-center space-x-1">
                           <span>ID / QR Code</span>
@@ -734,6 +737,15 @@
               </div>
               <!-- Inventaris Pagination Controls -->
               <div id="inventaris-pagination" class="border-t border-slate-100 bg-slate-50/50 px-4"></div>
+            </div>
+
+            <!-- Floating Action Bar untuk Cetak Label -->
+            <div id="print-action-bar" class="fixed bottom-6 right-6 bg-white/95 backdrop-blur shadow-2xl border border-slate-200 rounded-2xl px-6 py-4 flex items-center space-x-4 z-50 transform translate-y-28 opacity-0 pointer-events-none transition-all duration-300">
+              <span class="text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md" id="print-selected-count">0 terpilih</span>
+              <button onclick="app.printSelectedLabels()" class="bg-brand-500 hover:bg-brand-600 active:scale-95 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs shadow-md transition-all flex items-center space-x-1.5">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                <span>Cetak Label (KTP)</span>
+              </button>
             </div>
           </div>
 
@@ -1367,6 +1379,7 @@
         this.isProcessingOrder = false;
         this.favorites = []; // ID alat yang difavoritkan
         this.catalogFilter = 'all'; // 'all' | 'fav'
+        this.selectedInventarisIds = []; // ID alat yang dicentang untuk cetak label
         
         // State Paginasi
         this.katalogPage = 1;
@@ -2028,6 +2041,322 @@
           }
           this.renderKatalog();
         }
+      }
+
+      toggleSelectAllInventaris(masterCheckbox) {
+        // Cari seluruh checkbox item inventaris yang saat ini tampil di halaman
+        const checkboxes = document.querySelectorAll('.inventaris-item-checkbox');
+        checkboxes.forEach(cb => {
+          const id = cb.getAttribute('data-id');
+          if (!id) return;
+          cb.checked = masterCheckbox.checked;
+          
+          const idx = this.selectedInventarisIds.indexOf(id);
+          if (masterCheckbox.checked) {
+            if (idx === -1) this.selectedInventarisIds.push(id);
+          } else {
+            if (idx !== -1) this.selectedInventarisIds.splice(idx, 1);
+          }
+        });
+        
+        this.updateInventarisSelection();
+      }
+
+      updateInventarisSelection() {
+        // Collect checked checkboxes
+        const checkboxes = document.querySelectorAll('.inventaris-item-checkbox');
+        checkboxes.forEach(cb => {
+          const id = cb.getAttribute('data-id');
+          if (!id) return;
+          const idx = this.selectedInventarisIds.indexOf(id);
+          
+          if (cb.checked) {
+            if (idx === -1) this.selectedInventarisIds.push(id);
+          } else {
+            if (idx !== -1) this.selectedInventarisIds.splice(idx, 1);
+          }
+        });
+
+        // Tampilkan floating action bar jika ada yang terpilih
+        const bar = document.getElementById('print-action-bar');
+        const countTxt = document.getElementById('print-selected-count');
+        if (bar && countTxt) {
+          const count = this.selectedInventarisIds.length;
+          countTxt.innerText = `${count} terpilih`;
+          
+          if (count > 0) {
+            bar.classList.remove('opacity-0', 'translate-y-28', 'pointer-events-none');
+            bar.classList.add('opacity-100', 'translate-y-0');
+            bar.style.pointerEvents = 'auto';
+          } else {
+            bar.classList.remove('opacity-100', 'translate-y-0');
+            bar.classList.add('opacity-0', 'translate-y-28', 'pointer-events-none');
+            bar.style.pointerEvents = 'none';
+          }
+        }
+
+        // Sinkronkan tombol check-all
+        const masterCheck = document.getElementById('check-all-inventaris');
+        if (masterCheck && checkboxes.length > 0) {
+          let allChecked = true;
+          checkboxes.forEach(cb => {
+            if (!cb.checked) allChecked = false;
+          });
+          masterCheck.checked = allChecked;
+        }
+      }
+
+      printSelectedLabels() {
+        if (this.selectedInventarisIds.length === 0) {
+          this.showToast('error', 'Pilih minimal 1 alat untuk dicetak.');
+          return;
+        }
+
+        // Ambil objek data lengkap untuk alat-alat yang dicentang
+        const selectedItems = this.items.filter(item => this.selectedInventarisIds.includes(item.id_alat));
+        if (selectedItems.length === 0) {
+          this.showToast('error', 'Data alat tidak ditemukan.');
+          return;
+        }
+
+        // Buka tab popup kosong baru
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+          this.showToast('error', 'Gagal membuka tab cetak. Blokir Popup browser terdeteksi.');
+          return;
+        }
+
+        // Susun HTML stiker
+        let stikerPagesHtml = '';
+        const stickersPerPage = 9;
+        
+        for (let i = 0; i < selectedItems.length; i += stickersPerPage) {
+          const pageItems = selectedItems.slice(i, i + stickersPerPage);
+          let cardsHtml = '';
+          
+          pageItems.forEach(item => {
+            const qrData = encodeURIComponent(item.id_alat);
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${qrData}`;
+            const cleanDesc = item.deskripsi ? item.deskripsi.replace(/"/g, '&quot;') : 'Tidak ada deskripsi.';
+            
+            cardsHtml += `
+              <div class="sticker">
+                <div class="sticker-header">
+                  <div class="header-logo-container">
+                    <img class="logo-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 9.172V5L8 4z' /></svg>" alt="Logo">
+                  </div>
+                  <div class="header-title">RSUD dr. R. Koesma</div>
+                </div>
+                <div class="sticker-body">
+                  <img class="qr-code" src="${qrUrl}" alt="QR Code">
+                  <div class="tool-id">[ ${item.id_alat} ]</div>
+                </div>
+                <div class="sticker-footer">
+                  <div class="tool-name">${item.nama_alat}</div>
+                  <div class="tool-desc">${cleanDesc}</div>
+                </div>
+              </div>
+            `;
+          });
+          
+          // Mengisi stiker kosong jika jumlah alat kurang dari 9 agar grid tetap presisi dan kokoh
+          while (pageItems.length < stickersPerPage) {
+            pageItems.push({});
+            cardsHtml += `<div class="sticker empty-sticker"></div>`;
+          }
+
+          stikerPagesHtml += `
+            <div class="page">
+              ${cardsHtml}
+            </div>
+          `;
+        }
+
+        // Tulis document ke tab cetak
+        printWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Cetak Label Stiker SISTA-CSSD</title>
+            <style>
+              /* CSS Pengaturan Kertas A4 & Grid Margin Presisi */
+              @page {
+                size: A4 portrait;
+                margin: 0;
+              }
+              
+              html, body {
+                margin: 0;
+                padding: 0;
+                background-color: #f1f5f9;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+              }
+
+              /* Tiap halaman A4 */
+              .page {
+                width: 210mm;
+                height: 297mm;
+                padding: 15.1mm 19mm;
+                box-sizing: border-box;
+                display: grid;
+                grid-template-columns: repeat(3, 54mm);
+                grid-template-rows: repeat(3, 85.6mm);
+                gap: 5mm 5mm;
+                page-break-after: always;
+                background-color: #ffffff;
+                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+                margin: 20px auto;
+              }
+
+              /* Desain Individual Stiker Portrait (KTP size: 54mm x 85.6mm) */
+              .sticker {
+                width: 54mm;
+                height: 85.6mm;
+                box-sizing: border-box;
+                border: 1.5px solid #cbd5e1;
+                border-radius: 6mm;
+                padding: 3mm;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                background-color: #ffffff;
+                overflow: hidden;
+                position: relative;
+              }
+
+              .empty-sticker {
+                border: 1px dashed #e2e8f0;
+                background-color: #fafbfd;
+              }
+
+              /* Header Stiker */
+              .sticker-header {
+                display: flex;
+                align-items: center;
+                border-bottom: 1px solid #e2e8f0;
+                padding-bottom: 1.5mm;
+                margin-bottom: 1.5mm;
+              }
+
+              .header-logo-container {
+                width: 5.5mm;
+                height: 5.5mm;
+                border-radius: 1.2mm;
+                background: linear-gradient(135deg, #0284c7, #0369a1);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-right: 1.5mm;
+                flex-shrink: 0;
+              }
+
+              .logo-img {
+                width: 3.8mm;
+                height: 3.8mm;
+              }
+
+              .header-title {
+                font-size: 8.5px;
+                font-weight: 800;
+                color: #0f172a;
+                text-transform: uppercase;
+                letter-spacing: 0.2px;
+                white-space: nowrap;
+              }
+
+              /* Body Stiker (QR Code & ID) */
+              .sticker-body {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                flex-grow: 1;
+                margin-bottom: 1mm;
+              }
+
+              .qr-code {
+                width: 34mm;
+                height: 34mm;
+                object-fit: contain;
+              }
+
+              .tool-id {
+                font-size: 10px;
+                font-weight: 800;
+                color: #0284c7;
+                background-color: #f0f9ff;
+                border: 1px solid #bae6fd;
+                border-radius: 1.5mm;
+                padding: 0.5mm 3mm;
+                margin-top: 1.5mm;
+                letter-spacing: 0.5px;
+              }
+
+              /* Footer Stiker (Nama & Detail) */
+              .sticker-footer {
+                border-top: 1px solid #e2e8f0;
+                padding-top: 1.5mm;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
+              }
+
+              .tool-name {
+                font-size: 10px;
+                font-weight: 800;
+                color: #1e293b;
+                line-clamp: 1;
+                -webkit-line-clamp: 1;
+                display: -webkit-box;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                text-align: center;
+                margin-bottom: 0.5mm;
+              }
+
+              .tool-desc {
+                font-size: 7.5px;
+                color: #64748b;
+                line-clamp: 2;
+                -webkit-line-clamp: 2;
+                display: -webkit-box;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                text-align: center;
+                line-height: 1.2;
+                min-h: 18px;
+              }
+
+              /* CSS Cetak Khusus Browser */
+              @media print {
+                html, body {
+                  background-color: #ffffff;
+                }
+                .page {
+                  margin: 0;
+                  box-shadow: none;
+                  page-break-after: always;
+                }
+                .page:last-child {
+                  page-break-after: avoid;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            ${stikerPagesHtml}
+            <script>
+              // Trigger cetak otomatis begitu asset QR code ter-load
+              window.onload = function() {
+                setTimeout(function() {
+                  window.print();
+                }, 500);
+              };
+            </script>
+          </body>
+          </html>
+        `);
+        printWindow.document.close();
       }
 
       saveCart() {
@@ -3546,7 +3875,7 @@
         if (filtered.length === 0) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="8" class="p-8 text-center text-slate-500">Tidak ada alat yang cocok dengan pencarian Anda.</td>
+              <td colspan="9" class="p-8 text-center text-slate-500">Tidak ada alat yang cocok dengan pencarian Anda.</td>
             </tr>
           `;
           this.renderPaginationControls('inventaris-pagination', 0, 1, this.inventarisPageSize, 'changeInventarisPage');
@@ -3554,9 +3883,20 @@
         }
 
         // Slice for pagination
-        const start = (this.inventarisPage - 1) * this.inventarisPageSize;
-        const end = start + this.inventarisPageSize;
-        const slicedItems = filtered.slice(start, end);
+        const start = (this.katalogPage - 1) * this.katalogPageSize; // Wait, make sure this uses inventarisPage!
+        // Wait, the original code used:
+        // const start = (this.inventarisPage - 1) * this.inventarisPageSize;
+        // Let's use the correct one:
+        const startIdx = (this.inventarisPage - 1) * this.inventarisPageSize;
+        const endIdx = startIdx + this.inventarisPageSize;
+        const slicedItems = filtered.slice(startIdx, endIdx);
+
+        // Update master checkbox status
+        const masterCheck = document.getElementById('check-all-inventaris');
+        if (masterCheck) {
+          const allSlicedChecked = slicedItems.length > 0 && slicedItems.every(item => this.selectedInventarisIds.includes(item.id_alat));
+          masterCheck.checked = allSlicedChecked;
+        }
 
         slicedItems.forEach(item => {
           const isBorrowed = item.status_posisi.startsWith('Dipinjam');
@@ -3608,9 +3948,13 @@
             </div>`;
           }
 
+          const isChecked = this.selectedInventarisIds.includes(item.id_alat) ? 'checked' : '';
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-slate-50/50';
           tr.innerHTML = `
+            <td class="p-4 text-center">
+              <input type="checkbox" class="inventaris-item-checkbox rounded text-brand-500 focus:ring-brand-500 h-4 w-4 border-slate-300 cursor-pointer" data-id="${item.id_alat}" ${isChecked} onclick="app.updateInventarisSelection()">
+            </td>
             <td class="p-4"><span onclick="app.showItemHistory('${item.id_alat}')" class="font-bold text-brand-600 hover:text-brand-800 cursor-pointer hover:underline" title="Klik untuk melihat riwayat alat">${item.id_alat}</span></td>
             <td class="p-4 flex items-center font-semibold text-slate-800">${imgHtml} <span onclick="app.openDetailModal('${item.id_alat}')" class="cursor-pointer hover:text-brand-500 hover:underline transition duration-150">${item.nama_alat}</span></td>
             <td class="p-4 text-slate-500 text-xs truncate max-w-xs">${item.deskripsi || '-'}</td>
