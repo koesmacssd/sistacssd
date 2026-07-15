@@ -2480,14 +2480,14 @@
         let activeOrder = null;
         let actionType = null; // 'SERAH_TERIMA' | 'KEMBALI' | 'NONE'
 
-        // Cari di order 'Menunggu Serah Terima'
-        const pendingOrder = this.orders.find(o => o.status === 'Menunggu Serah Terima' && o.items.some(it => it.id_alat === itemId));
+        // Cari di order 'Ready for Pickup' (untuk proses Serah Terima)
+        const pendingOrder = this.orders.find(o => o.status_order === 'Ready for Pickup' && o.items.some(it => it.id_alat === itemId));
         if (pendingOrder) {
           activeOrder = pendingOrder;
           actionType = 'SERAH_TERIMA';
         } else {
-          // Cari di order 'Dipinjam' atau 'Tidak Lengkap'
-          const borrowedOrder = this.orders.find(o => (o.status === 'Dipinjam' || o.status === 'Tidak Lengkap') && o.items.some(it => it.id_alat === itemId));
+          // Cari di order 'Aktif' atau 'Tidak Lengkap' (untuk proses Pengembalian)
+          const borrowedOrder = this.orders.find(o => (o.status_order === 'Aktif' || o.status_order === 'Tidak Lengkap') && o.items.some(it => it.id_alat === itemId));
           if (borrowedOrder) {
             activeOrder = borrowedOrder;
             actionType = 'KEMBALI';
