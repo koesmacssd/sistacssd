@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pusat Panduan & Bantuan SISTA-CSSD</title>
+  <title>Pusat Panduan & Ekosistem SISTA-CSSD</title>
   
   <!-- Google Fonts: Outfit & Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -22,17 +22,13 @@
           },
           colors: {
             brand: {
-              50: '#eef8f8',
-              100: '#d5ecee',
-              200: '#afdadf',
-              300: '#7cc0ca',
-              400: '#4fa1ad',
-              500: '#348592',
-              600: '#2b6e7a',
-              700: '#275965',
-              800: '#254a54',
-              900: '#223f49',
-              950: '#12262e',
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#025a87',
+              700: '#0369a1',
+              900: '#0c4a6e',
+              950: '#082f49',
             }
           }
         }
@@ -62,56 +58,62 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
-    /* Hide scrollbar for Chrome, Safari and Opera */
     .no-scrollbar::-webkit-scrollbar {
       display: none;
     }
-    /* Hide scrollbar for IE, Edge and Firefox */
     .no-scrollbar {
-      -ms-overflow-style: none;  /* IE and Edge */
-      scrollbar-width: none;  /* Firefox */
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
+<body class="bg-slate-50 text-slate-800 antialiased">
 
-  <!-- TOP HERO BAR -->
-  <header class="bg-slate-900 text-white relative overflow-hidden py-16 sm:py-24 border-b border-slate-800">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(52,133,146,0.15),transparent)]"></div>
+  <!-- TOP HERO BAR WITH ADVANCED GLOW EFFECT -->
+  <header class="bg-slate-950 text-white relative overflow-hidden py-20 sm:py-28 border-b border-slate-900">
+    <!-- Glow spots -->
+    <div class="absolute top-0 right-0 transform translate-x-1/4 -translate-y-1/4 bg-brand-500/20 h-96 w-96 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 left-10 bg-emerald-500/10 h-72 w-72 rounded-full blur-3xl"></div>
+    
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-      <div class="flex items-center space-x-3 mb-6">
-        <img src="https://raw.githubusercontent.com/simpegkoesma/1/refs/heads/main/logo%20rsud%202%20png.png" alt="Logo RSUD" class="h-12 w-auto bg-white/10 p-1.5 rounded-2xl">
+      <div class="flex items-center space-x-3 mb-8">
+        <img src="https://raw.githubusercontent.com/simpegkoesma/1/refs/heads/main/logo%20rsud%202%20png.png" alt="Logo RSUD dr. R. Koesma" class="h-14 w-auto bg-white/5 p-2 rounded-2xl border border-white/10 shadow-lg">
         <div>
-          <h1 class="text-3xl font-extrabold tracking-tight font-display">SISTA-CSSD</h1>
-          <p class="text-xs text-brand-300 font-semibold tracking-wider uppercase">Sistem Serah Terima Alat Steril</p>
+          <h1 class="text-3xl font-black tracking-tight font-display bg-gradient-to-r from-white via-slate-100 to-brand-300 bg-clip-text text-transparent">SISTA-CSSD</h1>
+          <p class="text-xs text-brand-400 font-bold tracking-widest uppercase">Smart Sterilization & Logistical Tracker Ecosystem</p>
         </div>
       </div>
       <div class="max-w-3xl">
-        <h2 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-white font-display mb-4 leading-tight">
-          Pusat Panduan & Bantuan Penggunaan Aplikasi
+        <h2 class="text-4xl sm:text-6xl font-black tracking-tight text-white font-display mb-6 leading-tight">
+          Pusat Panduan & Ekosistem Aplikasi SISTA-CSSD
         </h2>
-        <p class="text-lg text-slate-300 leading-relaxed max-w-2xl">
-          Selamat datang di portal bantuan resmi. Di sini Anda dapat mempelajari alur kerja operasional, panduan penggunaan untuk ruangan maupun admin, serta solusi kendala teknis secara mendetail.
+        <p class="text-lg text-slate-300 leading-relaxed max-w-3xl">
+          Selamat datang di pusat dokumentasi resmi. Aplikasi SISTA-CSSD adalah sistem cerdas berbasis serverless yang mengintegrasikan pemindaian QR Code kamera, pelacakan siklus sterilisasi, gamifikasi staf, dan notifikasi otomatis multi-channel untuk mendukung akreditasi paripurna rumah sakit.
         </p>
       </div>
     </div>
   </header>
 
-  <!-- QUICK NAVIGATION BAR (Sticky) -->
+  <!-- STICKY QUICK NAVIGATION -->
   <nav class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center gap-4 py-3 sm:py-4">
-      <div class="flex space-x-6 sm:space-x-8 overflow-x-auto text-sm font-medium whitespace-nowrap min-w-0 flex-1 pr-4 no-scrollbar">
-        <a href="#tentang" class="text-brand-600 hover:text-brand-700 transition">Tentang Aplikasi</a>
-        <a href="#alur" class="text-slate-500 hover:text-slate-800 transition">Alur Serah Terima</a>
+      <div class="flex space-x-6 sm:space-x-8 overflow-x-auto text-sm font-semibold whitespace-nowrap min-w-0 flex-1 pr-4 no-scrollbar">
+        <a href="#fitur-unggulan" class="text-brand-600 hover:text-brand-700 transition">Fitur Canggih</a>
+        <a href="#alur" class="text-slate-500 hover:text-slate-800 transition">Siklus 6-Tahap</a>
         <a href="#ruangan" class="text-slate-500 hover:text-slate-800 transition">Panduan Ruangan</a>
         <a href="#admin" class="text-slate-500 hover:text-slate-800 transition">Panduan Admin</a>
-        <a href="#faq" class="text-slate-500 hover:text-slate-800 transition">FAQ / Tanya Jawab</a>
+        <a href="#faq" class="text-slate-500 hover:text-slate-800 transition">Tanya Jawab (FAQ)</a>
       </div>
       <div class="flex-shrink-0">
-        <a href="index.html" class="inline-flex items-center justify-center bg-brand-500 hover:bg-brand-600 text-white text-xs sm:text-sm font-semibold px-3 sm:px-4 py-2 rounded-xl transition duration-150 shadow-md shadow-brand-500/25">
-          <span class="hidden sm:inline">Masuk ke Aplikasi</span>
-          <span class="inline sm:hidden">Masuk</span>
-          <svg class="ml-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <a href="index.html" class="inline-flex items-center justify-center bg-brand-500 hover:bg-brand-600 active:scale-95 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-xl transition duration-150 shadow-md shadow-brand-500/25">
+          <span>Masuk Aplikasi</span>
+          <svg class="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
           </svg>
         </a>
@@ -119,119 +121,155 @@
     </div>
   </nav>
 
-  <!-- MAIN GUIDE CONTENT -->
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-20">
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-24">
 
-    <!-- SECTION 1: TENTANG APLIKASI -->
-    <section id="tentang" class="scroll-mt-24 space-y-6">
+    <!-- SECTION 1: SMART FEATURES ECOSYSTEM -->
+    <section id="fitur-unggulan" class="scroll-mt-24 space-y-8">
       <div class="border-l-4 border-brand-500 pl-4">
-        <h3 class="text-2xl font-bold font-display text-slate-900">1. Mengenal SISTA-CSSD</h3>
-        <p class="text-sm text-slate-500 mt-1">Pengertian dasar dan manfaat sistem digitalisasi.</p>
+        <h3 class="text-2xl sm:text-3xl font-black font-display text-slate-900 uppercase tracking-tight">1. Ekosistem Fitur Canggih</h3>
+        <p class="text-sm text-slate-500 mt-1">Mengapa SISTA-CSSD menjadi pelopor digitalisasi logistik steril rumah sakit.</p>
       </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
-          <div class="space-y-4">
-            <h4 class="text-lg font-bold text-slate-800 font-display">Apa itu SISTA-CSSD?</h4>
-            <p class="text-slate-600 leading-relaxed text-sm">
-              <strong>SISTA-CSSD</strong> (<strong>Sistem Informasi Serah Terima Alat CSSD</strong>) adalah platform digital yang dirancang untuk mengelola, melacak, dan mendokumentasikan setiap tahapan sirkulasi alat medis steril di rumah sakit.
-            </p>
-            <p class="text-slate-600 leading-relaxed text-sm">
-              Sistem ini menjembatani koordinasi antara <strong>Unit Kerja / Ruangan Tindakan</strong> (seperti Kamar Operasi, ICU, IGD, Kebidanan) dengan <strong>Instalasi CSSD</strong> (<strong>Central Sterile Supply Department</strong>) sebagai penyedia layanan sterilisasi alat medis.
-            </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Feature 1: QR Scanner -->
+        <div class="glass-card rounded-2xl p-6 shadow-sm hover:shadow-md transition duration-200 space-y-4 relative overflow-hidden group">
+          <div class="absolute top-0 right-0 h-24 w-24 bg-brand-500/5 rounded-full blur-xl group-hover:bg-brand-500/10 transition"></div>
+          <div class="p-3 bg-brand-50 text-brand-600 rounded-xl inline-block">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M4 8h16M4 16h16" />
+            </svg>
           </div>
-          <div class="mt-6 p-4 bg-brand-50 rounded-xl border border-brand-100/50">
-            <span class="text-xs font-bold text-brand-700 block mb-1">Misi Utama Sistem:</span>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              Meniadakan pencatatan manual berbasis kertas, meminimalkan risiko keterlambatan ketersediaan alat bedah, serta melacak masa kedaluwarsa steril secara real-time demi keselamatan pasien.
-            </p>
-          </div>
+          <h4 class="text-lg font-bold text-slate-900 font-display">Scan QR Kamera Cepat</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Integrasi pustaka pemindaian kamera HP secara langsung. Cukup arahkan kamera pada label QR alat medis untuk melihat isi set, status sterilisasi, masa aktif, serta langsung memproses penyerahan/pengembalian instan.
+          </p>
         </div>
 
-        <div class="bg-slate-900 text-slate-100 rounded-2xl p-6 shadow-md space-y-6">
-          <h4 class="text-lg font-bold text-white font-display">Mengapa Digitalisasi itu Penting?</h4>
-          <div class="space-y-4 text-sm">
-            <div class="flex items-start space-x-3">
-              <div class="p-2 bg-slate-800 rounded-lg text-emerald-400 mt-0.5">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-              </div>
-              <div>
-                <h5 class="font-semibold text-white">Akurasi & Pelacakan QR Code</h5>
-                <p class="text-xs text-slate-400 mt-0.5">Setiap set alat medis memiliki ID / QR Code unik untuk meminimalisasi kesalahan identifikasi fisik barang saat transaksi.</p>
-              </div>
-            </div>
-            <div class="flex items-start space-x-3">
-              <div class="p-2 bg-slate-800 rounded-lg text-emerald-400 mt-0.5">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-              </div>
-              <div>
-                <h5 class="font-semibold text-white">Notifikasi Real-time</h5>
-                <p class="text-xs text-slate-400 mt-0.5">Notifikasi email langsung dikirimkan kepada pengguna saat login, pendaftaran disetujui, dan pengajuan peminjaman alat steril.</p>
-              </div>
-            </div>
-            <div class="flex items-start space-x-3">
-              <div class="p-2 bg-slate-800 rounded-lg text-emerald-400 mt-0.5">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-              </div>
-              <div>
-                <h5 class="font-semibold text-white">Monitoring Kadaluwarsa Steril</h5>
-                <p class="text-xs text-slate-400 mt-0.5">Sistem otomatis memberi tanda bahaya (merah) pada alat medis di inventaris yang telah melampaui tanggal batas steril.</p>
-              </div>
-            </div>
+        <!-- Feature 2: Gamification -->
+        <div class="glass-card rounded-2xl p-6 shadow-sm hover:shadow-md transition duration-200 space-y-4 relative overflow-hidden group">
+          <div class="absolute top-0 right-0 h-24 w-24 bg-amber-500/5 rounded-full blur-xl group-hover:bg-amber-500/10 transition"></div>
+          <div class="p-3 bg-amber-50 text-amber-600 rounded-xl inline-block">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5a2 2 0 10-2 2h2zm0 0L4 7m8 1L20 7" />
+            </svg>
           </div>
+          <h4 class="text-lg font-bold text-slate-900 font-display">Sistem Prestasi Staf 🏆</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Menghadirkan fitur gamifikasi kerja. Staf CSSD mendapatkan akumulasi poin otomatis untuk setiap aksi sterilisasi, penyiapan alat, dan pencatatan. Dilengkapi halaman podium interaktif 3 besar teraktif bulanan.
+          </p>
+        </div>
+
+        <!-- Feature 3: Autoclave Cycle -->
+        <div class="glass-card rounded-2xl p-6 shadow-sm hover:shadow-md transition duration-200 space-y-4 relative overflow-hidden group">
+          <div class="absolute top-0 right-0 h-24 w-24 bg-emerald-500/5 rounded-full blur-xl group-hover:bg-emerald-500/10 transition"></div>
+          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl inline-block">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.25" />
+            </svg>
+          </div>
+          <h4 class="text-lg font-bold text-slate-900 font-display">Tracking 6-Siklus CSSD</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Mengontrol status posisi instrumen medis secara komprehensif mulai dari **Kotor**, **Pencucian**, **Proses Steril**, **Penyimpanan (di CSSD)**, **Steril (Siap Pakai)**, hingga **Dipinjam (di Ruangan)**.
+          </p>
+        </div>
+
+        <!-- Feature 4: Cloud Engine -->
+        <div class="glass-card rounded-2xl p-6 shadow-sm hover:shadow-md transition duration-200 space-y-4 relative overflow-hidden group">
+          <div class="absolute top-0 right-0 h-24 w-24 bg-indigo-500/5 rounded-full blur-xl group-hover:bg-indigo-500/10 transition"></div>
+          <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl inline-block">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <h4 class="text-lg font-bold text-slate-900 font-display">Google Cloud Enterprise SSO</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Login super aman menggunakan protokol otentikasi OAuth2 resmi Google. Backend memverifikasi token JWT secara berkala untuk menjaga kerahasiaan data pengguna dari pihak luar.
+          </p>
+        </div>
+
+        <!-- Feature 5: Multi-Channel Alert -->
+        <div class="glass-card rounded-2xl p-6 shadow-sm hover:shadow-md transition duration-200 space-y-4 relative overflow-hidden group">
+          <div class="absolute top-0 right-0 h-24 w-24 bg-rose-500/5 rounded-full blur-xl group-hover:bg-rose-500/10 transition"></div>
+          <div class="p-3 bg-rose-50 text-rose-600 rounded-xl inline-block">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+          </div>
+          <h4 class="text-lg font-bold text-slate-900 font-display">Notifikasi Multi-Channel</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Setiap aksi penting (registrasi akun baru, persetujuan admin, pembuatan peminjaman, barang siap diambil, selesai) memicu email HTML otomatis dan notifikasi real-time via bot Telegram ke grup koordinasi.
+          </p>
+        </div>
+
+        <!-- Feature 6: Excel Engine -->
+        <div class="glass-card rounded-2xl p-6 shadow-sm hover:shadow-md transition duration-200 space-y-4 relative overflow-hidden group">
+          <div class="absolute top-0 right-0 h-24 w-24 bg-cyan-500/5 rounded-full blur-xl group-hover:bg-cyan-500/10 transition"></div>
+          <div class="p-3 bg-cyan-50 text-cyan-600 rounded-xl inline-block">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+          </div>
+          <h4 class="text-lg font-bold text-slate-900 font-display">Auto-Backup & Ekspor Cepat</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Dukungan pustaka SheetJS untuk ekspor sekali klik berkas Excel (.xlsx) untuk monitoring data logistik ruangan. Super Admin juga dapat mengunduh seluruh database (Backup) dalam satu file ber-tab.
+          </p>
         </div>
       </div>
     </section>
 
-    <!-- SECTION 2: ALUR KERJA SERAH TERIMA -->
-    <section id="alur" class="scroll-mt-24 space-y-6">
+    <!-- SECTION 2: THE 6-STAGE Lifecycle -->
+    <section id="alur" class="scroll-mt-24 space-y-8">
       <div class="border-l-4 border-brand-500 pl-4">
-        <h3 class="text-2xl font-bold font-display text-slate-900">2. Siklus Alur Serah Terima Alat</h3>
-        <p class="text-sm text-slate-500 mt-1">Langkah demi langkah perputaran alat medis steril dari ruangan ke CSSD.</p>
+        <h3 class="text-2xl sm:text-3xl font-black font-display text-slate-900 uppercase tracking-tight">2. Siklus Pemrosesan Alat Medis</h3>
+        <p class="text-sm text-slate-500 mt-1">Gambaran siklus perputaran instrumen steril secara disiplin di rumah sakit.</p>
       </div>
 
-      <!-- VISUAL TIMELINE MAP -->
-      <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+      <!-- VISUAL TIMELINE CAROUSEL/GRID -->
+      <div class="bg-white rounded-2xl p-6 sm:p-10 border border-slate-200 shadow-sm relative overflow-hidden">
+        <div class="absolute top-0 right-0 bg-brand-500/5 h-64 w-64 rounded-full blur-3xl"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 relative z-10">
           
-          <!-- Step 1 -->
-          <div class="space-y-3 relative z-10">
-            <div class="w-10 h-10 rounded-xl bg-brand-500 text-white font-bold flex items-center justify-center font-display shadow shadow-brand-500/30">1</div>
-            <h4 class="font-bold text-slate-900 text-base">Pengajuan Pinjam</h4>
-            <p class="text-xs text-slate-500 leading-relaxed">
-              Petugas Ruangan memilih alat medis yang berstatus <strong>Steril</strong> di katalog, lalu mengirimkan formulir peminjaman.
-            </p>
-            <span class="text-[10px] font-bold text-brand-600 bg-brand-50 border border-brand-100 rounded px-2 py-0.5 inline-block">Role: Ruangan</span>
+          <!-- Stage 1 -->
+          <div class="space-y-2 border-b sm:border-b-0 pb-4 sm:pb-0">
+            <div class="w-8 h-8 rounded-lg bg-red-100 text-red-700 font-extrabold flex items-center justify-center font-display text-sm">1</div>
+            <h4 class="font-bold text-slate-900 text-sm">Kotor</h4>
+            <p class="text-[11px] text-slate-500 leading-relaxed">Alat pasca-tindakan medis dari ruangan dikembalikan ke CSSD dalam kondisi kotor.</p>
           </div>
 
-          <!-- Step 2 -->
-          <div class="space-y-3 relative z-10">
-            <div class="w-10 h-10 rounded-xl bg-brand-500 text-white font-bold flex items-center justify-center font-display shadow shadow-brand-500/30">2</div>
-            <h4 class="font-bold text-slate-900 text-base">Persetujuan & Pengambilan</h4>
-            <p class="text-xs text-slate-500 leading-relaxed">
-              Petugas CSSD menyiapkan barang fisik. Saat serah terima dilakukan, status transaksi diubah menjadi <strong>Dipinjam</strong>.
-            </p>
-            <span class="text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 rounded px-2 py-0.5 inline-block">Role: Admin CSSD</span>
+          <!-- Stage 2 -->
+          <div class="space-y-2 border-b sm:border-b-0 pb-4 sm:pb-0">
+            <div class="w-8 h-8 rounded-lg bg-orange-100 text-orange-700 font-extrabold flex items-center justify-center font-display text-sm">2</div>
+            <h4 class="font-bold text-slate-900 text-sm">Pencucian</h4>
+            <p class="text-[11px] text-slate-500 leading-relaxed">Proses dekontaminasi, pencucian, pembilasan, pengeringan, dan pengecekan kelayakan fisik.</p>
           </div>
 
-          <!-- Step 3 -->
-          <div class="space-y-3 relative z-10">
-            <div class="w-10 h-10 rounded-xl bg-brand-500 text-white font-bold flex items-center justify-center font-display shadow shadow-brand-500/30">3</div>
-            <h4 class="font-bold text-slate-900 text-base">Tindakan / Penggunaan</h4>
-            <p class="text-xs text-slate-500 leading-relaxed">
-              Alat medis steril digunakan di ruangan untuk tindakan pasien. Status posisi alat di inventaris tercatat dipinjam ruangan terkait.
-            </p>
-            <span class="text-[10px] font-bold text-brand-600 bg-brand-50 border border-brand-100 rounded px-2 py-0.5 inline-block">Role: Ruangan</span>
+          <!-- Stage 3 -->
+          <div class="space-y-2 border-b sm:border-b-0 pb-4 sm:pb-0">
+            <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 font-extrabold flex items-center justify-center font-display text-sm">3</div>
+            <h4 class="font-bold text-slate-900 text-sm">Proses Steril</h4>
+            <p class="text-[11px] text-slate-500 leading-relaxed">Alat dikemas dan dimasukkan ke mesin autoklaf/suhu rendah untuk proses membunuh kuman.</p>
           </div>
 
-          <!-- Step 4 -->
-          <div class="space-y-3 relative z-10">
-            <div class="w-10 h-10 rounded-xl bg-brand-500 text-white font-bold flex items-center justify-center font-display shadow shadow-brand-500/30">4</div>
-            <h4 class="font-bold text-slate-900 text-base">Pengembalian (Kotor)</h4>
-            <p class="text-xs text-slate-500 leading-relaxed">
-              Setelah selesai, alat dikembalikan ke CSSD dalam status <strong>Kotor</strong> untuk diproses sterilisasi ulang kembali ke status <strong>Steril</strong>.
-            </p>
-            <span class="text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 rounded px-2 py-0.5 inline-block">Role: Admin CSSD</span>
+          <!-- Stage 4 -->
+          <div class="space-y-2 border-b sm:border-b-0 pb-4 sm:pb-0">
+            <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 font-extrabold flex items-center justify-center font-display text-sm">4</div>
+            <h4 class="font-bold text-slate-900 text-sm">Penyimpanan</h4>
+            <p class="text-[11px] text-slate-500 leading-relaxed">Alat pasca-sterilisasi yang belum dilabeli/diverifikasi disimpan sementara di rak khusus CSSD.</p>
+          </div>
+
+          <!-- Stage 5 -->
+          <div class="space-y-2 border-b sm:border-b-0 pb-4 sm:pb-0">
+            <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 font-extrabold flex items-center justify-center font-display text-sm">5</div>
+            <h4 class="font-bold text-slate-900 text-sm">Steril (Siap)</h4>
+            <p class="text-[11px] text-slate-500 leading-relaxed">Alat diverifikasi, dilabeli barcode/QR, dan tampil di katalog ruangan sebagai barang siap dipinjam.</p>
+          </div>
+
+          <!-- Stage 6 -->
+          <div class="space-y-2">
+            <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 font-extrabold flex items-center justify-center font-display text-sm">6</div>
+            <h4 class="font-bold text-slate-900 text-sm">Dipinjam</h4>
+            <p class="text-[11px] text-slate-500 leading-relaxed">Alat dibawa dan diserahterimakan ke ruangan/unit untuk digunakan kembali pada pasien tindakan.</p>
           </div>
 
         </div>
@@ -239,95 +277,111 @@
     </section>
 
     <!-- SECTION 3: PANDUAN PENGGUNA - RUANGAN -->
-    <section id="ruangan" class="scroll-mt-24 space-y-6">
-      <div class="border-l-4 border-emerald-500 pl-4">
-        <h3 class="text-2xl font-bold font-display text-slate-900">3. Panduan Pengguna (Staf Ruangan / Unit Kerja)</h3>
-        <p class="text-sm text-slate-500 mt-1">Petunjuk lengkap pengoperasian akun bagi peminjam alat medis steril.</p>
+    <section id="ruangan" class="scroll-mt-24 space-y-8">
+      <div class="border-l-4 border-brand-500 pl-4">
+        <h3 class="text-2xl sm:text-3xl font-black font-display text-slate-900 uppercase tracking-tight">3. Panduan Staf Ruangan / Unit Kerja</h3>
+        <p class="text-sm text-slate-500 mt-1">Petunjuk lengkap bagi unit peminjam alat sterilisasi medis.</p>
       </div>
 
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-100">
         
         <!-- Step 1: Registrasi -->
-        <div class="p-6 space-y-4">
-          <div class="flex items-center space-x-2">
-            <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg">Langkah 1</span>
-            <h4 class="font-bold text-slate-900 text-lg">Registrasi Akun Baru</h4>
+        <div class="p-6 sm:p-8 space-y-4">
+          <div class="flex items-center space-x-3">
+            <span class="text-xs font-bold text-brand-700 bg-brand-50 border border-brand-100 px-3 py-1 rounded-lg">Fase 1</span>
+            <h4 class="font-bold text-slate-900 text-xl font-display">Registrasi Cepat Berbasis Ruangan</h4>
           </div>
           <p class="text-slate-600 text-sm leading-relaxed">
-            Login pertama kali wajib dilakukan menggunakan akun <strong>Google</strong> Anda. Jika email Anda belum terdaftar di sistem SISTA-CSSD, Anda akan dialihkan ke form <strong>Lengkapi Registrasi</strong>. 
-            Isi <strong>Nama Lengkap</strong>, pilih <strong>Nama Ruangan / Unit Kerja</strong> tempat Anda berdinas, dan masukkan <strong>Nomor HP / WhatsApp</strong> aktif Anda. Tekan tombol <strong>Kirim Registrasi</strong>. Akun Anda akan ditinjau (<strong>Pending</strong>) oleh Admin CSSD sebelum disetujui untuk digunakan.
+            Gunakan login akun <strong>Google</strong> Anda. Jika email Anda belum terdaftar di database, sistem secara otomatis mengalihkan Anda ke layar registrasi. Lengkapi nama Anda, pilih ruangan Anda (jika tidak tertera di pilihan utama, klik *Lainnya* dan ketik nama ruangan kustom Anda), serta isi nomor kontak HP/WhatsApp. Setelah mengklik kirim, notifikasi aktivasi otomatis terkirim ke Admin CSSD. Anda akan menerima email notifikasi setelah akun diaktifkan.
           </p>
         </div>
 
-        <!-- Step 2: Keranjang & Peminjaman -->
-        <div class="p-6 space-y-4">
-          <div class="flex items-center space-x-2">
-            <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg">Langkah 2</span>
-            <h4 class="font-bold text-slate-900 text-lg">Melakukan Pengajuan Pinjam Alat</h4>
+        <!-- Step 2: Keranjang Pintar -->
+        <div class="p-6 sm:p-8 space-y-4">
+          <div class="flex items-center space-x-3">
+            <span class="text-xs font-bold text-brand-700 bg-brand-50 border border-brand-100 px-3 py-1 rounded-lg">Fase 2</span>
+            <h4 class="font-bold text-slate-900 text-xl font-display">Mengajukan Peminjaman via Katalog Pintar</h4>
           </div>
           <p class="text-slate-600 text-sm leading-relaxed">
-            Masuk ke tab <strong>Katalog Alat</strong>. Anda akan melihat daftar alat medis yang berstatus <strong>Steril</strong> (siap pakai). Cari alat yang Anda butuhkan melalui kotak pencarian. Klik tombol <strong>+ Masukkan Keranjang</strong>. 
-            Setelah selesai memilih, buka tab <strong>Keranjang Request</strong>. Tulis catatan opsional (misal: "Untuk tindakan Bedah Sesar jam 10 pagi") lalu klik tombol <strong>Ajukan Transaksi</strong>.
+            Pada halaman **Katalog Alat**, Anda dapat meninjau alat-alat yang saat ini berkondisi **Steril** di instalasi CSSD. Cari nama alat medis pada bilah pencarian, klik tombol **+ Keranjang**. Buka tab **Keranjang Request**, tambahkan catatan opsional jika diperlukan (misalnya detail tindakan atau nama dokter penanggung jawab), lalu klik **Ajukan Peminjaman**. Setelah dikonfirmasi, sistem otomatis mengirimkan notifikasi ke pihak CSSD untuk segera mengemas barang.
           </p>
         </div>
 
-        <!-- Step 3: Monitoring & Ekspor -->
-        <div class="p-6 space-y-4">
-          <div class="flex items-center space-x-2">
-            <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg">Langkah 3</span>
-            <h4 class="font-bold text-slate-900 text-lg">Monitoring Riwayat & Unduh Excel</h4>
+        <!-- Step 3: Scan QR Hasil & Riwayat -->
+        <div class="p-6 sm:p-8 space-y-4">
+          <div class="flex items-center space-x-3">
+            <span class="text-xs font-bold text-brand-700 bg-brand-50 border border-brand-100 px-3 py-1 rounded-lg">Fase 3</span>
+            <h4 class="font-bold text-slate-900 text-xl font-display">Monitoring Status & Pemindaian QR Code Mandiri</h4>
           </div>
           <p class="text-slate-600 text-sm leading-relaxed">
-            Untuk melihat status alat medis yang Anda ajukan, buka tab <strong>Riwayat & Status</strong>. Anda dapat melihat apakah alat masih berstatus <strong>Diajukan (Pending)</strong>, telah <strong>Serah Terima (Dipinjam)</strong>, atau sudah dikembalikan (<strong>Selesai</strong>). 
-            Anda juga dapat mengekspor seluruh daftar transaksi ruangan Anda ke berkas `.xlsx` dengan mengklik tombol <strong>Ekspor Excel</strong> di pojok kanan atas.
+            Semua transaksi ruangan Anda dapat dipantau di tab **Riwayat & Status**. Anda dapat melacak status kesiapan alat (Pending, Ready, Aktif, Selesai). 
+            Selain itu, Anda dapat memindai label QR pada alat medis di ruangan Anda kapan saja. Arahkan kamera ponsel, sistem akan membuka pop-up **Detail Hasil Scan** yang berisi: ID Alat, Nama Alat, Komponen lengkap isi set alat tersebut, dan status posisinya saat ini untuk menjamin kesesuaian logistik steril secara akurat.
           </p>
         </div>
 
       </div>
     </section>
 
-    <!-- SECTION 4: PANDUAN PENGGUNA - ADMIN -->
-    <section id="admin" class="scroll-mt-24 space-y-6">
-      <div class="border-l-4 border-indigo-500 pl-4">
-        <h3 class="text-2xl font-bold font-display text-slate-900">4. Panduan Petugas (Admin & Super Admin CSSD)</h3>
-        <p class="text-sm text-slate-500 mt-1">Petunjuk lengkap pengelolaan siklus sterilisasi, persetujuan user, dan inventarisasi.</p>
+    <!-- SECTION 4: PANDUAN PETUGAS / ADMIN CSSD -->
+    <section id="admin" class="scroll-mt-24 space-y-8">
+      <div class="border-l-4 border-brand-500 pl-4">
+        <h3 class="text-2xl sm:text-3xl font-black font-display text-slate-900 uppercase tracking-tight">4. Panduan Petugas (Admin & Super Admin CSSD)</h3>
+        <p class="text-sm text-slate-500 mt-1">Tata cara pengelolaan transaksi logistik steril, penanganan ketidaklengkapan, dan gamifikasi poin.</p>
       </div>
 
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-100">
         
-        <!-- Step 1: Serah Terima -->
-        <div class="p-6 space-y-4">
-          <div class="flex items-center space-x-2">
-            <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg">Modul 1</span>
-            <h4 class="font-bold text-slate-900 text-lg">Memproses Serah Terima Alat Medis</h4>
+        <!-- Modul 1: Smart Scan Action -->
+        <div class="p-6 sm:p-8 space-y-4">
+          <div class="flex items-center space-x-3">
+            <span class="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-lg">Modul Admin</span>
+            <h4 class="font-bold text-slate-900 text-xl font-display">Pemrosesan Cepat Berbasis Scan (Zero-Typing Handover)</h4>
           </div>
           <p class="text-slate-600 text-sm leading-relaxed">
-            Buka tab <strong>Monitor Peminjaman</strong>. Jika ada ruangan mengajukan peminjaman, klik tombol <strong>Ambil / Serah Terima</strong> pada baris transaksi terkait saat perwakilan ruangan datang mengambil barang fisik. Status transaksi akan berubah menjadi <strong>Dipinjam</strong>. 
-            Ketika alat medis dikembalikan setelah tindakan, klik tombol <strong>Proses Pengembalian</strong>, catat kondisi fisik alat (misal: "Lengkap & utuh"), lalu simpan. Status alat akan berubah menjadi <strong>Kotor</strong> untuk masuk antrean pencucian & sterilisasi ulang di CSSD.
+            Petugas CSSD dapat mempercepat pemrosesan serah terima dan pengembalian alat medis dengan memindai kode QR fisik pada set alat medis menggunakan kamera:
+          </p>
+          <ul class="list-disc pl-5 text-sm text-slate-600 space-y-2">
+            <li>**Proses Serah Terima**: Arahkan pemindai pada alat medis berstatus *Ready for Pickup*, modal hasil scan akan muncul. Klik **Proses Serah Terima**, Anda akan dialihkan secara instan ke halaman monitor dengan filter pesanan terkait, dan pop-up konfirmasi penerima otomatis terbuka.</li>
+            <li>**Proses Pengembalian**: Pindai alat berstatus *Dipinjam*, klik **Proses Pengembalian**, sistem akan mengarahkan ke menu monitor peminjaman dan membuka pop-up konfirmasi pengembalian alat medis.</li>
+          </ul>
+        </div>
+
+        <!-- Modul 2: Siklus Sterilisasi & Lifetime Count -->
+        <div class="p-6 sm:p-8 space-y-4">
+          <div class="flex items-center space-x-3">
+            <span class="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-lg">Modul Admin</span>
+            <h4 class="font-bold text-slate-900 text-xl font-display">Manajemen Siklus Sterilisasi & Pelacakan Kadaluwarsa</h4>
+          </div>
+          <p class="text-slate-600 text-sm leading-relaxed">
+            Buka tab **Inventaris Alat** untuk melacak daur hidup alat. Ketika alat berstatus *Kotor*, klik ikon edit untuk mengubah siklus ke *Pencucian*, lalu *Proses Steril*. Setelah autoklaf selesai, set status alat ke **Steril**, sistem akan meminta Anda memasukkan tanggal sterilisasi dan secara otomatis mengkalkulasi tanggal kedaluwarsa berdasarkan masa aktif steril alat tersebut (misalnya 14, 30, atau 180 hari). Alat yang kedaluwarsa secara otomatis ditandai bahaya oleh sistem di database.
           </p>
         </div>
 
-        <!-- Step 2: Manajemen Inventaris -->
-        <div class="p-6 space-y-4">
-          <div class="flex items-center space-x-2">
-            <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg">Modul 2</span>
-            <h4 class="font-bold text-slate-900 text-lg">Pengelolaan Inventaris Alat & Sterilisasi</h4>
+        <!-- Modul 3: Poin Kerja & Gamifikasi Staf -->
+        <div class="p-6 sm:p-8 space-y-4">
+          <div class="flex items-center space-x-3">
+            <span class="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-lg">Modul Admin</span>
+            <h4 class="font-bold text-slate-900 text-xl font-display">Evaluasi Kinerja Staf & Akumulasi Poin Prestasi</h4>
           </div>
           <p class="text-slate-600 text-sm leading-relaxed">
-            Semua perubahan kondisi alat dicatat di tab <strong>Inventaris Alat</strong>. Admin dapat menambahkan alat baru dengan mengklik <strong>+ Tambah Alat</strong>. 
-            Jika alat yang baru saja didekontaminasi telah selesai disterilkan menggunakan mesin autoklaf/suhu rendah, klik ikon pensil (edit status) pada baris alat tersebut, ubah status menjadi <strong>Steril</strong>, masukkan tanggal sterilisasi, dan atur tanggal kedaluwarsanya. Sistem otomatis memperhitungkan sisa hari steril alat tersebut.
+            Setiap petugas CSSD yang terdaftar di sistem akan mendapatkan poin otomatis setiap kali memproses transaksi logistik steril:
           </p>
-        </div>
-
-        <!-- Step 3: Approve User & Edit Data -->
-        <div class="p-6 space-y-4">
-          <div class="flex items-center space-x-2">
-            <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg">Modul 3</span>
-            <h4 class="font-bold text-slate-900 text-lg">Persetujuan Akun & Perubahan Profil Pengguna</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs mt-2 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div class="p-3 bg-white rounded-lg border border-slate-100 shadow-sm text-center">
+              <span class="font-bold text-brand-600 text-base block">+10 Poin</span>
+              <span class="text-slate-500">Menyelesaikan Sterilisasi Alat (Set Steril)</span>
+            </div>
+            <div class="p-3 bg-white rounded-lg border border-slate-100 shadow-sm text-center">
+              <span class="font-bold text-brand-600 text-base block">+5 Poin</span>
+              <span class="text-slate-500">Melakukan Konfirmasi Serah Terima ke Ruangan</span>
+            </div>
+            <div class="p-3 bg-white rounded-lg border border-slate-100 shadow-sm text-center">
+              <span class="font-bold text-brand-600 text-base block">+5 Poin</span>
+              <span class="text-slate-500">Memproses Konfirmasi Pengembalian Selesai</span>
+            </div>
           </div>
-          <p class="text-slate-600 text-sm leading-relaxed">
-            Setiap pendaftaran user ruangan baru masuk ke antrean tab <strong>Manajemen User</strong> dengan status <strong>Pending</strong>. Admin wajib memverifikasi profil pendaftar. Klik <strong>Setujui (Ruangan)</strong> atau <strong>Setujui (Admin)</strong> untuk mengaktifkan akun. 
-            Jika terjadi perubahan perwakilan ruangan, perubahan nomor kontak WhatsApp, atau kesalahan penulisan nama, Admin dapat mengklik tombol <strong>Edit</strong> pada baris user untuk memperbarui Nama Lengkap, Nomor HP, atau Ruangan pengguna secara langsung tanpa memengaruhi akun Google mereka.
+          <p class="text-slate-600 text-sm leading-relaxed mt-2">
+            Perolehan poin bulanan dikompilasi secara real-time pada tab **Prestasi Staf 🏆**, lengkap dengan visualisasi podium untuk 3 peringkat teratas. Fitur ini dirancang untuk memacu dedikasi dan budaya pelayanan prima di internal CSSD.
           </p>
         </div>
 
@@ -335,10 +389,10 @@
     </section>
 
     <!-- SECTION 5: FAQ ACCORDION -->
-    <section id="faq" class="scroll-mt-24 space-y-6">
+    <section id="faq" class="scroll-mt-24 space-y-8">
       <div class="border-l-4 border-brand-500 pl-4">
-        <h3 class="text-2xl font-bold font-display text-slate-900">5. FAQ (Tanya & Jawab)</h3>
-        <p class="text-sm text-slate-500 mt-1">Pertanyaan umum dan panduan pemecahan masalah cepat.</p>
+        <h3 class="text-2xl sm:text-3xl font-black font-display text-slate-900 uppercase tracking-tight">5. Pertanyaan Umum (FAQ)</h3>
+        <p class="text-sm text-slate-500 mt-1">Jawaban cepat atas pertanyaan operasional yang paling sering diajukan.</p>
       </div>
 
       <div class="space-y-4">
@@ -347,10 +401,10 @@
         <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-2">
           <h4 class="font-bold text-slate-900 text-sm sm:text-base flex items-center space-x-2">
             <span class="text-brand-500">Q:</span>
-            <span>Bagaimana jika masa sterilisasi alat medis telah kedaluwarsa?</span>
+            <span>Bagaimana jika alat medis steril telah melewati tanggal kedaluwarsa steril?</span>
           </h4>
           <p class="text-slate-600 text-xs sm:text-sm leading-relaxed pl-6">
-            Alat medis yang masa sterilnya habis tidak akan muncul di Katalog Ruangan dan tidak dapat diajukan pinjam. Petugas CSSD harus memproses sterilisasi ulang alat fisik tersebut, kemudian mengupdate statusnya kembali ke <strong>Steril</strong> di menu <strong>Inventaris Alat</strong> untuk memperbarui masa kedaluwarsa sterilnya.
+            Sistem secara otomatis mendeteksi tanggal kedaluwarsa steril. Jika masa aktif steril terlampaui, alat medis tersebut akan ditandai dengan warna merah bahaya dan **otomatis disembunyikan dari katalog ruangan** sehingga tidak bisa dipinjam. Alat medis fisik harus dikirim ulang ke CSSD untuk disterilkan kembali melalui siklus autoklaf.
           </p>
         </div>
 
@@ -358,10 +412,10 @@
         <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-2">
           <h4 class="font-bold text-slate-900 text-sm sm:text-base flex items-center space-x-2">
             <span class="text-brand-500">Q:</span>
-            <span>Mengapa pendaftaran saya berstatus "Menunggu Persetujuan Admin"?</span>
+            <span>Bagaimana cara melaporkan jika ada alat yang hilang atau rusak saat dikembalikan?</span>
           </h4>
           <p class="text-slate-600 text-xs sm:text-sm leading-relaxed pl-6">
-            Hal ini terjadi demi keamanan sistem data rumah sakit. Akun Anda harus diverifikasi terlebih dahulu oleh penanggung jawab Instalasi CSSD untuk memastikan nama dan unit kerja Anda sesuai. Silakan hubungi petugas CSSD agar akun Anda segera disetujui.
+            Saat memproses pengembalian di tab *Monitor Peminjaman*, klik opsi **Barang Tidak Lengkap / Rusak** pada pop-up konfirmasi. Masukkan deskripsi kehilangan/kerusakan fisik alat, ambil foto bukti fisik menggunakan kamera ponsel, lalu simpan. Sistem akan menandai transaksi tersebut dengan status **Tidak Lengkap** (merah bahaya) dan mengirim notifikasi WhatsApp/Telegram kepada perwakilan ruangan agar segera ditindaklanjuti.
           </p>
         </div>
 
@@ -369,10 +423,10 @@
         <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-2">
           <h4 class="font-bold text-slate-900 text-sm sm:text-base flex items-center space-x-2">
             <span class="text-brand-500">Q:</span>
-            <span>Di mana saya bisa melihat daftar aktivitas log audit sistem?</span>
+            <span>Apakah aplikasi SISTA-CSSD dapat diinstal di ponsel (HP) tanpa masuk ke Play Store?</span>
           </h4>
           <p class="text-slate-600 text-xs sm:text-sm leading-relaxed pl-6">
-            Log audit mencatat seluruh tindakan sistem secara kronologis (siapa, melakukan apa, dan kapan). Fitur ini eksklusif bagi pengguna berwewenang <strong>Admin</strong> / <strong>Super Admin</strong> dan dapat diakses melalui tab <strong>Log Audit</strong> di sidebar menu kiri.
+            Ya! Aplikasi SISTA-CSSD mendukung teknologi PWA. Buka tautan aplikasi di browser Google Chrome (Android) atau Safari (iOS) ponsel Anda, tekan menu browser, lalu pilih **Tambahkan ke Layar Utama** / **Install App**. Aplikasi akan terinstal langsung di layar ponsel Anda dan dapat diakses dengan cepat seperti aplikasi asli.
           </p>
         </div>
 
@@ -380,10 +434,10 @@
         <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-2">
           <h4 class="font-bold text-slate-900 text-sm sm:text-base flex items-center space-x-2">
             <span class="text-brand-500">Q:</span>
-            <span>Apakah beberapa petugas dalam satu ruangan yang sama bisa saling melihat riwayat peminjaman?</span>
+            <span>Bagaimana jika akun pendaftaran staf tertunda (Pending)?</span>
           </h4>
           <p class="text-slate-600 text-xs sm:text-sm leading-relaxed pl-6">
-            Ya. SISTA-CSSD dirancang dengan prinsip <strong>Berbasis Ruangan (Room-Based)</strong>, bukan akun individu. Seluruh petugas yang terdaftar di ruangan yang sama (misal: "ICU") akan memiliki akses penuh untuk memantau, melacak, dan mengekspor data riwayat peminjaman yang diajukan oleh siapa saja dari ruangan tersebut.
+            Demi menjaga keamanan logistik instrumen bedah rumah sakit, setiap akun pendaftar ruangan baru wajib diverifikasi oleh Kepala Unit CSSD. Silakan hubungi admin CSSD melalui tombol pintasan *Hubungi Admin* di menu sidebar untuk aktivasi cepat akun Anda.
           </p>
         </div>
 
@@ -392,11 +446,15 @@
 
   </main>
 
-  <!-- FOOTER SECTION -->
-  <footer class="bg-slate-900 text-slate-400 py-12 border-t border-slate-800">
+  <!-- FOOTER -->
+  <footer class="bg-slate-950 text-slate-500 py-16 border-t border-slate-900">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
-      <p class="text-sm">
-        &copy; 2026 Instalasi CSSD RSUD dr. R. Koesma. Hak Cipta Dilindungi Undang-Undang.
+      <div class="flex items-center justify-center space-x-2">
+        <img src="https://raw.githubusercontent.com/simpegkoesma/1/refs/heads/main/logo%20rsud%202%20png.png" alt="Logo" class="h-8 w-auto filter opacity-45">
+        <span class="font-display font-black text-slate-600">SISTA-CSSD Ecosystem</span>
+      </div>
+      <p class="text-xs">
+        &copy; 2026 Instalasi CSSD RSUD dr. R. Koesma Tuban. Hak Cipta Dilindungi Undang-Undang.
       </p>
     </div>
   </footer>
