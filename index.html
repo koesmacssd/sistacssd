@@ -662,6 +662,12 @@
               <div>
                 <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Inventaris Alat Medis</h1>
                 <p class="text-sm text-slate-500">Kelola status dan daftarkan alat baru ke sistem.</p>
+                <div class="mt-2.5">
+                  <button id="btn-print-labels-static" onclick="app.printSelectedLabels()" class="bg-brand-500 hover:bg-brand-600 active:scale-95 text-white font-extrabold px-3 py-1.5 rounded-xl text-[11px] shadow-sm transition-all flex items-center space-x-1.5">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                    <span>Cetak Label (<span id="print-static-selected-count">0</span> terpilih)</span>
+                  </button>
+                </div>
               </div>
               
               <div class="w-full sm:w-auto flex items-center space-x-2">
@@ -739,13 +745,6 @@
               <div id="inventaris-pagination" class="border-t border-slate-100 bg-slate-50/50 px-4"></div>
             </div>
 
-            <!-- Floating Action Bar untuk Cetak Label -->
-            <div id="print-action-bar" class="fixed bottom-6 right-6 bg-white/95 backdrop-blur shadow-2xl border border-slate-200 rounded-2xl px-6 py-4 flex items-center space-x-4 z-50 transform translate-y-28 opacity-0 pointer-events-none transition-all duration-300">
-              <span class="text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md" id="print-selected-count">0 terpilih</span>
-              <button onclick="app.printSelectedLabels()" class="bg-brand-500 hover:bg-brand-600 active:scale-95 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs shadow-md transition-all flex items-center space-x-1.5">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-                <span>Cetak Label (KTP)</span>
-              </button>
             </div>
           </div>
 
@@ -2077,22 +2076,10 @@
           }
         });
 
-        // Tampilkan floating action bar jika ada yang terpilih
-        const bar = document.getElementById('print-action-bar');
-        const countTxt = document.getElementById('print-selected-count');
-        if (bar && countTxt) {
-          const count = this.selectedInventarisIds.length;
-          countTxt.innerText = `${count} terpilih`;
-          
-          if (count > 0) {
-            bar.classList.remove('opacity-0', 'translate-y-28', 'pointer-events-none');
-            bar.classList.add('opacity-100', 'translate-y-0');
-            bar.style.pointerEvents = 'auto';
-          } else {
-            bar.classList.remove('opacity-100', 'translate-y-0');
-            bar.classList.add('opacity-0', 'translate-y-28', 'pointer-events-none');
-            bar.style.pointerEvents = 'none';
-          }
+        // Update static print button label
+        const countTxtStatic = document.getElementById('print-static-selected-count');
+        if (countTxtStatic) {
+          countTxtStatic.innerText = this.selectedInventarisIds.length;
         }
 
         // Sinkronkan tombol check-all
