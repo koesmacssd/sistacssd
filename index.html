@@ -22,7 +22,7 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <!-- HTML5 QR Code Library for Camera Scan -->
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js" type="text/javascript"></script>
   
   <script>
     tailwind.config = {
@@ -1362,28 +1362,28 @@
           </div>
         </div>
       </div>
-    <!-- 8. MODAL SCANNER QR CODE -->
-    <div id="scanner-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl flex flex-col border border-slate-200">
-        <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-          <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
-            <span>📷 Pindai QR Code Alat</span>
-          </h3>
-          <button onclick="app.closeScannerModal()" class="text-slate-400 hover:text-slate-600 focus:outline-none">
-            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+  </div>
+
+  <!-- 8. MODAL SCANNER QR CODE (Direct child of body) -->
+  <div id="scanner-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl flex flex-col border border-slate-200">
+      <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+        <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+          <span>📷 Pindai QR Code Alat</span>
+        </h3>
+        <button onclick="app.closeScannerModal()" class="text-slate-400 hover:text-slate-600 focus:outline-none">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="p-5 flex flex-col items-center justify-center">
+        <div id="reader" style="width: 280px; height: 280px; background: #000000; border-radius: 12px; overflow: hidden; position: relative; border: 1.5px solid #1e293b;">
+          <!-- html5-qrcode will render here -->
         </div>
-        <div class="p-5 flex flex-col items-center justify-center">
-          <div id="reader" style="width: 280px; height: 280px; background: #000000; border-radius: 12px; overflow: hidden; position: relative; border: 1.5px solid #1e293b;">
-            <!-- html5-qrcode will render here -->
-          </div>
-          <p class="text-xs text-slate-500 mt-4 text-center font-medium">Dekatkan QR Code stiker alat medis ke kamera.</p>
-        </div>
+        <p class="text-xs text-slate-500 mt-4 text-center font-medium">Dekatkan QR Code stiker alat medis ke kamera.</p>
       </div>
     </div>
-
   </div>
 
   <!-- SCRIPT LOGIKA SPA SISTA-CSSD -->
