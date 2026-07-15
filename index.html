@@ -238,13 +238,6 @@
 
             <!-- Profile Info & Logout -->
             <div class="flex items-center space-x-4">
-              <!-- Scan QR Button for Admin/Super Admin (hidden by default, shown globally in script) -->
-              <button id="header-scan-btn" onclick="app.openScannerModal()" class="hidden bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-extrabold h-9 px-3.5 rounded-xl text-xs shadow-md transition-all flex items-center space-x-1.5" title="Scan QR Code Alat">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v-4m6 11h2m-6 0h-2v4m0-11v-4m6 11h2m-6 0h-2v4" />
-                </svg>
-                <span class="hidden md:inline">Scan QR Alat</span>
-              </button>
               <div onclick="app.openProfileEditModal()" class="flex items-center space-x-3 cursor-pointer hover:opacity-85 transition group" title="Ubah Nama / Ruangan Anda">
                 <div class="text-right hidden sm:block">
                   <p id="nav-user-name" class="text-sm font-semibold text-white group-hover:text-brand-300 transition"></p>
@@ -1386,6 +1379,14 @@
     </div>
   </div>
 
+  <!-- 9. FLOATING SCAN BUTTON (Bottom Center - Barcode Icon) -->
+  <button id="floating-scan-btn" onclick="app.openScannerModal()" class="hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white p-4 rounded-full shadow-2xl z-40 transition-all border border-indigo-500 flex items-center justify-center h-14 w-14" title="Scan QR Code Alat">
+    <!-- Barcode Icon SVG -->
+    <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3 5h2v14H3V5zm4 0h1v14H7V5zm3 0h3v14h-3V5zm5 0h1v14h-1V5zm3 0h3v14h-3V5z" />
+    </svg>
+  </button>
+
   <!-- SCRIPT LOGIKA SPA SISTA-CSSD -->
   <script>
     class SistaCSSD {
@@ -1486,13 +1487,22 @@
       }
 
       // Routing Tampilan Utama
-      showView(viewName) {
+       showView(viewName) {
         document.getElementById('view-login').classList.add('hidden');
         document.getElementById('view-register').classList.add('hidden');
         document.getElementById('view-pending').classList.add('hidden');
         document.getElementById('view-dashboard').classList.add('hidden');
 
         document.getElementById(`view-${viewName}`).classList.remove('hidden');
+
+        const floatBtn = document.getElementById('floating-scan-btn');
+        if (floatBtn) {
+          if (viewName !== 'dashboard' || (this.user && this.user.peran === 'Ruangan')) {
+            floatBtn.classList.add('hidden');
+          } else if (this.user && this.user.peran !== 'Ruangan') {
+            floatBtn.classList.remove('hidden');
+          }
+        }
       }
 
       handleHashRouting() {
@@ -1644,7 +1654,7 @@
         document.getElementById('nav-ruangan-menu').classList.add('hidden');
         document.getElementById('nav-admin-menu').classList.add('hidden');
 
-        const scanBtn = document.getElementById('header-scan-btn');
+        const scanBtn = document.getElementById('floating-scan-btn');
         if (scanBtn) {
           if (this.user.peran === 'Ruangan') {
             scanBtn.classList.add('hidden');
