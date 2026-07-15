@@ -14,6 +14,7 @@ var ORDERS_SHEET_NAME = 'orders';
 var DETAILS_SHEET_NAME = 'order_details';
 var LOGS_SHEET_NAME = 'logs';
 var ADMINS_SHEET_NAME = 'admins_contact';
+var FAVORITES_SHEET_NAME = 'favorites';
 
 // Helper to get active sheet or open by ScriptProperty
 function getSpreadsheet() {
@@ -216,6 +217,9 @@ function doGet(e) {
       case 'getAchievementsData':
         return getAchievementsData(userEmail);
         
+      case 'getFavorites':
+        return getFavoritesData(userEmail);
+        
       default:
         return jsonResponse(false, "Action GET '" + action + "' tidak dikenali.");
     }
@@ -335,6 +339,9 @@ function doPost(e) {
           return jsonResponse(false, "Akses ditolak. Hanya untuk Super Admin.");
         }
         return updateAchievementsConfig(postData, userEmail);
+        
+      case 'toggleFavorite':
+        return toggleFavoriteItem(postData, userEmail);
         
       default:
         return jsonResponse(false, "Action POST '" + action + "' tidak dikenali.");
@@ -1673,6 +1680,15 @@ function initDatabase() {
     logsSheet = ss.insertSheet(LOGS_SHEET_NAME);
     logsSheet.appendRow(['timestamp', 'email_aktor', 'aktivitas']);
   }
+
+  // 7. Favorites Sheet
+  var favoritesSheet = ss.getSheetByName(FAVORITES_SHEET_NAME);
+  if (!favoritesSheet) {
+    favoritesSheet = ss.insertSheet(FAVORITES_SHEET_NAME);
+    favoritesSheet.appendRow(['email', 'id_alat']);
+    // Format header
+    favoritesSheet.getRange("A1:B1").setFontWeight("bold").setBackground("#e2e8f0");
+  }
   
   return jsonResponse(true, "Database SISTA-CSSD berhasil diinisialisasi.");
 }
@@ -2378,4 +2394,58 @@ function updateAchievementsConfig(postData, actorEmail) {
   writeLog(actorEmail, "Mengubah konfigurasi tampilan prestasi staf menjadi: " + value);
   sendTelegramNotification("⚙️ *Konfigurasi Diubah*\nTampilan Prestasi Staf: " + value + "\nOleh: " + actorEmail);
   return jsonResponse(true, "Konfigurasi berhasil disimpan.");
+}
+
+// Mengambil daftar ID alat favorit untuk user tertentu
+function getFavoritesData(userEmail) {
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(FAVORITES_SHEET_NAME);
+  var favorites = [];
+  if (sheet) {
+    var data = sheet.getDataRange().getValues();
+    var cleanEmail = userEmail.toString().trim().toLowerCase();
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] && data[i][0].toString().trim().toLowerCase() === cleanEmail) {
+        favorites.push(data[i][1].toString().trim());
+      }
+    }
+  }
+  return jsonResponse(true, "Data favorit berhasil dimuat.", favorites);
+}
+
+// Toggle status favorit alat
+function toggleFavoriteItem(postData, userEmail) {
+  var itemId = postData.id_alat;
+  if (!itemId) {
+    return jsonResponse(false, "Parameter 'id_alat' diperlukan.");
+  }
+  
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(FAVORITES_SHEET_NAME);
+  if (!sheet) {
+    initDatabase();
+    sheet = ss.getSheetByName(FAVORITES_SHEET_NAME);
+  }
+  
+  var data = sheet.getDataRange().getValues();
+  var cleanEmail = userEmail.toString().trim().toLowerCase();
+  var cleanItemId = itemId.toString().trim().toLowerCase();
+  
+  var foundRow = -1;
+  for (var i = 1; i < data.length; i++) {
+    var rowEmail = data[i][0].toString().trim().toLowerCase();
+    var rowItemId = data[i][1].toString().trim().toLowerCase();
+    if (rowEmail === cleanEmail && rowItemId === cleanItemId) {
+      foundRow = i + 1;
+      break;
+    }
+  }
+  
+  if (foundRow !== -1) {
+    sheet.deleteRow(foundRow);
+    return jsonResponse(true, "Dihapus dari favorit.", { status: "REMOVED", id_alat: itemId });
+  } else {
+    sheet.appendRow([cleanEmail, itemId.toString().trim()]);
+    return jsonResponse(true, "Ditambahkan ke favorit.", { status: "ADDED", id_alat: itemId });
+  }
 }

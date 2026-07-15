@@ -377,6 +377,16 @@
               </div>
             </div>
 
+            <!-- Tab Filter Kategori & Favorit -->
+            <div class="flex items-center space-x-2 border-b border-slate-100 pb-2">
+              <button onclick="app.setCatalogFilter('all')" id="btn-filter-cat-all" class="px-4 py-2 rounded-xl text-xs font-bold transition bg-brand-500 text-white shadow-sm flex items-center space-x-1">
+                <span>🎒 Semua Alat</span>
+              </button>
+              <button onclick="app.setCatalogFilter('fav')" id="btn-filter-cat-fav" class="px-4 py-2 rounded-xl text-xs font-bold transition bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center space-x-1">
+                <span>⭐ Favorit Saya</span>
+              </button>
+            </div>
+            
             <!-- Grid Katalog -->
             <div id="katalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               <!-- Render via JS -->
@@ -1355,6 +1365,8 @@
         this.modalOperation = 'add'; // 'add' | 'edit'
         this.adminOrdersFilter = 'all';
         this.isProcessingOrder = false;
+        this.favorites = []; // ID alat yang difavoritkan
+        this.catalogFilter = 'all'; // 'all' | 'fav'
         
         // State Paginasi
         this.katalogPage = 1;
@@ -1653,11 +1665,17 @@
         // Lazy load data berdasarkan tab yang aktif
         try {
           if (tabName === 'katalog') {
+            const promises = [];
             if (!this.items || this.items.length === 0) {
-              const catalogList = document.getElementById('katalog-list');
-              if (catalogList) catalogList.innerHTML = '<div class="p-8 text-center text-slate-500 text-sm font-medium">Memuat katalog alat steril...</div>';
-              const res = await this.callApi('getItems');
-              if (res.success) this.items = res.data;
+              const catalogGrid = document.getElementById('katalog-grid');
+              if (catalogGrid) catalogGrid.innerHTML = '<div class="col-span-full py-12 text-center text-slate-500 text-sm font-medium">Memuat katalog alat steril...</div>';
+              promises.push(this.callApi('getItems').then(res => { if (res.success) this.items = res.data; }));
+            }
+            if (!this.favorites || this.favorites.length === 0) {
+              promises.push(this.callApi('getFavorites').then(res => { if (res.success) this.favorites = res.data; }));
+            }
+            if (promises.length > 0) {
+              await Promise.all(promises);
             }
             this.renderKatalog();
           } else if (tabName === 'keranjang') {
@@ -1950,6 +1968,68 @@
         this.showToast('info', 'Keranjang dikosongkan.');
       }
 
+      setCatalogFilter(filter) {
+        this.catalogFilter = filter;
+        
+        // Update highlight active filter buttons
+        const btnAll = document.getElementById('btn-filter-cat-all');
+        const btnFav = document.getElementById('btn-filter-cat-fav');
+        if (btnAll && btnFav) {
+          if (filter === 'all') {
+            btnAll.className = 'px-4 py-2 rounded-xl text-xs font-bold transition bg-brand-500 text-white shadow-sm flex items-center space-x-1';
+            btnFav.className = 'px-4 py-2 rounded-xl text-xs font-bold transition bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center space-x-1';
+          } else {
+            btnAll.className = 'px-4 py-2 rounded-xl text-xs font-bold transition bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center space-x-1';
+            btnFav.className = 'px-4 py-2 rounded-xl text-xs font-bold transition bg-brand-500 text-white shadow-sm flex items-center space-x-1';
+          }
+        }
+        
+        // Reset page and render
+        this.katalogPage = 1;
+        this.renderKatalog();
+      }
+
+      async toggleFavorite(itemId) {
+        if (!itemId) return;
+        
+        // Optimistic UI Update
+        const idx = this.favorites.indexOf(itemId);
+        const isAdding = idx === -1;
+        if (isAdding) {
+          this.favorites.push(itemId);
+        } else {
+          this.favorites.splice(idx, 1);
+        }
+        
+        // Render instantly
+        this.renderKatalog();
+        
+        try {
+          const res = await this.callApiPost('toggleFavorite', { id_alat: itemId });
+          if (!res.success) {
+            // Rollback on failure
+            this.showToast('error', 'Gagal memperbarui favorit: ' + res.message);
+            const idxRollback = this.favorites.indexOf(itemId);
+            if (isAdding) {
+              if (idxRollback !== -1) this.favorites.splice(idxRollback, 1);
+            } else {
+              this.favorites.push(itemId);
+            }
+            this.renderKatalog();
+          }
+        } catch (e) {
+          // Rollback on network failure
+          this.showToast('error', 'Gagal menghubungi server database.');
+          const idxRollback = this.favorites.indexOf(itemId);
+          if (isAdding) {
+            if (idxRollback !== -1) this.favorites.splice(idxRollback, 1);
+          } else {
+            this.favorites.push(itemId);
+          }
+          this.renderKatalog();
+        }
+      }
+
       saveCart() {
         localStorage.setItem('sista_cart', JSON.stringify(this.cart));
         localStorage.setItem('sista_cart_notes', JSON.stringify(this.cartNotes));
@@ -2017,9 +2097,14 @@
         }
 
         // Filter search items
-        const availableItems = this.items.filter(item => {
+        let availableItems = this.items.filter(item => {
           return item.nama_alat.toLowerCase().includes(query) || item.id_alat.toLowerCase().includes(query);
         });
+
+        // Filter berdasarkan Favorit
+        if (this.catalogFilter === 'fav') {
+          availableItems = availableItems.filter(item => this.favorites.includes(item.id_alat));
+        }
 
         // Urutkan item secara lokal
         const sortSelect = document.getElementById('katalog-sort');
@@ -2094,8 +2179,11 @@
           }
 
           const card = document.createElement('div');
-          card.className = 'bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col justify-between p-5 hover:shadow-md transition duration-200';
+          card.className = 'relative bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col justify-between p-5 hover:shadow-md transition duration-200';
           card.innerHTML = `
+            <button onclick="app.toggleFavorite('${item.id_alat}')" class="absolute top-8 right-8 p-1.5 rounded-full bg-white/90 backdrop-blur shadow-sm hover:bg-white border border-slate-200 hover:scale-110 transition duration-150 z-10 text-sm focus:outline-none flex items-center justify-center h-8 w-8" title="Tandai Favorit">
+              ${this.favorites.includes(item.id_alat) ? '⭐' : '☆'}
+            </button>
             <div class="space-y-3">
               ${imgHtml}
               <div class="flex justify-between items-start">
