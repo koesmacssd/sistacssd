@@ -2559,16 +2559,26 @@
       }
 
       handleProcessSerahTerimaScanned(orderId) {
-        this.openSerahTerimaModal(orderId);
+        this.setTab('admin-peminjaman');
+        const searchInput = document.getElementById('admin-orders-search');
+        if (searchInput) {
+          searchInput.value = orderId;
+          this.renderAdminOrders();
+        }
+        setTimeout(() => {
+          this.updateOrderStatus(orderId, 'Aktif');
+        }, 300);
       }
 
       handleProcessReturnScanned(orderId, scannedItemId) {
-        this.openReturnModal(orderId);
+        this.setTab('admin-peminjaman');
+        const searchInput = document.getElementById('admin-orders-search');
+        if (searchInput) {
+          searchInput.value = orderId;
+          this.renderAdminOrders();
+        }
         setTimeout(() => {
-          const chk = document.getElementById(`chk-item-${scannedItemId}`);
-          if (chk) {
-            chk.checked = true;
-          }
+          this.updateOrderStatus(orderId, 'Selesai');
         }, 300);
       }
 
