@@ -72,8 +72,9 @@
       border: 1px solid rgba(226, 232, 240, 0.8);
     }
   </style>
-  <!-- tsParticles CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/tsparticles-all@3/tsparticles.all.bundle.min.js"></script>
+  <!-- tsParticles Engine & Slim Bundle CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tsparticles/engine@3/tsparticles.engine.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tsparticles/slim@3/tsparticles.slim.bundle.min.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased">
 
@@ -467,6 +468,10 @@
   <!-- tsParticles Initialization -->
   <script>
     (async () => {
+      // Register all slim plugins to tsParticles engine
+      await loadSlim(tsParticles);
+
+      // Load particles options
       await tsParticles.load({
         id: "particles-js",
         options: {
