@@ -2128,7 +2128,7 @@
 
         // Susun HTML stiker
         let stikerPagesHtml = '';
-        const stickersPerPage = 18;
+        const stickersPerPage = 14;
         
         for (let i = 0; i < selectedItems.length; i += stickersPerPage) {
           const pageItems = selectedItems.slice(i, i + stickersPerPage);
@@ -2144,20 +2144,18 @@
               <div class="sticker">
                 <div class="qr-container">
                   <img class="qr-code" src="${qrUrl}" alt="QR">
+                  <div class="tool-id">${item.id_alat}</div>
                 </div>
                 <div class="sticker-info">
                   <div class="hosp-name">RSUD dr. R. Koesma Tuban</div>
-                  <div class="tool-title-row">
-                    <span class="tool-id">${item.id_alat}</span>
-                    <span class="tool-name">${item.nama_alat}</span>
-                  </div>
+                  <div class="tool-title-row">${item.nama_alat}</div>
                   <div class="tool-desc">${cleanDesc}</div>
                 </div>
               </div>
             `;
           });
           
-          // Mengisi stiker kosong jika jumlah alat kurang dari 18 agar grid tetap presisi
+          // Mengisi stiker kosong jika jumlah alat kurang dari 14 agar grid tetap presisi
           while (pageItems.length < stickersPerPage) {
             pageItems.push({});
             cardsHtml += `<div class="sticker empty-sticker"></div>`;
@@ -2177,7 +2175,7 @@
           <head>
             <title>Cetak Label Stiker SISTA-CSSD</title>
             <style>
-              /* CSS Pengaturan Kertas A4 & Grid Margin Presisi (2x9 Grid) */
+              /* CSS Pengaturan Kertas A4 & Grid Margin Presisi (2x7 Grid) */
               @page {
                 size: A4 portrait;
                 margin: 0;
@@ -2194,26 +2192,26 @@
               .page {
                 width: 210mm;
                 height: 297mm;
-                padding: 7.5mm 16mm;
+                padding: 7mm 10mm;
                 box-sizing: border-box;
                 display: grid;
-                grid-template-columns: repeat(2, 84mm);
-                grid-template-rows: repeat(9, 30mm);
-                gap: 1.5mm 10mm;
+                grid-template-columns: repeat(2, 92mm);
+                grid-template-rows: repeat(7, 37mm);
+                gap: 4mm 6mm;
                 page-break-after: always;
                 background-color: #ffffff;
                 box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
                 margin: 20px auto;
               }
 
-              /* Desain Individual Stiker Landscape (84mm x 30mm) */
+              /* Desain Individual Stiker Landscape (92mm x 37mm) - Border Kotak */
               .sticker {
-                width: 84mm;
-                height: 30mm;
+                width: 92mm;
+                height: 37mm;
                 box-sizing: border-box;
-                border: 1px solid #cbd5e1;
-                border-radius: 2.5mm;
-                padding: 1.8mm;
+                border: 1.5px solid #0f172a;
+                border-radius: 0px; /* Border Kotak, Bukan Rounded */
+                padding: 1.5mm 2mm;
                 display: flex;
                 align-items: center;
                 background-color: #ffffff;
@@ -2222,25 +2220,42 @@
               }
 
               .empty-sticker {
-                border: 1px dashed #e2e8f0;
+                border: 1px dashed #cbd5e1;
                 background-color: #fafbfd;
               }
 
               /* QR Code Container (Kiri) */
               .qr-container {
                 width: 27mm;
-                height: 27mm;
+                height: 34mm;
                 display: flex;
+                flex-direction: column;
                 align-items: center;
                 justify-content: center;
                 flex-shrink: 0;
-                margin-right: 2.5mm;
+                margin-right: 3mm;
+                box-sizing: border-box;
               }
 
               .qr-code {
-                width: 27mm;
-                height: 27mm;
+                width: 25mm;
+                height: 25mm;
                 object-fit: contain;
+              }
+
+              /* ID Alat Medis di bawah QR Code */
+              .tool-id {
+                font-size: 8.5px;
+                font-weight: 800;
+                color: #0284c7;
+                background-color: #f0f9ff;
+                border: 0.5px solid #bae6fd;
+                border-radius: 0px; /* Border Kotak */
+                padding: 0.2mm 1.5mm;
+                margin-top: 1mm;
+                white-space: nowrap;
+                text-align: center;
+                box-sizing: border-box;
               }
 
               /* Info Panel (Kanan) */
@@ -2249,7 +2264,7 @@
                 flex-direction: column;
                 justify-content: flex-start;
                 flex-grow: 1;
-                height: 27mm;
+                height: 34mm;
                 overflow: hidden;
                 box-sizing: border-box;
               }
@@ -2261,7 +2276,7 @@
                 color: #0f172a;
                 border-bottom: 1.5px solid #0284c7;
                 padding-bottom: 0.5mm;
-                margin-bottom: 0.8mm;
+                margin-bottom: 1.2mm;
                 text-transform: uppercase;
                 letter-spacing: 0.2px;
                 white-space: nowrap;
@@ -2270,43 +2285,30 @@
                 line-height: 1.2;
               }
 
-              /* Baris 2: ID & Nama Alat (Font 11, Wrap jika panjang) */
+              /* Baris 2: Nama Alat (Font 11, Wrap jika panjang) */
               .tool-title-row {
                 font-size: 11px;
-                font-weight: 700;
+                font-weight: 800;
                 color: #1e293b;
-                margin-bottom: 0.8mm;
+                margin-bottom: 1mm;
                 line-height: 1.25;
                 display: -webkit-box;
-                -webkit-line-clamp: 2; /* Bungkus hingga 2 baris jika panjang */
+                -webkit-line-clamp: 2; /* Bungkus jika panjang */
                 -webkit-box-orient: vertical;
                 overflow: hidden;
-              }
-
-              .tool-id {
-                color: #0284c7;
-                background-color: #f0f9ff;
-                border: 0.5px solid #bae6fd;
-                border-radius: 0.8mm;
-                padding: 0.1mm 1mm;
-                font-weight: 800;
-                margin-right: 1mm;
-                display: inline-block;
-                white-space: nowrap;
-              }
-
-              .tool-name {
-                display: inline;
               }
 
               /* Baris 3: Deskripsi (Font 10) */
               .tool-desc {
                 font-size: 10px;
                 color: #475569;
-                line-height: 1.15;
+                line-height: 1.2;
+                display: -webkit-box;
+                -webkit-line-clamp: 4; /* Sisa ruang memuat 4 baris */
+                -webkit-box-orient: vertical;
+                overflow: hidden;
                 text-align: left;
                 white-space: pre-line;
-                overflow: hidden;
               }
 
               /* CSS Cetak Khusus Browser */
