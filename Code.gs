@@ -1253,6 +1253,7 @@ function updateItemCycle(postData, actorEmail) {
         writeLog(actorEmail, "Mengubah status " + itemId + " ke Proses Steril.");
         sendTelegramNotification("🧪 *Proses Sterilisasi Dimulai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\n\nOleh: " + actorInfo);
         clearItemsCache();
+        addPoints(actorEmail, "Proses Sterilisasi", 3);
         return jsonResponse(true, "Status alat berhasil diubah ke Proses Steril.", { id_alat: itemId, status: 'Proses Steril' });
         
       } else if (nextCycle === 'Pencucian') {
@@ -1294,7 +1295,6 @@ function updateItemCycle(postData, actorEmail) {
         var actorInfo = getActorInfoString(actorEmail);
         sendTelegramNotification("💎 *Sterilisasi Selesai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\nStatus: Steril ✔\nKadaluwarsa: " + Utilities.formatDate(expiryDate, Session.getScriptTimeZone(), 'dd/MM/yyyy') + "\n\nOleh: " + actorInfo);
         clearItemsCache();
-        addPoints(actorEmail, "Proses Sterilisasi", 3);
         return jsonResponse(true, "Alat berhasil disterilkan dan siap dipinjam kembali.", { 
           id_alat: itemId, 
           status: 'Steril',
