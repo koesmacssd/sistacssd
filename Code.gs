@@ -2023,27 +2023,37 @@ function archiveOldData() {
     }
     
     var logsData = logsSheet.getDataRange().getValues();
-    var rowsToDelete = [];
-    
-    for (var i = logsData.length - 1; i >= 1; i--) {
-      var logDate = new Date(logsData[i][0]);
-      if (logDate < cutoffDate) {
-        logsArchive.appendRow(logsData[i]);
-        rowsToDelete.push(i + 1); // Baris 1-indexed
+    if (logsData.length > 1) {
+      var headers = logsData[0];
+      var logsToKeep = [headers];
+      var logsToArchive = [];
+      
+      for (var i = 1; i < logsData.length; i++) {
+        var logDate = new Date(logsData[i][0]);
+        if (logDate < cutoffDate) {
+          logsToArchive.push(logsData[i]);
+        } else {
+          logsToKeep.push(logsData[i]);
+        }
       }
-    }
-    
-    // Hapus baris dari sheet utama (dari bawah ke atas agar indeks tetap valid)
-    for (var d = 0; d < rowsToDelete.length; d++) {
-      logsSheet.deleteRow(rowsToDelete[d]);
-    }
-    
-    if (rowsToDelete.length > 0) {
-      Logger.log('Arsipkan ' + rowsToDelete.length + ' baris log lama ke ' + logsArchiveName);
+      
+      // Tulis massal ke sheet arsip jika ada data lama
+      if (logsToArchive.length > 0) {
+        var lastRow = logsArchive.getLastRow();
+        logsArchive.getRange(lastRow + 1, 1, logsToArchive.length, headers.length).setValues(logsToArchive);
+      }
+      
+      // Perbarui sheet log utama secara efisien
+      logsSheet.clearContents();
+      logsSheet.getRange(1, 1, logsToKeep.length, headers.length).setValues(logsToKeep);
+      
+      if (logsToArchive.length > 0) {
+        Logger.log('Arsipkan ' + logsToArchive.length + ' baris log lama ke ' + logsArchiveName);
+      }
     }
   }
   
-  // --- 2. Arsipkan Orders Selesai ---
+  // --- 2. Arsipkan Orders & Details ---
   var ordersSheet = ss.getSheetByName(ORDERS_SHEET_NAME);
   var detailsSheet = ss.getSheetByName(DETAILS_SHEET_NAME);
   
@@ -2065,46 +2075,61 @@ function archiveOldData() {
     
     var ordersData = ordersSheet.getDataRange().getValues();
     var detailsData = detailsSheet.getDataRange().getValues();
-    var archivedOrderIds = [];
-    var orderRowsToDelete = [];
     
-    for (var o = ordersData.length - 1; o >= 1; o--) {
-      var orderStatus = ordersData[o][3];
-      var orderReturnDate = ordersData[o][6] ? new Date(ordersData[o][6]) : null;
+    if (ordersData.length > 1) {
+      var orderHeaders = ordersData[0];
+      var ordersToKeep = [orderHeaders];
+      var ordersToArchive = [];
+      var archivedOrdersMap = {};
       
-      if (orderStatus === 'Selesai' && orderReturnDate && orderReturnDate < cutoffDate) {
-        ordersArchive.appendRow(ordersData[o]);
-        archivedOrderIds.push(ordersData[o][0]);
-        orderRowsToDelete.push(o + 1);
+      for (var o = 1; o < ordersData.length; o++) {
+        var orderStatus = ordersData[o][3];
+        var orderReturnDate = ordersData[o][6] ? new Date(ordersData[o][6]) : null;
+        
+        if (orderStatus === 'Selesai' && orderReturnDate && orderReturnDate < cutoffDate) {
+          ordersToArchive.push(ordersData[o]);
+          archivedOrdersMap[ordersData[o][0]] = true; // id_order
+        } else {
+          ordersToKeep.push(ordersData[o]);
+        }
       }
-    }
-    
-    // Buat map indeks untuk pencarian O(1)
-    var archivedOrdersMap = {};
-    for (var a = 0; a < archivedOrderIds.length; a++) {
-      archivedOrdersMap[archivedOrderIds[a]] = true;
-    }
-    
-    // Arsipkan detail terkait
-    var detailRowsToDelete = [];
-    for (var dt = detailsData.length - 1; dt >= 1; dt--) {
-      var orderId = detailsData[dt][1];
-      if (archivedOrdersMap[orderId]) {
-        detailsArchive.appendRow(detailsData[dt]);
-        detailRowsToDelete.push(dt + 1);
+      
+      // Kelompokkan data details
+      var detailHeaders = detailsData[0];
+      var detailsToKeep = [detailHeaders];
+      var detailsToArchive = [];
+      
+      for (var dt = 1; dt < detailsData.length; dt++) {
+        var orderId = detailsData[dt][1];
+        if (archivedOrdersMap[orderId]) {
+          detailsToArchive.push(detailsData[dt]);
+        } else {
+          detailsToKeep.push(detailsData[dt]);
+        }
       }
-    }
-    
-    // Hapus dari sheet utama (dari bawah ke atas)
-    for (var dr = 0; dr < detailRowsToDelete.length; dr++) {
-      detailsSheet.deleteRow(detailRowsToDelete[dr]);
-    }
-    for (var or2 = 0; or2 < orderRowsToDelete.length; or2++) {
-      ordersSheet.deleteRow(orderRowsToDelete[or2]);
-    }
-    
-    if (archivedOrderIds.length > 0) {
-      Logger.log('Arsipkan ' + archivedOrderIds.length + ' transaksi selesai ke ' + ordersArchiveName);
+      
+      // Tulis data orders terarsip secara massal
+      if (ordersToArchive.length > 0) {
+        var lastRowOrders = ordersArchive.getLastRow();
+        ordersArchive.getRange(lastRowOrders + 1, 1, ordersToArchive.length, orderHeaders.length).setValues(ordersToArchive);
+      }
+      
+      // Tulis data details terarsip secara massal
+      if (detailsToArchive.length > 0) {
+        var lastRowDetails = detailsArchive.getLastRow();
+        detailsArchive.getRange(lastRowDetails + 1, 1, detailsToArchive.length, detailHeaders.length).setValues(detailsToArchive);
+      }
+      
+      // Tulis ulang sheet utama dengan data aktif yang tersisa secara efisien
+      ordersSheet.clearContents();
+      ordersSheet.getRange(1, 1, ordersToKeep.length, orderHeaders.length).setValues(ordersToKeep);
+      
+      detailsSheet.clearContents();
+      detailsSheet.getRange(1, 1, detailsToKeep.length, detailHeaders.length).setValues(detailsToKeep);
+      
+      if (ordersToArchive.length > 0) {
+        Logger.log('Arsipkan ' + ordersToArchive.length + ' transaksi selesai ke ' + ordersArchiveName);
+      }
     }
   }
 }
@@ -2318,7 +2343,7 @@ function getOrCreateBackupFolder() {
     "Januari", "Februari", "Maret", "April", "Mei", "Juni",
     "Juli", "Agustus", "September", "Oktober", "November", "Desember"
   ];
-  var monthIdx = parseInt(monthNum) - 1;
+  var monthIdx = parseInt(monthNum, 10) - 1;
   var monthName = monthNum + "_" + monthNames[monthIdx];
   
   var rootFolder;
