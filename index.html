@@ -2170,6 +2170,35 @@
           return;
         }
 
+        Swal.fire({
+          title: 'Pilih Ukuran Kertas',
+          input: 'radio',
+          inputOptions: {
+            'continuous': 'Continuous (7,5 x 5 cm)',
+            'a4': 'A4 (Grid 2x7)'
+          },
+          inputValue: 'continuous',
+          showCancelButton: true,
+          confirmButtonText: 'Cetak',
+          cancelButtonText: 'Batal',
+          confirmButtonColor: '#0284c7',
+          cancelButtonColor: '#64748b',
+          customClass: {
+            popup: 'rounded-2xl max-w-sm'
+          },
+          inputValidator: (value) => {
+            if (!value) {
+              return 'Anda harus memilih ukuran kertas!';
+            }
+          }
+        }).then((result) => {
+          if (result.isConfirmed) {
+            this.executePrintLabels(result.value, selectedItems);
+          }
+        });
+      }
+
+      executePrintLabels(paperType, selectedItems) {
         // Buka tab popup kosong baru
         const printWindow = window.open('', '_blank');
         if (!printWindow) {
@@ -2177,217 +2206,368 @@
           return;
         }
 
-        // Susun HTML stiker
         let stikerPagesHtml = '';
-        const stickersPerPage = 14;
-        
-        for (let i = 0; i < selectedItems.length; i += stickersPerPage) {
-          const pageItems = selectedItems.slice(i, i + stickersPerPage);
-          let cardsHtml = '';
-          
-          pageItems.forEach(item => {
+
+        if (paperType === 'a4') {
+          const stickersPerPage = 14;
+          for (let i = 0; i < selectedItems.length; i += stickersPerPage) {
+            const pageItems = selectedItems.slice(i, i + stickersPerPage);
+            let cardsHtml = '';
+            
+            pageItems.forEach(item => {
+              if (!item.id_alat) return;
+              const qrData = encodeURIComponent(item.id_alat);
+              const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${qrData}`;
+              const cleanDesc = item.deskripsi ? item.deskripsi.replace(/"/g, '&quot;') : 'Tidak ada deskripsi.';
+              
+              cardsHtml += `
+                <div class="sticker">
+                  <div class="qr-container">
+                    <img class="qr-code" src="${qrUrl}" alt="QR">
+                    <div class="tool-id">${item.id_alat}</div>
+                  </div>
+                  <div class="sticker-info">
+                    <div class="hosp-name">RSUD DR. R. KOESMA</div>
+                    <div class="tool-title-row">${item.nama_alat}</div>
+                    <div class="tool-desc">${cleanDesc}</div>
+                  </div>
+                </div>
+              `;
+            });
+            
+            // Mengisi stiker kosong jika jumlah alat kurang dari 14 agar grid tetap presisi
+            while (pageItems.length < stickersPerPage) {
+              pageItems.push({});
+              cardsHtml += `<div class="sticker empty-sticker"></div>`;
+            }
+
+            stikerPagesHtml += `
+              <div class="page">
+                ${cardsHtml}
+              </div>
+            `;
+          }
+
+          printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>Cetak Label Stiker SISTA-CSSD</title>
+              <style>
+                /* CSS Pengaturan Kertas A4 & Grid Margin Presisi (2x7 Grid) */
+                @page {
+                  size: A4 portrait;
+                  margin: 0;
+                }
+                
+                html, body {
+                  margin: 0;
+                  padding: 0;
+                  background-color: #f1f5f9;
+                  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                }
+
+                /* Tiap halaman A4 */
+                .page {
+                  width: 210mm;
+                  height: 297mm;
+                  padding: 7mm 10mm;
+                  box-sizing: border-box;
+                  display: grid;
+                  grid-template-columns: repeat(2, 92mm);
+                  grid-template-rows: repeat(7, 37mm);
+                  gap: 4mm 6mm;
+                  page-break-after: always;
+                  background-color: #ffffff;
+                  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+                  margin: 20px auto;
+                }
+
+                /* Desain Individual Stiker Landscape (92mm x 37mm) - Border Kotak */
+                .sticker {
+                  width: 92mm;
+                  height: 37mm;
+                  box-sizing: border-box;
+                  border: 1.5px solid #0f172a;
+                  border-radius: 0px; /* Border Kotak, Bukan Rounded */
+                  padding: 1.5mm 2mm;
+                  display: flex;
+                  align-items: center;
+                  background-color: #ffffff;
+                  overflow: hidden;
+                  position: relative;
+                }
+
+                .empty-sticker {
+                  border: 1px dashed #cbd5e1;
+                  background-color: #fafbfd;
+                }
+
+                /* QR Code Container (Kiri) */
+                .qr-container {
+                  width: 27mm;
+                  height: 34mm;
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  justify-content: center;
+                  flex-shrink: 0;
+                  margin-right: 3mm;
+                  box-sizing: border-box;
+                }
+
+                .qr-code {
+                  width: 25mm;
+                  height: 25mm;
+                  object-fit: contain;
+                }
+
+                /* ID Alat Medis di bawah QR Code */
+                .tool-id {
+                  font-size: 8.5px;
+                  font-weight: 800;
+                  color: #0284c7;
+                  background-color: #f0f9ff;
+                  border: 0.5px solid #bae6fd;
+                  border-radius: 0px; /* Border Kotak */
+                  padding: 0.2mm 1.5mm;
+                  margin-top: 1mm;
+                  white-space: nowrap;
+                  text-align: center;
+                  box-sizing: border-box;
+                }
+
+                /* Info Panel (Kanan) */
+                .sticker-info {
+                  display: flex;
+                  flex-direction: column;
+                  justify-content: flex-start;
+                  flex-grow: 1;
+                  height: 34mm;
+                  overflow: hidden;
+                  box-sizing: border-box;
+                }
+
+                /* Baris 1: Nama RS (Font 12) */
+                .hosp-name {
+                  font-size: 12px;
+                  font-weight: 800;
+                  color: #0f172a;
+                  border-bottom: 1.5px solid #0284c7;
+                  padding-bottom: 0.5mm;
+                  margin-bottom: 1.2mm;
+                  text-transform: uppercase;
+                  letter-spacing: 0.2px;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  line-height: 1.2;
+                }
+
+                /* Baris 2: Nama Alat (Font 11, Wrap jika panjang) */
+                .tool-title-row {
+                  font-size: 11px;
+                  font-weight: 800;
+                  color: #1e293b;
+                  margin-bottom: 1mm;
+                  line-height: 1.25;
+                  display: -webkit-box;
+                  -webkit-line-clamp: 2; /* Bungkus jika panjang */
+                  -webkit-box-orient: vertical;
+                  overflow: hidden;
+                }
+
+                /* Baris 3: Deskripsi (Font 10) */
+                .tool-desc {
+                  font-size: 9.5px;
+                  color: #000000;
+                  line-height: 1.1;
+                  text-align: left;
+                  white-space: pre-line;
+                  overflow: hidden;
+                }
+
+                /* CSS Cetak Khusus Browser */
+                @media print {
+                  html, body {
+                    background-color: #ffffff;
+                  }
+                  .page {
+                    margin: 0;
+                    box-shadow: none;
+                    page-break-after: always;
+                  }
+                  .page:last-child {
+                    page-break-after: avoid;
+                  }
+                }
+              </style>
+            </head>
+            <body>
+              ${stikerPagesHtml}
+              <script>
+                window.onload = function() {
+                  setTimeout(function() {
+                    window.print();
+                  }, 500);
+                };
+              </script>
+            </body>
+            </html>
+          `);
+        } else {
+          // Tata letak kertas Continuous 7.5x5 cm
+          selectedItems.forEach(item => {
             if (!item.id_alat) return;
             const qrData = encodeURIComponent(item.id_alat);
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${qrData}`;
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrData}`;
             const cleanDesc = item.deskripsi ? item.deskripsi.replace(/"/g, '&quot;') : 'Tidak ada deskripsi.';
             
-            cardsHtml += `
-              <div class="sticker">
-                <div class="qr-container">
-                  <img class="qr-code" src="${qrUrl}" alt="QR">
-                  <div class="tool-id">${item.id_alat}</div>
+            stikerPagesHtml += `
+              <div class="sticker-continuous">
+                <div class="qr-container-continuous">
+                  <img class="qr-code-continuous" src="${qrUrl}" alt="QR">
+                  <div class="tool-id-continuous">${item.id_alat}</div>
                 </div>
-                <div class="sticker-info">
-                  <div class="hosp-name">RSUD dr. R. Koesma Tuban</div>
-                  <div class="tool-title-row">${item.nama_alat}</div>
-                  <div class="tool-desc">${cleanDesc}</div>
+                <div class="info-continuous">
+                  <div class="hosp-name-continuous">RSUD DR. R. KOESMA</div>
+                  <div class="tool-title-continuous">${item.nama_alat}</div>
+                  <div class="tool-desc-continuous">${cleanDesc}</div>
                 </div>
               </div>
             `;
           });
-          
-          // Mengisi stiker kosong jika jumlah alat kurang dari 14 agar grid tetap presisi
-          while (pageItems.length < stickersPerPage) {
-            pageItems.push({});
-            cardsHtml += `<div class="sticker empty-sticker"></div>`;
-          }
 
-          stikerPagesHtml += `
-            <div class="page">
-              ${cardsHtml}
-            </div>
-          `;
-        }
-
-        // Tulis document ke tab cetak
-        printWindow.document.write(`
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>Cetak Label Stiker SISTA-CSSD</title>
-            <style>
-              /* CSS Pengaturan Kertas A4 & Grid Margin Presisi (2x7 Grid) */
-              @page {
-                size: A4 portrait;
-                margin: 0;
-              }
-              
-              html, body {
-                margin: 0;
-                padding: 0;
-                background-color: #f1f5f9;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-              }
-
-              /* Tiap halaman A4 */
-              .page {
-                width: 210mm;
-                height: 297mm;
-                padding: 7mm 10mm;
-                box-sizing: border-box;
-                display: grid;
-                grid-template-columns: repeat(2, 92mm);
-                grid-template-rows: repeat(7, 37mm);
-                gap: 4mm 6mm;
-                page-break-after: always;
-                background-color: #ffffff;
-                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-                margin: 20px auto;
-              }
-
-              /* Desain Individual Stiker Landscape (92mm x 37mm) - Border Kotak */
-              .sticker {
-                width: 92mm;
-                height: 37mm;
-                box-sizing: border-box;
-                border: 1.5px solid #0f172a;
-                border-radius: 0px; /* Border Kotak, Bukan Rounded */
-                padding: 1.5mm 2mm;
-                display: flex;
-                align-items: center;
-                background-color: #ffffff;
-                overflow: hidden;
-                position: relative;
-              }
-
-              .empty-sticker {
-                border: 1px dashed #cbd5e1;
-                background-color: #fafbfd;
-              }
-
-              /* QR Code Container (Kiri) */
-              .qr-container {
-                width: 27mm;
-                height: 34mm;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                flex-shrink: 0;
-                margin-right: 3mm;
-                box-sizing: border-box;
-              }
-
-              .qr-code {
-                width: 25mm;
-                height: 25mm;
-                object-fit: contain;
-              }
-
-              /* ID Alat Medis di bawah QR Code */
-              .tool-id {
-                font-size: 8.5px;
-                font-weight: 800;
-                color: #0284c7;
-                background-color: #f0f9ff;
-                border: 0.5px solid #bae6fd;
-                border-radius: 0px; /* Border Kotak */
-                padding: 0.2mm 1.5mm;
-                margin-top: 1mm;
-                white-space: nowrap;
-                text-align: center;
-                box-sizing: border-box;
-              }
-
-              /* Info Panel (Kanan) */
-              .sticker-info {
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-start;
-                flex-grow: 1;
-                height: 34mm;
-                overflow: hidden;
-                box-sizing: border-box;
-              }
-
-              /* Baris 1: Nama RS (Font 12) */
-              .hosp-name {
-                font-size: 12px;
-                font-weight: 800;
-                color: #0f172a;
-                border-bottom: 1.5px solid #0284c7;
-                padding-bottom: 0.5mm;
-                margin-bottom: 1.2mm;
-                text-transform: uppercase;
-                letter-spacing: 0.2px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                line-height: 1.2;
-              }
-
-              /* Baris 2: Nama Alat (Font 11, Wrap jika panjang) */
-              .tool-title-row {
-                font-size: 11px;
-                font-weight: 800;
-                color: #1e293b;
-                margin-bottom: 1mm;
-                line-height: 1.25;
-                display: -webkit-box;
-                -webkit-line-clamp: 2; /* Bungkus jika panjang */
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-              }
-
-              /* Baris 3: Deskripsi (Font 10) */
-              .tool-desc {
-                font-size: 9.5px;
-                color: #000000;
-                line-height: 1.1;
-                text-align: left;
-                white-space: pre-line;
-                overflow: hidden;
-              }
-
-              /* CSS Cetak Khusus Browser */
-              @media print {
-                html, body {
-                  background-color: #ffffff;
-                }
-                .page {
+          printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>Cetak Label Stiker SISTA-CSSD (Continuous)</title>
+              <style>
+                @page {
+                  size: 75mm 50mm;
                   margin: 0;
-                  box-shadow: none;
+                }
+                
+                html, body {
+                  margin: 0;
+                  padding: 0;
+                  background-color: #ffffff;
+                  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                }
+
+                .sticker-continuous {
+                  width: 75mm;
+                  height: 50mm;
+                  box-sizing: border-box;
+                  border: 1.5px solid #0f172a;
+                  padding: 2.5mm 3mm;
+                  display: flex;
+                  align-items: center;
+                  background-color: #ffffff;
+                  overflow: hidden;
                   page-break-after: always;
                 }
-                .page:last-child {
+
+                .sticker-continuous:last-child {
                   page-break-after: avoid;
                 }
-              }
-            </style>
-          </head>
-          <body>
-            ${stikerPagesHtml}
-            \<script>
-              // Trigger cetak otomatis begitu asset QR code ter-load
-              window.onload = function() {
-                setTimeout(function() {
-                  window.print();
-                }, 500);
-              };
-            <\/script>
-          </body>
-          </html>
-        `);
+
+                .qr-container-continuous {
+                  width: 26mm;
+                  height: 44mm;
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  justify-content: center;
+                  flex-shrink: 0;
+                  margin-right: 3mm;
+                  box-sizing: border-box;
+                }
+
+                .qr-code-continuous {
+                  width: 25mm;
+                  height: 25mm;
+                  object-fit: contain;
+                }
+
+                .tool-id-continuous {
+                  font-size: 8px;
+                  font-weight: 800;
+                  color: #0284c7;
+                  background-color: #f0f9ff;
+                  border: 0.5px solid #bae6fd;
+                  padding: 0.3mm 1mm;
+                  margin-top: 2mm;
+                  white-space: nowrap;
+                  text-align: center;
+                  box-sizing: border-box;
+                  max-width: 100%;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                }
+
+                .info-continuous {
+                  display: flex;
+                  flex-direction: column;
+                  justify-content: flex-start;
+                  flex-grow: 1;
+                  height: 44mm;
+                  overflow: hidden;
+                  box-sizing: border-box;
+                }
+
+                .hosp-name-continuous {
+                  font-size: 11px;
+                  font-weight: 800;
+                  color: #0f172a;
+                  border-bottom: 1.5px solid #0284c7;
+                  padding-bottom: 0.5mm;
+                  margin-bottom: 1.5mm;
+                  text-transform: uppercase;
+                  letter-spacing: 0.1px;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  line-height: 1.2;
+                }
+
+                .tool-title-continuous {
+                  font-size: 10.5px;
+                  font-weight: 800;
+                  color: #1e293b;
+                  margin-bottom: 1mm;
+                  line-height: 1.25;
+                  display: -webkit-box;
+                  -webkit-line-clamp: 2;
+                  -webkit-box-orient: vertical;
+                  overflow: hidden;
+                }
+
+                .tool-desc-continuous {
+                  font-size: 8.5px;
+                  color: #000000;
+                  line-height: 1.15;
+                  text-align: left;
+                  white-space: pre-line;
+                  overflow: hidden;
+                }
+              </style>
+            </head>
+            <body>
+              ${stikerPagesHtml}
+              <script>
+                window.onload = function() {
+                  setTimeout(function() {
+                    window.print();
+                  }, 500);
+                };
+              </script>
+            </body>
+            </html>
+          `);
+        }
+
         printWindow.document.close();
       }
 
