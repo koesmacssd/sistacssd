@@ -550,7 +550,7 @@
                 </div>
               </div>
               <!-- Total Alat Kotor -->
-              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex items-start space-x-3 min-h-[132px]">
+              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex items-start space-x-3">
                 <div class="p-3 bg-red-100 rounded-xl text-red-600 mt-0.5">
                   <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </div>
@@ -558,26 +558,38 @@
                   <p class="text-xs font-semibold text-slate-500 mb-1">Siklus CSSD</p>
                   <div class="space-y-1 select-none">
                     <div onclick="app.showDashboardDetails('Kotor')" class="flex items-center justify-between text-[11px] hover:underline cursor-pointer hover:text-red-600">
-                      <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-red-500 mr-1.5"></span>Kotor</span>
+                      <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-red-500 mr-1.5"></span>1. Kotor</span>
                       <span id="stat-kotor-only" class="font-extrabold text-red-600">0</span>
                     </div>
                     <div onclick="app.showDashboardDetails('Pencucian')" class="flex items-center justify-between text-[11px] hover:underline cursor-pointer hover:text-blue-600">
-                      <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-blue-500 mr-1.5"></span>Pencucian</span>
+                      <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-blue-500 mr-1.5"></span>2. Pencucian</span>
                       <span id="stat-cuci-only" class="font-extrabold text-blue-600">0</span>
                     </div>
-                    <div onclick="app.showDashboardDetails('Proses Steril')" class="flex items-center justify-between text-[11px] hover:underline cursor-pointer hover:text-amber-500">
-                      <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-amber-500 mr-1.5"></span>Proses Steril</span>
+                    <div onclick="app.showDashboardDetails('Setting')" class="flex items-center justify-between text-[11px] hover:underline cursor-pointer hover:text-purple-600">
+                      <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-purple-500 mr-1.5"></span>3. Setting</span>
+                      <span id="stat-setting-only" class="font-extrabold text-purple-600">0</span>
+                    </div>
+                    <div onclick="app.showDashboardDetails('Labelling/Packing')" class="flex items-center justify-between text-[11px] hover:underline cursor-pointer hover:text-pink-600">
+                      <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-pink-500 mr-1.5"></span>4. Labelling/Packing</span>
+                      <span id="stat-label-only" class="font-extrabold text-pink-600">0</span>
+                    </div>
+                    <div onclick="app.showDashboardDetails('Proses Sterilisasi')" class="flex items-center justify-between text-[11px] hover:underline cursor-pointer hover:text-amber-500">
+                      <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-amber-500 mr-1.5"></span>5. Proses Sterilisasi</span>
                       <span id="stat-proses-only" class="font-extrabold text-amber-500">0</span>
                     </div>
-                    <div onclick="app.showDashboardDetails('Steril')" class="flex items-center justify-between text-[11px] hover:underline cursor-pointer hover:text-green-600">
-                      <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-green-500 mr-1.5"></span>Steril</span>
-                      <span id="stat-steril-only" class="font-extrabold text-green-600">0</span>
+                    <div onclick="app.showDashboardDetails('Steril')" class="flex items-center justify-between text-[11px] hover:underline cursor-pointer hover:text-teal-600">
+                      <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-teal-500 mr-1.5"></span>6. Steril</span>
+                      <span id="stat-steril-only" class="font-extrabold text-teal-600">0</span>
+                    </div>
+                    <div onclick="app.showDashboardDetails('Penyimpanan')" class="flex items-center justify-between text-[11px] hover:underline cursor-pointer hover:text-green-600">
+                      <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-green-500 mr-1.5"></span>7. Penyimpanan</span>
+                      <span id="stat-penyimpanan-only" class="font-extrabold text-green-600">0</span>
                     </div>
                   </div>
                 </div>
               </div>
               <!-- Kedaluwarsa Steril -->
-              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex items-start space-x-3 min-h-[132px]">
+              <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex items-start space-x-3">
                 <div class="p-3 bg-rose-100 rounded-xl text-rose-600 mt-0.5">
                   <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                 </div>
@@ -589,7 +601,7 @@
                       <span id="stat-expired-red" class="font-extrabold text-red-600">0</span>
                     </div>
                     <div onclick="app.showDashboardDetails('<7H')" class="flex items-center justify-between text-[11px] hover:underline cursor-pointer hover:text-amber-600">
-                      <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-amber-500 mr-1.5"></span>Masa <7H</span>
+                      <span class="text-slate-500 font-semibold flex items-center"><span class="h-1.5 w-1.5 rounded-full bg-amber-500 mr-1.5"></span>Masa &lt;7H</span>
                       <span id="stat-expired-orange" class="font-extrabold text-amber-600">0</span>
                     </div>
                   </div>
@@ -607,7 +619,7 @@
                 </button>
                 <button onclick="app.setTab('admin-inventaris')" class="p-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition duration-150 text-left space-y-2">
                   <span class="block text-sm font-bold text-slate-700">Mulai Siklus Sterilisasi</span>
-                  <span class="block text-xs text-slate-500">Ubah status alat kotor menjadi Proses Steril atau Steril.</span>
+                  <span class="block text-xs text-slate-500">Ubah status alat medis mengikuti 7 tahap pemrosesan CSSD.</span>
                 </button>
                 <button onclick="app.setTab('admin-user-mgmt')" class="p-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition duration-150 text-left space-y-2">
                   <span class="block text-sm font-bold text-slate-700">Aktivasi User Baru</span>
@@ -2713,50 +2725,38 @@
             `;
           } else {
             const currentStatus = item.status_posisi || '';
-            const isAllowed = (targetStatus) => {
-              if (currentStatus === targetStatus) return false;
-              if (currentStatus === 'Kotor') {
-                return targetStatus === 'Pencucian';
-              }
-              if (currentStatus === 'Pencucian') {
-                return targetStatus === 'Proses Steril' || targetStatus === 'Kotor';
-              }
-              if (currentStatus === 'Proses Steril') {
-                return targetStatus === 'Steril' || targetStatus === 'Kotor';
-              }
-              if (currentStatus === 'Steril') {
-                return targetStatus === 'Kotor';
-              }
-              return false;
-            };
+            const statuses = ['Kotor', 'Pencucian', 'Setting', 'Labelling/Packing', 'Proses Sterilisasi', 'Steril', 'Penyimpanan'];
+            const currentIdx = statuses.indexOf(currentStatus);
+            const nextIdx = (currentIdx !== -1) ? (currentIdx + 1) : -1;
+            const nextStatus = (nextIdx !== -1 && nextIdx < statuses.length) ? statuses[nextIdx] : null;
 
-            const kotorClass = isAllowed('Kotor') 
-              ? "bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2 px-3 rounded-lg text-xs transition border border-slate-200"
-              : "bg-slate-50 text-slate-400 font-medium py-2 px-3 rounded-lg text-xs border border-slate-100 opacity-40 cursor-not-allowed pointer-events-none";
+            if (nextStatus) {
+              let btnLabel = '';
+              let btnIcon = '';
+              let btnClass = 'w-full bg-brand-500 hover:bg-brand-600 text-white font-extrabold py-3 px-4 rounded-xl text-sm shadow-md transition flex items-center justify-center space-x-2';
+              
+              if (nextStatus === 'Pencucian') { btnLabel = 'Set ke Pencucian'; btnIcon = '🧼'; }
+              else if (nextStatus === 'Setting') { btnLabel = 'Set ke Setting'; btnIcon = '⚙️'; }
+              else if (nextStatus === 'Labelling/Packing') { btnLabel = 'Set ke Labelling/Packing'; btnIcon = '📦'; }
+              else if (nextStatus === 'Proses Sterilisasi') { btnLabel = 'Set ke Proses Sterilisasi'; btnIcon = '🧪'; }
+              else if (nextStatus === 'Steril') { btnLabel = 'Set ke Steril'; btnIcon = '💎'; btnClass = 'w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold py-3 px-4 rounded-xl text-sm shadow-md transition flex items-center justify-center space-x-2'; }
+              else if (nextStatus === 'Penyimpanan') { btnLabel = 'Set ke Penyimpanan'; btnIcon = '🏛️'; btnClass = 'w-full bg-green-600 hover:bg-green-700 text-white font-extrabold py-3 px-4 rounded-xl text-sm shadow-md transition flex items-center justify-center space-x-2'; }
 
-            const pencucianClass = isAllowed('Pencucian')
-              ? "bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2 px-3 rounded-lg text-xs transition border border-slate-200"
-              : "bg-slate-50 text-slate-400 font-medium py-2 px-3 rounded-lg text-xs border border-slate-100 opacity-40 cursor-not-allowed pointer-events-none";
-
-            const prosesClass = isAllowed('Proses Steril')
-              ? "bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2 px-3 rounded-lg text-xs transition border border-slate-200"
-              : "bg-slate-50 text-slate-400 font-medium py-2 px-3 rounded-lg text-xs border border-slate-100 opacity-40 cursor-not-allowed pointer-events-none";
-
-            const sterilClass = isAllowed('Steril')
-              ? "bg-brand-500 hover:bg-brand-600 text-white font-bold py-2 px-3 rounded-lg text-xs transition shadow-sm"
-              : "bg-slate-50 text-slate-400 font-medium py-2 px-3 rounded-lg text-xs border border-slate-100 opacity-40 cursor-not-allowed pointer-events-none";
-
-            actionBtnHtml = `
-              <div class="space-y-2">
-                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Ubah Status Pemrosesan CSSD:</p>
-                <div class="grid grid-cols-2 gap-2">
-                  <button onclick="Swal.close(); app.updateSingleItemStatus('${item.id_alat}', 'Kotor')" class="${kotorClass}">Set Kotor</button>
-                  <button onclick="Swal.close(); app.updateSingleItemStatus('${item.id_alat}', 'Pencucian')" class="${pencucianClass}">Set Pencucian</button>
-                  <button onclick="Swal.close(); app.updateSingleItemStatus('${item.id_alat}', 'Proses Steril')" class="${prosesClass}">Set Proses Steril</button>
-                  <button onclick="Swal.close(); app.updateSingleItemStatus('${item.id_alat}', 'Steril')" class="${sterilClass}">Set Steril (Selesai)</button>
+              actionBtnHtml = `
+                <div class="space-y-2">
+                  <p class="text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Langkah Selanjutnya:</p>
+                  <button onclick="Swal.close(); app.updateSingleItemStatus('${item.id_alat}', '${nextStatus}')" class="${btnClass}">
+                    <span>${btnIcon} ${btnLabel}</span>
+                  </button>
                 </div>
-              </div>
-            `;
+              `;
+            } else {
+              actionBtnHtml = `
+                <div class="text-xs font-semibold text-slate-500 text-center bg-slate-100 p-3 rounded-xl">
+                  Alat berada di Penyimpanan dan siap dipinjam.
+                </div>
+              `;
+            }
           }
         }
 
@@ -2930,8 +2930,8 @@
           } else if (sortType === 'name-desc') {
             return b.nama_alat.localeCompare(a.nama_alat);
           } else if (sortType === 'status-avail') {
-            const aVal = a.status_posisi === 'Steril' ? 0 : 1;
-            const bVal = b.status_posisi === 'Steril' ? 0 : 1;
+            const aVal = a.status_posisi === 'Penyimpanan' ? 0 : 1;
+            const bVal = b.status_posisi === 'Penyimpanan' ? 0 : 1;
             return aVal - bVal;
           } else {
             const indexA = this.items.indexOf(a);
@@ -2957,11 +2957,12 @@
 
         slicedItems.forEach(item => {
           const inCart = this.cart.includes(item.id_alat);
-          const isSteril = item.status_posisi === 'Steril';
-          const isSterilOrBorrowed = item.status_posisi === 'Steril' || item.status_posisi.startsWith('Dipinjam');
+          const isAvailableForBorrow = item.status_posisi === 'Penyimpanan';
+          const isSteril = item.status_posisi === 'Steril' || item.status_posisi === 'Penyimpanan';
+          const isSterilOrBorrowed = isSteril || item.status_posisi.startsWith('Dipinjam');
           
           let actionBtnHtml = '';
-          if (isSteril) {
+          if (isAvailableForBorrow) {
             if (inCart) {
               actionBtnHtml = `
                 <button onclick="app.removeFromCart('${item.id_alat}')" class="w-full bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-2 px-4 rounded-xl text-xs flex items-center justify-center space-x-1 transition duration-150">
@@ -3214,8 +3215,11 @@
         let countActive = 0;
         let countKotorOnly = 0;
         let countCuciOnly = 0;
+        let countSettingOnly = 0;
+        let countLabelOnly = 0;
         let countProsesOnly = 0;
         let countSterilOnly = 0;
+        let countPenyimpananOnly = 0;
 
         let countExpired = 0;
         let countSoonExpired = 0;
@@ -3229,10 +3233,13 @@
         this.items.forEach(i => {
           if (i.status_posisi === 'Kotor') countKotorOnly++;
           else if (i.status_posisi === 'Pencucian') countCuciOnly++;
-          else if (i.status_posisi === 'Proses Steril') countProsesOnly++;
+          else if (i.status_posisi === 'Setting') countSettingOnly++;
+          else if (i.status_posisi === 'Labelling/Packing') countLabelOnly++;
+          else if (i.status_posisi === 'Proses Sterilisasi') countProsesOnly++;
           else if (i.status_posisi === 'Steril') countSterilOnly++;
+          else if (i.status_posisi === 'Penyimpanan') countPenyimpananOnly++;
           
-          if ((i.status_posisi === 'Steril' || i.status_posisi.startsWith('Dipinjam')) && i.tanggal_kadaluwarsa_steril) {
+          if ((i.status_posisi === 'Steril' || i.status_posisi === 'Penyimpanan' || i.status_posisi.startsWith('Dipinjam')) && i.tanggal_kadaluwarsa_steril) {
             const expDate = new Date(i.tanggal_kadaluwarsa_steril);
             const today = new Date();
             expDate.setHours(0, 0, 0, 0);
@@ -3255,8 +3262,11 @@
         
         document.getElementById('stat-kotor-only').innerText = countKotorOnly;
         document.getElementById('stat-cuci-only').innerText = countCuciOnly;
+        document.getElementById('stat-setting-only').innerText = countSettingOnly;
+        document.getElementById('stat-label-only').innerText = countLabelOnly;
         document.getElementById('stat-proses-only').innerText = countProsesOnly;
         document.getElementById('stat-steril-only').innerText = countSterilOnly;
+        document.getElementById('stat-penyimpanan-only').innerText = countPenyimpananOnly;
         
         document.getElementById('stat-expired-red').innerText = countExpired;
         document.getElementById('stat-expired-orange').innerText = countSoonExpired;
@@ -3347,13 +3357,13 @@
         let title = '';
         let filteredItems = [];
         
-        if (type === 'Kotor' || type === 'Pencucian' || type === 'Proses Steril' || type === 'Steril') {
+        if (['Kotor', 'Pencucian', 'Setting', 'Labelling/Packing', 'Proses Sterilisasi', 'Steril', 'Penyimpanan'].includes(type)) {
           title = `Daftar Alat Berstatus: ${type}`;
           filteredItems = this.items.filter(i => i.status_posisi === type);
         } else if (type === 'EXP') {
           title = 'Daftar Alat Steril KADALUWARSA (EXP)';
           filteredItems = this.items.filter(i => {
-            if (i.status_posisi !== 'Steril' && !i.status_posisi.startsWith('Dipinjam')) return false;
+            if (i.status_posisi !== 'Steril' && i.status_posisi !== 'Penyimpanan' && !i.status_posisi.startsWith('Dipinjam')) return false;
             if (!i.tanggal_kadaluwarsa_steril) return false;
             const expDate = new Date(i.tanggal_kadaluwarsa_steril);
             const today = new Date();
@@ -3364,7 +3374,7 @@
         } else if (type === '<7H') {
           title = 'Daftar Alat Steril HAMPIR KADALUWARSA (<7 Hari)';
           filteredItems = this.items.filter(i => {
-            if (i.status_posisi !== 'Steril' && !i.status_posisi.startsWith('Dipinjam')) return false;
+            if (i.status_posisi !== 'Steril' && i.status_posisi !== 'Penyimpanan' && !i.status_posisi.startsWith('Dipinjam')) return false;
             if (!i.tanggal_kadaluwarsa_steril) return false;
             const expDate = new Date(i.tanggal_kadaluwarsa_steril);
             const today = new Date();
@@ -3397,16 +3407,21 @@
             ? this.formatDateTime(it.tanggal_kadaluwarsa_steril).split(' ')[0] 
             : '-';
           
+          let badgeColorClass = 'bg-slate-100 text-slate-700';
+          if (it.status_posisi === 'Kotor') badgeColorClass = 'bg-red-100 text-red-700';
+          else if (it.status_posisi === 'Pencucian') badgeColorClass = 'bg-blue-100 text-blue-700';
+          else if (it.status_posisi === 'Setting') badgeColorClass = 'bg-purple-100 text-purple-700';
+          else if (it.status_posisi === 'Labelling/Packing') badgeColorClass = 'bg-pink-100 text-pink-700';
+          else if (it.status_posisi === 'Proses Sterilisasi') badgeColorClass = 'bg-yellow-100 text-yellow-700';
+          else if (it.status_posisi === 'Steril') badgeColorClass = 'bg-teal-100 text-teal-700';
+          else if (it.status_posisi === 'Penyimpanan') badgeColorClass = 'bg-green-100 text-green-700';
+
           rowsHtml += `
             <tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0 text-left">
               <td class="px-3 py-2.5 font-bold text-slate-800 whitespace-nowrap">${it.id_alat}</td>
               <td class="px-3 py-2.5 font-semibold text-slate-700 whitespace-nowrap">${it.nama_alat}</td>
               <td class="px-3 py-2.5 whitespace-nowrap">
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase whitespace-nowrap ${
-                  it.status_posisi === 'Kotor' ? 'bg-red-100 text-red-700' :
-                  it.status_posisi === 'Pencucian' ? 'bg-blue-100 text-blue-700' :
-                  it.status_posisi === 'Proses Steril' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'
-                }">${it.status_posisi}</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase whitespace-nowrap ${badgeColorClass}">${it.status_posisi}</span>
               </td>
               <td class="px-3 py-2.5 text-slate-500 font-medium whitespace-nowrap">${expInfo}</td>
               <td class="px-3 py-2.5 text-center whitespace-nowrap">
@@ -4385,43 +4400,53 @@
         }
 
         slicedItems.forEach(item => {
-          const isBorrowed = item.status_posisi.startsWith('Dipinjam');
+          const isBorrowed = item.status_posisi.startsWith('Dipinjam') || item.status_posisi === 'Ready for Pickup';
           let statusSelectHtml = '';
           let posisiHtml = '';
 
           if (isBorrowed) {
-            // Jika dipinjam, dropdown status terkunci
+            // Jika dipinjam atau siap diambil, dropdown status terkunci
+            const displayStatus = item.status_posisi.startsWith('Dipinjam') ? 'Dipinjam' : 'Ready for Pickup';
             statusSelectHtml = `
               <select disabled class="bg-blue-50 border border-blue-200 text-blue-700 text-[11px] font-bold px-2 py-0.5 rounded-lg focus:outline-none cursor-not-allowed">
-                <option selected>Dipinjam</option>
+                <option selected>${displayStatus}</option>
               </select>
             `;
             
             // Posisi adalah nama ruangan (misal: "Dipinjam IGD" -> "IGD")
-            const roomName = item.status_posisi.substring(8).trim();
+            const roomName = item.status_posisi.startsWith('Dipinjam') ? item.status_posisi.substring(8).trim() : 'CSSD';
             posisiHtml = `<span class="inline-block text-[11px] font-bold px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 border border-blue-200">${roomName}</span>`;
           } else {
-             // Jika di CSSD, tampilkan dropdown pilihan status (Kotor, Pencucian, Proses Steril, Steril)
-            const statuses = ['Kotor', 'Pencucian', 'Proses Steril', 'Steril'];
-            let optionsHtml = '';
-            statuses.forEach(st => {
-              const isSelected = item.status_posisi === st ? 'selected' : '';
-              optionsHtml += `<option value="${st}" ${isSelected}>${st}</option>`;
-            });
+             // Jika di CSSD, tampilkan dropdown pilihan status (Kotor, Pencucian, Setting, Labelling/Packing, Proses Sterilisasi, Steril, Penyimpanan)
+             const statuses = ['Kotor', 'Pencucian', 'Setting', 'Labelling/Packing', 'Proses Sterilisasi', 'Steril', 'Penyimpanan'];
+             const currentIdx = statuses.indexOf(item.status_posisi);
+             const nextIdx = (currentIdx !== -1) ? (currentIdx + 1) : -1;
+             const nextStatus = (nextIdx !== -1 && nextIdx < statuses.length) ? statuses[nextIdx] : null;
+             
+             let optionsHtml = '';
+             statuses.forEach(st => {
+               const isSelected = item.status_posisi === st ? 'selected' : '';
+               const isAllowed = (st === item.status_posisi || st === nextStatus);
+               const disabledAttr = isAllowed ? '' : 'disabled class="text-slate-300 bg-slate-50 cursor-not-allowed"';
+               optionsHtml += `<option value="${st}" ${isSelected} ${disabledAttr}>${st}</option>`;
+             });
 
-            let selectColorClass = '';
-            if (item.status_posisi === 'Steril') selectColorClass = 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100/70';
-            else if (item.status_posisi === 'Kotor') selectColorClass = 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100/70';
-            else if (item.status_posisi === 'Proses Steril') selectColorClass = 'bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100/70';
-            else if (item.status_posisi === 'Pencucian') selectColorClass = 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100/70';
+             let selectColorClass = '';
+             if (item.status_posisi === 'Kotor') selectColorClass = 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100/70';
+             else if (item.status_posisi === 'Pencucian') selectColorClass = 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100/70';
+             else if (item.status_posisi === 'Setting') selectColorClass = 'bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100/70';
+             else if (item.status_posisi === 'Labelling/Packing') selectColorClass = 'bg-pink-50 border-pink-200 text-pink-700 hover:bg-pink-100/70';
+             else if (item.status_posisi === 'Proses Sterilisasi') selectColorClass = 'bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100/70';
+             else if (item.status_posisi === 'Steril') selectColorClass = 'bg-teal-50 border-teal-200 text-teal-700 hover:bg-teal-100/70';
+             else if (item.status_posisi === 'Penyimpanan') selectColorClass = 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100/70';
 
-            statusSelectHtml = `
-              <select onchange="app.updateItemCycle('${item.id_alat}', this.value)" class="${selectColorClass} border text-[11px] font-bold px-2 py-0.5 rounded-lg focus:outline-none cursor-pointer transition duration-150 focus:ring-2 focus:ring-brand-500 bg-white">
-                ${optionsHtml}
-              </select>
-            `;
+             statusSelectHtml = `
+               <select onchange="app.updateItemCycle('${item.id_alat}', this.value)" class="${selectColorClass} border text-[11px] font-bold px-2 py-0.5 rounded-lg focus:outline-none cursor-pointer transition duration-150 focus:ring-2 focus:ring-brand-500 bg-white">
+                 ${optionsHtml}
+               </select>
+             `;
 
-            posisiHtml = `<span class="inline-block text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200">CSSD</span>`;
+             posisiHtml = `<span class="inline-block text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200">CSSD</span>`;
           }
 
           let imgHtml = '';
@@ -4450,9 +4475,9 @@
             <td class="p-4">
               ${posisiHtml}
             </td>
-            <td class="p-4 text-xs text-slate-500">${(item.status_posisi === 'Steril' || item.status_posisi.startsWith('Dipinjam')) ? this.formatDateTime(item.tanggal_sterilisasi) : '-'}</td>
+            <td class="p-4 text-xs text-slate-500">${(item.status_posisi === 'Steril' || item.status_posisi === 'Penyimpanan' || item.status_posisi.startsWith('Dipinjam')) ? this.formatDateTime(item.tanggal_sterilisasi) : '-'}</td>
             <td class="p-4 text-xs">
-              ${(item.status_posisi === 'Steril' || item.status_posisi.startsWith('Dipinjam')) ? this.getRemainingDaysHtml(item.tanggal_kadaluwarsa_steril) : '-'}
+              ${(item.status_posisi === 'Steril' || item.status_posisi === 'Penyimpanan' || item.status_posisi.startsWith('Dipinjam')) ? this.getRemainingDaysHtml(item.tanggal_kadaluwarsa_steril) : '-'}
             </td>
             <td class="p-4 text-right space-x-1.5 whitespace-nowrap">
               <button onclick="app.openEditToolModal('${item.id_alat}')" class="text-slate-400 hover:text-slate-600 inline-block align-middle" title="Ubah Info Alat">
@@ -4864,14 +4889,20 @@
               let badgeColor = 'bg-slate-400';
               
               if (event.tipe === 'log') {
-                if (event.deskripsi.includes('sterilisasi')) {
-                  badgeColor = 'bg-green-500';
+                if (event.deskripsi.includes('Kotor')) {
+                  badgeColor = 'bg-red-500';
                 } else if (event.deskripsi.includes('Pencucian')) {
                   badgeColor = 'bg-blue-500';
-                } else if (event.deskripsi.includes('Penyimpanan')) {
-                  badgeColor = 'bg-indigo-500';
-                } else if (event.deskripsi.includes('Proses Steril')) {
+                } else if (event.deskripsi.includes('Setting')) {
+                  badgeColor = 'bg-purple-500';
+                } else if (event.deskripsi.includes('Labelling/Packing')) {
+                  badgeColor = 'bg-pink-500';
+                } else if (event.deskripsi.includes('Proses Sterilisasi')) {
                   badgeColor = 'bg-yellow-500';
+                } else if (event.deskripsi.includes('sterilisasi') || event.deskripsi.includes('Steril')) {
+                  badgeColor = 'bg-teal-500';
+                } else if (event.deskripsi.includes('Penyimpanan')) {
+                  badgeColor = 'bg-green-500';
                 }
               } else if (event.tipe === 'order_request') {
                 badgeColor = 'bg-amber-500';
@@ -5602,7 +5633,7 @@
         document.getElementById('detail-deskripsi').innerText = item.deskripsi || 'Tidak ada deskripsi.';
 
         // Tampilkan tanggal sterilisasi & kadaluwarsa jika statusnya adalah Steril atau Dipinjam
-        const isSterilOrBorrowed = item.status_posisi === 'Steril' || item.status_posisi.startsWith('Dipinjam');
+        const isSterilOrBorrowed = item.status_posisi === 'Steril' || item.status_posisi === 'Penyimpanan' || item.status_posisi.startsWith('Dipinjam');
         const kadaluwarsaContainer = document.getElementById('detail-kadaluwarsa-container');
         const sterilisasiContainer = document.getElementById('detail-sterilisasi-container');
 
@@ -5654,15 +5685,19 @@
         statusEl.className = 'inline-block text-[11px] font-bold px-2 py-0.5 rounded-md uppercase mt-1';
         
         if (item.status_posisi === 'Steril') {
+          statusEl.classList.add('bg-teal-100', 'text-teal-700');
+        } else if (item.status_posisi === 'Penyimpanan') {
           statusEl.classList.add('bg-green-100', 'text-green-700');
         } else if (item.status_posisi === 'Kotor') {
           statusEl.classList.add('bg-red-100', 'text-red-700');
-        } else if (item.status_posisi === 'Proses Steril') {
-          statusEl.classList.add('bg-yellow-100', 'text-yellow-700');
         } else if (item.status_posisi === 'Pencucian') {
           statusEl.classList.add('bg-blue-100', 'text-blue-700');
-        } else if (item.status_posisi === 'Penyimpanan') {
-          statusEl.classList.add('bg-indigo-100', 'text-indigo-700');
+        } else if (item.status_posisi === 'Setting') {
+          statusEl.classList.add('bg-purple-100', 'text-purple-700');
+        } else if (item.status_posisi === 'Labelling/Packing') {
+          statusEl.classList.add('bg-pink-100', 'text-pink-700');
+        } else if (item.status_posisi === 'Proses Sterilisasi') {
+          statusEl.classList.add('bg-yellow-100', 'text-yellow-700');
         } else {
           statusEl.classList.add('bg-slate-100', 'text-slate-700');
         }

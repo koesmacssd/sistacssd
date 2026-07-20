@@ -1237,16 +1237,28 @@ function updateItemCycle(postData, actorEmail) {
           return jsonResponse(false, "Alat kotor harus melalui proses 'Pencucian' terlebih dahulu.");
         }
       } else if (currentStatus === 'Pencucian') {
-        if (nextCycle !== 'Proses Steril' && nextCycle !== 'Kotor') {
-          return jsonResponse(false, "Alat yang sedang dicuci hanya bisa dipindahkan ke 'Proses Steril' atau kembali ke 'Kotor'.");
+        if (nextCycle !== 'Setting') {
+          return jsonResponse(false, "Alat yang sedang dicuci harus melalui proses 'Setting' terlebih dahulu.");
         }
-      } else if (currentStatus === 'Proses Steril') {
-        if (nextCycle !== 'Steril' && nextCycle !== 'Kotor') {
-          return jsonResponse(false, "Alat dalam proses steril hanya bisa diselesaikan ke 'Steril' atau kembali ke 'Kotor'.");
+      } else if (currentStatus === 'Setting') {
+        if (nextCycle !== 'Labelling/Packing') {
+          return jsonResponse(false, "Alat yang selesai di-setting harus melalui proses 'Labelling/Packing' terlebih dahulu.");
+        }
+      } else if (currentStatus === 'Labelling/Packing') {
+        if (nextCycle !== 'Proses Sterilisasi') {
+          return jsonResponse(false, "Alat yang selesai dipacking harus melalui 'Proses Sterilisasi' terlebih dahulu.");
+        }
+      } else if (currentStatus === 'Proses Sterilisasi') {
+        if (nextCycle !== 'Steril') {
+          return jsonResponse(false, "Alat dalam proses sterilisasi hanya bisa diselesaikan ke 'Steril'.");
         }
       } else if (currentStatus === 'Steril') {
+        if (nextCycle !== 'Penyimpanan') {
+          return jsonResponse(false, "Alat steril harus dipindahkan ke 'Penyimpanan' terlebih dahulu.");
+        }
+      } else if (currentStatus === 'Penyimpanan') {
         if (nextCycle !== 'Kotor') {
-          return jsonResponse(false, "Alat steril hanya bisa diturunkan statusnya ke 'Kotor'.");
+          return jsonResponse(false, "Alat di penyimpanan hanya bisa diturunkan statusnya ke 'Kotor'.");
         }
       } else if (currentStatus.indexOf('Dipinjam') === 0 || currentStatus === 'Ready for Pickup') {
         if (nextCycle !== 'Kotor') {
@@ -1255,15 +1267,7 @@ function updateItemCycle(postData, actorEmail) {
       }
 
       var actorInfo = getActorInfoString(actorEmail);
-      if (nextCycle === 'Proses Steril') {
-        sheet.getRange(row, 5).setValue('Proses Steril');
-        writeLog(actorEmail, "Mengubah status " + itemId + " ke Proses Steril.");
-        sendTelegramNotification("🧪 *Proses Sterilisasi Dimulai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\n\nOleh: " + actorInfo);
-        clearItemsCache();
-        addPoints(actorEmail, "Proses Sterilisasi", 3);
-        return jsonResponse(true, "Status alat berhasil diubah ke Proses Steril.", { id_alat: itemId, status: 'Proses Steril' });
-        
-      } else if (nextCycle === 'Pencucian') {
+      if (nextCycle === 'Pencucian') {
         sheet.getRange(row, 5).setValue('Pencucian');
         writeLog(actorEmail, "Mengubah status " + itemId + " ke Pencucian.");
         sendTelegramNotification("🧼 *Proses Pencucian Dimulai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\n\nOleh: " + actorInfo);
@@ -1271,15 +1275,29 @@ function updateItemCycle(postData, actorEmail) {
         addPoints(actorEmail, "Proses Pencucian (Washing)", 3);
         return jsonResponse(true, "Status alat berhasil diubah ke Pencucian.", { id_alat: itemId, status: 'Pencucian' });
         
-      } else if (nextCycle === 'Kotor') {
-        sheet.getRange(row, 5).setValue('Kotor');
-        sheet.getRange(row, 6).setValue(''); // Hapus tanggal sterilisasi
-        sheet.getRange(row, 7).setValue(''); // Hapus tanggal kadaluwarsa
-        writeLog(actorEmail, "Mengubah status " + itemId + " ke Kotor.");
-        sendTelegramNotification("🔴 *Status Alat Diubah ke Kotor*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\n\nOleh: " + actorInfo);
+      } else if (nextCycle === 'Setting') {
+        sheet.getRange(row, 5).setValue('Setting');
+        writeLog(actorEmail, "Mengubah status " + itemId + " ke Setting.");
+        sendTelegramNotification("⚙️ *Proses Setting Dimulai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\n\nOleh: " + actorInfo);
         clearItemsCache();
-        addPoints(actorEmail, "Penerimaan Barang Kotor", 1);
-        return jsonResponse(true, "Status alat berhasil diubah ke Kotor.", { id_alat: itemId, status: 'Kotor' });
+        addPoints(actorEmail, "Setting & Assembly", 2);
+        return jsonResponse(true, "Status alat berhasil diubah ke Setting.", { id_alat: itemId, status: 'Setting' });
+        
+      } else if (nextCycle === 'Labelling/Packing') {
+        sheet.getRange(row, 5).setValue('Labelling/Packing');
+        writeLog(actorEmail, "Mengubah status " + itemId + " ke Labelling/Packing.");
+        sendTelegramNotification("📦 *Proses Labelling/Packing*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\n\nOleh: " + actorInfo);
+        clearItemsCache();
+        addPoints(actorEmail, "Labelling & Packing", 2);
+        return jsonResponse(true, "Status alat berhasil diubah ke Labelling/Packing.", { id_alat: itemId, status: 'Labelling/Packing' });
+        
+      } else if (nextCycle === 'Proses Sterilisasi') {
+        sheet.getRange(row, 5).setValue('Proses Sterilisasi');
+        writeLog(actorEmail, "Mengubah status " + itemId + " ke Proses Sterilisasi.");
+        sendTelegramNotification("🧪 *Proses Sterilisasi Dimulai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\n\nOleh: " + actorInfo);
+        clearItemsCache();
+        addPoints(actorEmail, "Proses Sterilisasi", 3);
+        return jsonResponse(true, "Status alat berhasil diubah ke Proses Sterilisasi.", { id_alat: itemId, status: 'Proses Sterilisasi' });
         
       } else if (nextCycle === 'Steril') {
         var now = new Date();
@@ -1302,12 +1320,31 @@ function updateItemCycle(postData, actorEmail) {
         var actorInfo = getActorInfoString(actorEmail);
         sendTelegramNotification("💎 *Sterilisasi Selesai*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\nStatus: Steril ✔\nKadaluwarsa: " + Utilities.formatDate(expiryDate, Session.getScriptTimeZone(), 'dd/MM/yyyy') + "\n\nOleh: " + actorInfo);
         clearItemsCache();
-        return jsonResponse(true, "Alat berhasil disterilkan dan siap dipinjam kembali.", { 
+        return jsonResponse(true, "Alat berhasil disterilkan.", { 
           id_alat: itemId, 
           status: 'Steril',
           tanggal_sterilisasi: now,
           tanggal_kadaluwarsa: expiryDate
         });
+        
+      } else if (nextCycle === 'Penyimpanan') {
+        sheet.getRange(row, 5).setValue('Penyimpanan');
+        writeLog(actorEmail, "Mengubah status " + itemId + " ke Penyimpanan.");
+        sendTelegramNotification("🏛️ *Alat Masuk Penyimpanan (Storage)*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\n\nOleh: " + actorInfo);
+        clearItemsCache();
+        addPoints(actorEmail, "Penyimpanan", 1);
+        return jsonResponse(true, "Alat dipindahkan ke Penyimpanan dan siap dipinjam kembali.", { id_alat: itemId, status: 'Penyimpanan' });
+        
+      } else if (nextCycle === 'Kotor') {
+        sheet.getRange(row, 5).setValue('Kotor');
+        sheet.getRange(row, 6).setValue(''); // Hapus tanggal sterilisasi
+        sheet.getRange(row, 7).setValue(''); // Hapus tanggal kadaluwarsa
+        writeLog(actorEmail, "Mengubah status " + itemId + " ke Kotor.");
+        sendTelegramNotification("🔴 *Status Alat Diubah ke Kotor*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\n\nOleh: " + actorInfo);
+        clearItemsCache();
+        addPoints(actorEmail, "Penerimaan Barang Kotor", 1);
+        return jsonResponse(true, "Status alat berhasil diubah ke Kotor.", { id_alat: itemId, status: 'Kotor' });
+        
       } else {
         return jsonResponse(false, "Status siklus '" + nextCycle + "' tidak valid.");
       }
