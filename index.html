@@ -1708,7 +1708,8 @@
             }
           }
         } catch (e) {
-          this.showToast('error', 'Koneksi gagal. Periksa kembali URL API Apps Script Anda.');
+          this.showToast('error', 'Koneksi gagal: ' + e.toString());
+          console.error(e);
           this.showView('login');
         } finally {
           this.showLoginLoading(false);
