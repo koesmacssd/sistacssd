@@ -1672,7 +1672,7 @@
             if (isLogin && this.user.popup_status === 'ON' && this.user.popup_message) {
               Swal.fire({
                 title: '📢 Pengumuman SISTA-CSSD',
-                html: `<div class="text-left text-sm text-slate-600 whitespace-pre-line leading-relaxed">${this.user.popup_message}</div>`,
+                html: `<div class="text-left text-sm text-slate-600 whitespace-pre-line leading-relaxed">${this.linkify(this.user.popup_message)}</div>`,
                 icon: 'info',
                 confirmButtonText: 'Saya Mengerti',
                 confirmButtonColor: '#3b82f6',
@@ -6247,6 +6247,18 @@
         } catch (err) {
           this.showToast('error', 'Gagal menyimpan pesan notifikasi.');
         }
+      }
+
+      linkify(text) {
+        if (!text) return '';
+        const urlRegex = /(https?:\/\/[^\s]+|t\.me\/[^\s]+)/g;
+        return text.replace(urlRegex, (url) => {
+          let href = url;
+          if (url.startsWith('t.me/')) {
+            href = 'https://' + url;
+          }
+          return `<a href="${href}" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: underline; font-weight: 600;">${url}</a>`;
+        });
       }
 
       getStaffAvatarUrl(staff) {
