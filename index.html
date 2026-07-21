@@ -1486,8 +1486,8 @@
         this.logsPageSize = 25;
 
         // State Sorting
-        this.inventarisSortKey = 'id_alat';
-        this.inventarisSortDir = 'asc';
+        this.inventarisSortKey = 'tanggal_sterilisasi';
+        this.inventarisSortDir = 'desc';
 
         this.logsSortKey = 'timestamp';
         this.logsSortDir = 'desc';
@@ -4414,9 +4414,9 @@
 
         // Sort items before slicing for pagination
         filtered.sort((a, b) => {
-          if (this.inventarisSortKey === 'tanggal_kadaluwarsa_steril') {
-            let valA = a.tanggal_kadaluwarsa_steril || '';
-            let valB = b.tanggal_kadaluwarsa_steril || '';
+          if (this.inventarisSortKey === 'tanggal_kadaluwarsa_steril' || this.inventarisSortKey === 'tanggal_sterilisasi') {
+            let valA = a[this.inventarisSortKey] || '';
+            let valB = b[this.inventarisSortKey] || '';
             
             // Posisikan yang kosong (tanpa tanggal) di paling bawah baik asc maupun desc
             if (valA === '' && valB !== '') return 1;
