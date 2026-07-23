@@ -1014,9 +1014,13 @@
                     <option value="">Memuat Bulan...</option>
                   </select>
                 </div>
-                <button onclick="app.exportAchievementsToExcel()" class="bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 font-semibold px-3.5 py-2 rounded-xl text-xs transition duration-150 flex items-center space-x-1.5 shadow-sm" title="Ekspor Rekap Poin Staf ke Excel">
+                <button onclick="app.exportAchievementsToExcel()" class="bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 font-semibold px-3.5 py-2 rounded-xl text-xs transition duration-150 flex items-center space-x-1.5 shadow-sm" title="Ekspor Rekap Poin Staf ke Excel (.xlsx)">
                   <svg class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                  <span>Ekspor Excel 📊</span>
+                  <span>Excel (.xlsx) 📊</span>
+                </button>
+                <button onclick="app.exportAchievementsToPdf()" class="bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-semibold px-3.5 py-2 rounded-xl text-xs transition duration-150 flex items-center space-x-1.5 shadow-sm" title="Cetak / Ekspor Rekap Poin ke PDF A4">
+                  <svg class="h-4 w-4 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                  <span>Cetak PDF (A4) 📄</span>
                 </button>
                 <button onclick="app.showPointsRules()" class="bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 font-semibold px-3.5 py-2 rounded-xl text-xs transition duration-150 flex items-center space-x-1.5 shadow-sm">
                   <svg class="h-4 w-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -6806,11 +6810,17 @@
                   </div>
 
                   <!-- Footer Actions -->
-                  <div class="flex justify-between items-center pt-2">
-                    <button onclick="app.exportStaffDetailsToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition shadow-sm flex items-center space-x-1.5">
-                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                      <span>Ekspor Pekerjaan Staf Ini (Excel) 📊</span>
-                    </button>
+                  <div class="flex flex-wrap justify-between items-center gap-2 pt-2">
+                    <div class="flex items-center space-x-2">
+                      <button onclick="app.exportStaffDetailsToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-xl text-xs transition shadow-sm flex items-center space-x-1.5" title="Ekspor Pekerjaan Staf Ini ke Excel (.xlsx)">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        <span>Excel (.xlsx) 📊</span>
+                      </button>
+                      <button onclick="app.exportStaffDetailsToPdf()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-2 rounded-xl text-xs transition shadow-sm flex items-center space-x-1.5" title="Cetak / Simpan PDF A4 Rincian Staf Ini">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                        <span>Cetak PDF (A4) 📄</span>
+                      </button>
+                    </div>
                     <button onclick="Swal.close()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-4 py-2 rounded-xl text-xs transition">Tutup</button>
                   </div>
                 </div>
@@ -6831,6 +6841,151 @@
         }
       }
 
+      exportAchievementsToExcel() {
+        if (!this.currentLeaderboardData || this.currentLeaderboardData.length === 0) {
+          this.showToast('warning', 'Tidak ada data peringkat staf untuk diekspor.');
+          return;
+        }
+
+        const monthSelect = document.getElementById('achievements-month-filter')?.value || 'Semua';
+        const rows = this.currentLeaderboardData.map((staf, idx) => ({
+          'Peringkat': idx + 1,
+          'Nama Staf': staf.nama || '-',
+          'Email Staf': staf.email || '-',
+          'Peran / Posisi': 'Staf CSSD',
+          'Total Pekerjaan (Poin)': staf.points || 0
+        }));
+
+        try {
+          const worksheet = XLSX.utils.json_to_sheet(rows);
+          const workbook = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(workbook, worksheet, `Rekap Poin ${monthSelect}`);
+          
+          const max_len = {};
+          rows.forEach(row => {
+            Object.keys(row).forEach(key => {
+              const val = String(row[key] || '');
+              max_len[key] = Math.max(max_len[key] || key.length, val.length);
+            });
+          });
+          worksheet['!cols'] = Object.keys(max_len).map(key => ({
+            wch: Math.max(max_len[key] + 4, 12)
+          }));
+
+          XLSX.writeFile(workbook, `SISTA_CSSD_Rekap_Poin_Staf_${monthSelect}.xlsx`);
+          this.showToast('success', 'Rekap poin staf berhasil diekspor ke Excel (.xlsx)!');
+        } catch (e) {
+          this.showToast('error', 'Gagal memproses ekspor Excel.');
+          console.error(e);
+        }
+      }
+
+      exportAchievementsToPdf() {
+        if (!this.currentLeaderboardData || this.currentLeaderboardData.length === 0) {
+          this.showToast('warning', 'Tidak ada data peringkat staf untuk dicetak.');
+          return;
+        }
+
+        const monthSelect = document.getElementById('achievements-month-filter')?.value || 'Semua Periode';
+        const nowStr = new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' });
+
+        const rowsHtml = this.currentLeaderboardData.map((staf, idx) => `
+          <tr>
+            <td style="text-align: center; font-weight: bold;">${idx + 1}</td>
+            <td><strong>${staf.nama || '-'}</strong></td>
+            <td>${staf.email || '-'}</td>
+            <td>Staf CSSD</td>
+            <td style="text-align: center; font-weight: bold;">${staf.points || 0} Poin</td>
+          </tr>
+        `).join('');
+
+        const win = window.open('', '_blank');
+        win.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Laporan Rekapitulasi Poin Staf CSSD - ${monthSelect}</title>
+            <style>
+              @page { size: A4 portrait; margin: 15mm; }
+              body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; font-size: 12px; margin: 0; padding: 10px; }
+              .header { text-align: center; border-bottom: 3px double #0f172a; padding-bottom: 10px; margin-bottom: 15px; }
+              .header h2 { margin: 0; font-size: 16px; text-transform: uppercase; color: #0f172a; }
+              .header h3 { margin: 3px 0; font-size: 14px; color: #334155; }
+              .header p { margin: 2px 0; font-size: 10px; color: #64748b; }
+              .meta-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 11px; }
+              table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+              th, td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; }
+              th { background-color: #f1f5f9; font-weight: bold; text-transform: uppercase; font-size: 10px; color: #334155; }
+              tr:nth-child(even) { background-color: #f8fafc; }
+              .footer-sign { margin-top: 40px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+              .sign-box { text-align: center; width: 220px; }
+              .sign-space { height: 65px; }
+              @media print {
+                body { padding: 0; }
+                .no-print { display: none; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="no-print" style="margin-bottom: 15px; text-align: right;">
+              <button onclick="window.print()" style="background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer;">🖨️ Cetak / Simpan PDF A4</button>
+            </div>
+            
+            <div class="header">
+              <h2>RSUD dr. R. KOESMA TUBAN</h2>
+              <h3>INSTALASI STERILISASI SENTRAL (CSSD)</h3>
+              <p>JL. Dr. Wahidin Sudirohusodo No. 800, Tuban, Jawa Timur | SISTA-CSSD System</p>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 15px;">
+              <h3 style="margin: 0; text-transform: uppercase; text-decoration: underline;">LAPORAN REKAPITULASI PRESTASI & POIN KERJA STAF</h3>
+              <p style="margin: 3px 0 0 0; font-size: 11px; color: #475569;">Periode Penilaian: <strong>${monthSelect}</strong></p>
+            </div>
+
+            <div class="meta-box">
+              <div><strong>Tanggal Dicetak:</strong> ${nowStr}</div>
+              <div><strong>Total Staf Terdaftar:</strong> ${this.currentLeaderboardData.length} Orang</div>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 40px; text-align: center;">No</th>
+                  <th>Nama Staf CSSD</th>
+                  <th>Email Staf</th>
+                  <th>Peran / Jabatan</th>
+                  <th style="width: 130px; text-align: center;">Total Pekerjaan (Poin)</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+
+            <div class="footer-sign">
+              <div class="sign-box">
+                <p>Dicetak Oleh,</p>
+                <div class="sign-space"></div>
+                <p><strong>Admin / Petugas CSSD</strong></p>
+              </div>
+              <div class="sign-box">
+                <p>Tuban, ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}<br>Mengetahui, Kepala Instalasi CSSD</p>
+                <div class="sign-space"></div>
+                <p><strong>________________________</strong></p>
+              </div>
+            </div>
+
+            <script>
+              window.onload = function() {
+                setTimeout(function() { window.print(); }, 500);
+              };
+            <\/script>
+          </body>
+          </html>
+        `);
+        win.document.close();
+      }
+
       exportStaffDetailsToExcel() {
         if (!this.activeStaffDetails || !this.activeStaffDetails.activities || this.activeStaffDetails.activities.length === 0) {
           this.showToast('warning', 'Tidak ada data rincian pekerjaan untuk diekspor.');
@@ -6838,25 +6993,146 @@
         }
 
         const d = this.activeStaffDetails;
-        let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-        csvContent += `STAF,${d.nama_staf}\nEMAIL,${d.target_email}\nRUANGAN,${d.nama_ruangan}\nPERIODE,${d.selected_month_year}\nTOTAL PEKERJAAN,${d.total_activities}\nTOTAL POIN,${d.total_points}\n\n`;
-        csvContent += "NO,WAKTU PEKERJAAN,JENIS AKTIVITAS PEKERJAAN,POIN\n";
+        const rows = d.activities.map((act, idx) => ({
+          'No': idx + 1,
+          'Waktu Pekerjaan': act.timestamp || '-',
+          'Jenis Aktivitas Pekerjaan': act.activity || '-',
+          'Poin': act.points || 1
+        }));
 
-        d.activities.forEach((act, idx) => {
-          const timeStr = (act.timestamp || '').replace(/"/g, '""');
-          const activityStr = (act.activity || '').replace(/"/g, '""');
-          csvContent += `${idx + 1},"${timeStr}","${activityStr}",${act.points || 1}\n`;
-        });
+        try {
+          const worksheet = XLSX.utils.json_to_sheet(rows);
+          const workbook = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(workbook, worksheet, "Rincian Pekerjaan");
 
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        const safeName = d.nama_staf.replace(/[^a-zA-Z0-9]/g, '_');
-        link.setAttribute("download", `Rincian_Pekerjaan_${safeName}_${d.selected_month_year}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        this.showToast('success', `Rincian pekerjaan ${d.nama_staf} berhasil diekspor.`);
+          const max_len = {};
+          rows.forEach(row => {
+            Object.keys(row).forEach(key => {
+              const val = String(row[key] || '');
+              max_len[key] = Math.max(max_len[key] || key.length, val.length);
+            });
+          });
+          worksheet['!cols'] = Object.keys(max_len).map(key => ({
+            wch: Math.max(max_len[key] + 4, 12)
+          }));
+
+          const safeName = (d.nama_staf || 'Staf').replace(/[^a-zA-Z0-9]/g, '_');
+          XLSX.writeFile(workbook, `SISTA_CSSD_Rincian_Pekerjaan_${safeName}_${d.selected_month_year}.xlsx`);
+          this.showToast('success', `Rincian pekerjaan ${d.nama_staf} berhasil diekspor ke Excel (.xlsx)!`);
+        } catch (e) {
+          this.showToast('error', 'Gagal memproses ekspor Excel.');
+          console.error(e);
+        }
+      }
+
+      exportStaffDetailsToPdf() {
+        if (!this.activeStaffDetails || !this.activeStaffDetails.activities || this.activeStaffDetails.activities.length === 0) {
+          this.showToast('warning', 'Tidak ada data rincian pekerjaan untuk dicetak.');
+          return;
+        }
+
+        const d = this.activeStaffDetails;
+        const nowStr = new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' });
+
+        const rowsHtml = d.activities.map((act, idx) => `
+          <tr>
+            <td style="text-align: center; font-weight: bold;">${idx + 1}</td>
+            <td style="font-family: monospace;">${act.timestamp || '-'}</td>
+            <td><strong>${act.activity || '-'}</strong></td>
+            <td style="text-align: center; font-weight: bold; color: #2563eb;">+1 Pts</td>
+          </tr>
+        `).join('');
+
+        const win = window.open('', '_blank');
+        win.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Rincian Pekerjaan Staf - ${d.nama_staf} (${d.selected_month_year})</title>
+            <style>
+              @page { size: A4 portrait; margin: 15mm; }
+              body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; font-size: 12px; margin: 0; padding: 10px; }
+              .header { text-align: center; border-bottom: 3px double #0f172a; padding-bottom: 10px; margin-bottom: 15px; }
+              .header h2 { margin: 0; font-size: 16px; text-transform: uppercase; color: #0f172a; }
+              .header h3 { margin: 3px 0; font-size: 14px; color: #334155; }
+              .header p { margin: 2px 0; font-size: 10px; color: #64748b; }
+              .profile-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px 16px; border-radius: 8px; margin-bottom: 15px; }
+              .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11px; }
+              table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+              th, td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; }
+              th { background-color: #f1f5f9; font-weight: bold; text-transform: uppercase; font-size: 10px; color: #334155; }
+              tr:nth-child(even) { background-color: #f8fafc; }
+              .footer-sign { margin-top: 40px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+              .sign-box { text-align: center; width: 220px; }
+              .sign-space { height: 65px; }
+              @media print {
+                body { padding: 0; }
+                .no-print { display: none; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="no-print" style="margin-bottom: 15px; text-align: right;">
+              <button onclick="window.print()" style="background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer;">🖨️ Cetak / Simpan PDF A4</button>
+            </div>
+            
+            <div class="header">
+              <h2>RSUD dr. R. KOESMA TUBAN</h2>
+              <h3>INSTALASI STERILISASI SENTRAL (CSSD)</h3>
+              <p>JL. Dr. Wahidin Sudirohusodo No. 800, Tuban, Jawa Timur | SISTA-CSSD System</p>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 15px;">
+              <h3 style="margin: 0; text-transform: uppercase; text-decoration: underline;">LAPORAN RINCIAN AKTIVITAS PEKERJAAN STAF INDIVIDU</h3>
+            </div>
+
+            <div class="profile-box">
+              <div class="profile-grid">
+                <div><strong>Nama Staf:</strong> ${d.nama_staf}</div>
+                <div><strong>Periode Penilaian:</strong> ${d.selected_month_year}</div>
+                <div><strong>Email Staf:</strong> ${d.target_email}</div>
+                <div><strong>Total Pekerjaan:</strong> ${d.total_activities} Aksi (${d.total_points} Pts)</div>
+                <div><strong>Unit / Posisi:</strong> ${d.nama_ruangan || 'Staf CSSD'}</div>
+                <div><strong>Tanggal Dicetak:</strong> ${nowStr}</div>
+              </div>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 40px; text-align: center;">No</th>
+                  <th style="width: 150px;">Waktu Pekerjaan</th>
+                  <th>Jenis Aktivitas Pekerjaan</th>
+                  <th style="width: 80px; text-align: center;">Poin</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+
+            <div class="footer-sign">
+              <div class="sign-box">
+                <p>Staf Yang Bersangkutan,</p>
+                <div class="sign-space"></div>
+                <p><strong>${d.nama_staf}</strong></p>
+              </div>
+              <div class="sign-box">
+                <p>Tuban, ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}<br>Mengetahui, Supervisor / Ka. CSSD</p>
+                <div class="sign-space"></div>
+                <p><strong>________________________</strong></p>
+              </div>
+            </div>
+
+            <script>
+              window.onload = function() {
+                setTimeout(function() { window.print(); }, 500);
+              };
+            <\/script>
+          </body>
+          </html>
+        `);
+        win.document.close();
       }
 
       showPointsRules() {
