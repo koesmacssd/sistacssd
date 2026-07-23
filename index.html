@@ -1002,17 +1002,27 @@
 
           <!-- TAB 10: PRESTASI STAF (ADMIN/GAMIFIKASI) -->
           <div id="tab-admin-achievements" class="tab-content hidden space-y-6">
-            <div class="flex justify-between items-center">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <div>
                 <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Prestasi Staf 🏆</h1>
-                <p class="text-sm text-slate-500">Apresiasi kinerja dan kontribusi staf CSSD bulan ini.</p>
+                <p class="text-sm text-slate-500">Apresiasi kinerja dan kontribusi staf CSSD (1 Poin per Aktivitas Pekerjaan).</p>
               </div>
-              <div class="flex space-x-2">
-                <button onclick="app.showPointsRules()" class="bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 font-semibold px-4 py-2.5 rounded-xl text-sm transition duration-150 flex items-center space-x-1.5 shadow-sm">
-                  <svg class="h-4 w-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  <span>Cara Dapat Poin</span>
+              <div class="flex flex-wrap items-center gap-2">
+                <div class="flex items-center space-x-1.5 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
+                  <span class="text-xs font-semibold text-slate-500">Periode:</span>
+                  <select id="achievements-month-filter" onchange="app.loadAchievementsData()" class="bg-white border border-slate-300 text-slate-700 font-bold px-3 py-1.5 rounded-lg text-xs shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <option value="">Memuat Bulan...</option>
+                  </select>
+                </div>
+                <button onclick="app.exportAchievementsToExcel()" class="bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 font-semibold px-3.5 py-2 rounded-xl text-xs transition duration-150 flex items-center space-x-1.5 shadow-sm" title="Ekspor Rekap Poin Staf ke Excel">
+                  <svg class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                  <span>Ekspor Excel 📊</span>
                 </button>
-                <button onclick="app.loadAchievementsData()" class="bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 px-4 py-2.5 rounded-xl shadow-sm transition duration-150 flex items-center space-x-1.5">
+                <button onclick="app.showPointsRules()" class="bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 font-semibold px-3.5 py-2 rounded-xl text-xs transition duration-150 flex items-center space-x-1.5 shadow-sm">
+                  <svg class="h-4 w-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <span>Aturan Poin</span>
+                </button>
+                <button onclick="app.loadAchievementsData()" class="bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 px-3 py-2 rounded-xl shadow-sm transition duration-150 flex items-center space-x-1 text-xs">
                   <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.25" /></svg>
                   <span>Refresh</span>
                 </button>
@@ -6554,16 +6564,33 @@
       // --- GAMIFIKASI & PRESTASI STAF ---
       async loadAchievementsData() {
         try {
-          // Tampilkan state loading
+          const selectedMonth = document.getElementById('achievements-month-filter')?.value || '';
+          
           const container = document.getElementById('my-activities-container');
           if (container) container.innerHTML = '<div class="text-slate-500 py-4 text-center">Memuat riwayat poin...</div>';
           
           const leaderboardTbody = document.getElementById('leaderboard-tbody');
           if (leaderboardTbody) leaderboardTbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">Memuat peringkat staf...</td></tr>';
 
-          const res = await this.callApi('getAchievementsData');
+          const res = await this.callApi('getAchievementsData', { month_year: selectedMonth });
           if (res.success && res.data) {
             const data = res.data;
+            this.currentLeaderboardData = data.leaderboard || [];
+            
+            // Sync Dropdown Bulan
+            const filterEl = document.getElementById('achievements-month-filter');
+            if (filterEl && data.available_months && data.available_months.length > 0) {
+              const curVal = selectedMonth || data.selected_month_year || data.current_month_year;
+              filterEl.innerHTML = data.available_months.map(m => {
+                const parts = m.split('-');
+                let monthName = m;
+                if (parts.length === 2) {
+                  const dObj = new Date(parseInt(parts[1]), parseInt(parts[0]) - 1, 1);
+                  monthName = dObj.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+                }
+                return `<option value="${m}" ${m === curVal ? 'selected' : ''}>${monthName} (${m})</option>`;
+              }).join('');
+            }
             
             // Poin pribadi
             const pointsEl = document.getElementById('my-points-month-val');
@@ -6581,19 +6608,18 @@
                         <span class="font-bold text-slate-800">${act.activity}</span>
                         <span class="text-[10px] text-slate-400 block">${timeStr}</span>
                       </div>
-                      <span class="font-black text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">+${act.points}</span>
+                      <span class="font-black text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">+1 Pts</span>
                     </div>
                   `;
                 }).join('');
               } else {
-                container.innerHTML = '<div class="text-slate-400 py-4 text-center">Belum ada perolehan poin bulan ini.</div>';
+                container.innerHTML = '<div class="text-slate-400 py-4 text-center">Belum ada perolehan poin pada periode ini.</div>';
               }
             }
             
             // Leaderboard & Podium
             const top3 = data.leaderboard ? data.leaderboard.slice(0, 3) : [];
             
-            // Elements
             const p1Name = document.getElementById('podium-1-name');
             const p1Points = document.getElementById('podium-1-points');
             const p1Avatar = document.getElementById('podium-1-avatar');
@@ -6651,13 +6677,14 @@
                 else if (rankNum === 2) rankBadge = '🥈';
                 else if (rankNum === 3) rankBadge = '🥉';
                 
+                const safeName = (staff.nama || '-').replace(/'/g, "\\'");
                 return `
                   <tr class="border-b border-slate-100 hover:bg-slate-50 transition duration-150">
                     <td class="px-4 py-3 text-center font-bold text-slate-700">${rankBadge}</td>
                     <td class="px-4 py-3 flex items-center space-x-3">
                       <img src="${avatar}" class="h-8 w-8 rounded-full object-cover border border-slate-200">
                       <div>
-                        <span class="font-bold text-slate-900 block">${staff.nama || '-'}</span>
+                        <span onclick="app.openStaffDetailModal('${staff.email}', '${safeName}')" class="font-bold text-brand-600 hover:text-brand-800 cursor-pointer hover:underline block">${staff.nama || '-'}</span>
                         <span class="text-[10px] text-slate-400 block">${staff.email || '-'}</span>
                       </div>
                     </td>
@@ -6667,7 +6694,7 @@
                 `;
               }).join('');
             } else {
-              tableHtml = '<tr><td colspan="4" class="p-8 text-center text-slate-400">Belum ada peringkat staf untuk bulan ini.</td></tr>';
+              tableHtml = '<tr><td colspan="4" class="p-8 text-center text-slate-400">Belum ada peringkat staf untuk periode ini.</td></tr>';
             }
             
             if (leaderboardTbody) leaderboardTbody.innerHTML = tableHtml;
@@ -6681,78 +6708,198 @@
         }
       }
 
+      exportAchievementsToExcel() {
+        if (!this.currentLeaderboardData || this.currentLeaderboardData.length === 0) {
+          this.showToast('warning', 'Tidak ada data peringkat staf untuk diekspor.');
+          return;
+        }
+
+        const monthSelect = document.getElementById('achievements-month-filter')?.value || 'Semua';
+        let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+        csvContent += "PERIODE,PERINGKAT,NAMA STAF,EMAIL,TOTAL PEKERJAAN (POIN)\n";
+
+        this.currentLeaderboardData.forEach((staf, idx) => {
+          const nama = (staf.nama || '').replace(/"/g, '""');
+          const email = (staf.email || '').replace(/"/g, '""');
+          csvContent += `"${monthSelect}",${idx + 1},"${nama}","${email}",${staf.points || 0}\n`;
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `Rekap_Poin_Staf_CSSD_${monthSelect}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        this.showToast('success', 'Rekap poin staf berhasil diekspor ke Excel (CSV).');
+      }
+
+      async openStaffDetailModal(targetEmail, staffName) {
+        const selectedMonth = document.getElementById('achievements-month-filter')?.value || '';
+        try {
+          Swal.fire({
+            title: 'Memuat Rincian Pekerjaan...',
+            text: `Mengambil riwayat pekerjaan ${staffName}...`,
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+          });
+
+          const res = await this.callApi('getStaffActivityDetails', {
+            target_email: targetEmail,
+            month_year: selectedMonth
+          });
+
+          if (res.success && res.data) {
+            const d = res.data;
+            this.activeStaffDetails = d;
+
+            let rowsHtml = '';
+            if (d.activities && d.activities.length > 0) {
+              rowsHtml = d.activities.map((act, idx) => {
+                return `
+                  <tr class="border-b border-slate-100 hover:bg-slate-50 text-left text-xs">
+                    <td class="px-3 py-2 text-center font-bold text-slate-500">${idx + 1}</td>
+                    <td class="px-3 py-2 text-slate-600 font-mono whitespace-nowrap">${act.timestamp || '-'}</td>
+                    <td class="px-3 py-2 font-bold text-slate-800">${act.activity}</td>
+                    <td class="px-3 py-2 text-center font-bold text-brand-600 bg-brand-50 rounded-lg">+1 Pts</td>
+                  </tr>
+                `;
+              }).join('');
+            } else {
+              rowsHtml = '<tr><td colspan="4" class="p-6 text-center text-slate-400">Tidak ada riwayat pekerjaan pada periode ini.</td></tr>';
+            }
+
+            const avatarUrl = d.foto_profil_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(d.nama_staf)}&background=f1f5f9&color=475569&bold=true&size=128`;
+
+            Swal.fire({
+              title: '',
+              html: `
+                <div class="font-sans text-xs text-left space-y-4">
+                  <!-- Header Profile -->
+                  <div class="flex items-center space-x-3 bg-slate-50 border border-slate-200 p-3 rounded-2xl">
+                    <img src="${avatarUrl}" class="h-12 w-12 rounded-full object-cover border-2 border-brand-500 shadow-sm">
+                    <div>
+                      <h3 class="font-bold text-slate-900 text-sm">${d.nama_staf}</h3>
+                      <span class="text-slate-500 text-[11px] block">${d.target_email} (${d.nama_ruangan})</span>
+                      <div class="mt-1 flex items-center space-x-2">
+                        <span class="bg-brand-100 text-brand-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Periode: ${d.selected_month_year}</span>
+                        <span class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full">Total: ${d.total_activities} Pekerjaan (${d.total_points} Pts)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Table Activities -->
+                  <div class="overflow-x-auto rounded-xl border border-slate-200 max-h-72 overflow-y-auto custom-scrollbar">
+                    <table class="w-full text-left table-auto">
+                      <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase font-bold text-[10px]">
+                        <tr>
+                          <th class="px-3 py-2 text-center">No</th>
+                          <th class="px-3 py-2">Waktu Pekerjaan</th>
+                          <th class="px-3 py-2">Jenis Aktivitas Pekerjaan</th>
+                          <th class="px-3 py-2 text-center">Poin</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${rowsHtml}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Footer Actions -->
+                  <div class="flex justify-between items-center pt-2">
+                    <button onclick="app.exportStaffDetailsToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition shadow-sm flex items-center space-x-1.5">
+                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                      <span>Ekspor Pekerjaan Staf Ini (Excel) 📊</span>
+                    </button>
+                    <button onclick="Swal.close()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-4 py-2 rounded-xl text-xs transition">Tutup</button>
+                  </div>
+                </div>
+              `,
+              width: '650px',
+              showConfirmButton: false,
+              showCloseButton: true,
+              customClass: {
+                popup: 'rounded-2xl font-sans max-w-full p-4',
+              }
+            });
+
+          } else {
+            Swal.fire('Gagal', res.message || 'Gagal mengambil rincian pekerjaan staf.', 'error');
+          }
+        } catch (err) {
+          Swal.fire('Error', err.message || 'Terjadi kesalahan sistem.', 'error');
+        }
+      }
+
+      exportStaffDetailsToExcel() {
+        if (!this.activeStaffDetails || !this.activeStaffDetails.activities || this.activeStaffDetails.activities.length === 0) {
+          this.showToast('warning', 'Tidak ada data rincian pekerjaan untuk diekspor.');
+          return;
+        }
+
+        const d = this.activeStaffDetails;
+        let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+        csvContent += `STAF,${d.nama_staf}\nEMAIL,${d.target_email}\nRUANGAN,${d.nama_ruangan}\nPERIODE,${d.selected_month_year}\nTOTAL PEKERJAAN,${d.total_activities}\nTOTAL POIN,${d.total_points}\n\n`;
+        csvContent += "NO,WAKTU PEKERJAAN,JENIS AKTIVITAS PEKERJAAN,POIN\n";
+
+        d.activities.forEach((act, idx) => {
+          const timeStr = (act.timestamp || '').replace(/"/g, '""');
+          const activityStr = (act.activity || '').replace(/"/g, '""');
+          csvContent += `${idx + 1},"${timeStr}","${activityStr}",${act.points || 1}\n`;
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        const safeName = d.nama_staf.replace(/[^a-zA-Z0-9]/g, '_');
+        link.setAttribute("download", `Rincian_Pekerjaan_${safeName}_${d.selected_month_year}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        this.showToast('success', `Rincian pekerjaan ${d.nama_staf} berhasil diekspor.`);
+      }
+
       showPointsRules() {
         Swal.fire({
-          title: '🏆 Cara Mendapatkan Poin',
+          title: '🏆 Aturan Poin & Prestasi Staf',
           html: `
             <div class="text-left space-y-3.5 text-xs font-medium text-slate-600 font-sans p-1">
-              <p class="text-slate-500 leading-relaxed">Poin dihitung setiap bulan untuk mengapresiasi keaktifan, ketelitian, dan integritas staf CSSD/Admin dalam pengelolaan instrumen medis steril.</p>
+              <p class="text-slate-500 leading-relaxed">Setiap aktivitas pekerjaan operasional digital yang dilakukan staf bernilai <strong>1 Poin</strong> per tugas:</p>
               
-              <div class="space-y-2.5">
+              <div class="space-y-2">
                 <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                  <div class="flex items-center space-x-2">
-                    <span class="text-lg">🧼</span>
-                    <span class="font-bold text-slate-800">Proses Pencucian (Washing)</span>
-                  </div>
-                  <span class="bg-brand-100 text-brand-800 font-bold px-2 py-1 rounded-lg">+3 Poin</span>
+                  <span class="font-bold text-slate-800">🧼 Proses Pencucian (Washing)</span>
+                  <span class="font-black text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full text-xs">+1 Poin</span>
                 </div>
-                
                 <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                  <div class="flex items-center space-x-2">
-                    <span class="text-lg">🧪</span>
-                    <span class="font-bold text-slate-800">Proses Sterilisasi Selesai</span>
-                  </div>
-                  <span class="bg-brand-100 text-brand-800 font-bold px-2 py-1 rounded-lg">+3 Poin</span>
+                  <span class="font-bold text-slate-800">⚙️ Setting & Assembly</span>
+                  <span class="font-black text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full text-xs">+1 Poin</span>
                 </div>
-                
                 <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                  <div class="flex items-center space-x-2">
-                    <span class="text-lg">🆕</span>
-                    <span class="font-bold text-slate-800">Input Alat Baru ke Inventaris</span>
-                  </div>
-                  <span class="bg-brand-100 text-brand-800 font-bold px-2 py-1 rounded-lg">+1 Poin</span>
+                  <span class="font-bold text-slate-800">📦 Labelling & Packing Pouch</span>
+                  <span class="font-black text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full text-xs">+1 Poin</span>
                 </div>
-
                 <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                  <div class="flex items-center space-x-2">
-                    <span class="text-lg">🤝</span>
-                    <span class="font-bold text-slate-800">Serah Terima/Penyerahan Alat</span>
-                  </div>
-                  <span class="bg-brand-100 text-brand-800 font-bold px-2 py-1 rounded-lg">+1 Poin</span>
+                  <span class="font-bold text-slate-800">🧪 Proses Sterilisasi Autoklaf/Plasma</span>
+                  <span class="font-black text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full text-xs">+1 Poin</span>
                 </div>
-                
                 <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                  <div class="flex items-center space-x-2">
-                    <span class="text-lg">📦</span>
-                    <span class="font-bold text-slate-800">Penerimaan Pengembalian</span>
-                  </div>
-                  <span class="bg-brand-100 text-brand-800 font-bold px-2 py-1 rounded-lg">+1 Poin</span>
+                  <span class="font-bold text-slate-800">📥 Penerimaan, Serah Terima & Penyimpanan</span>
+                  <span class="font-black text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full text-xs">+1 Poin</span>
                 </div>
-                
                 <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                  <div class="flex items-center space-x-2">
-                    <span class="text-lg">🔴</span>
-                    <span class="font-bold text-slate-800">Penerimaan Barang Kotor</span>
-                  </div>
-                  <span class="bg-brand-100 text-brand-800 font-bold px-2 py-1 rounded-lg">+1 Poin</span>
-                </div>
-                
-                <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                  <div class="flex items-center space-x-2">
-                    <span class="text-lg">✅</span>
-                    <span class="font-bold text-slate-800">Verifikasi Pengguna Baru</span>
-                  </div>
-                  <span class="bg-brand-100 text-brand-800 font-bold px-2 py-1 rounded-lg">+1 Poin</span>
+                  <span class="font-bold text-slate-800">🆕 Input Alat Baru & Verifikasi User</span>
+                  <span class="font-black text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full text-xs">+1 Poin</span>
                 </div>
               </div>
-              <p class="text-[10px] text-slate-400 text-center italic mt-4">“Ketelitian dan kebersihan adalah keselamatan pasien.” - Tim CSSD</p>
+              <p class="text-[10px] text-slate-400 text-center italic mt-3">“Setiap kontribusi pekerjaan dicatat secara transparan 1 poin per aksi.” - SISTA-CSSD</p>
             </div>
           `,
           confirmButtonText: 'Mengerti, Siap Berprestasi!',
-          confirmButtonColor: '#0f172a',
+          confirmButtonColor: '#3b82f6',
           customClass: {
-            popup: 'rounded-2xl font-sans max-w-sm',
-            confirmButton: 'rounded-xl px-5 py-3 text-sm font-semibold'
+            popup: 'rounded-2xl font-sans max-w-md',
+            confirmButton: 'rounded-xl px-5 py-2.5 text-xs font-semibold'
           }
         });
       }
