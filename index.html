@@ -3492,6 +3492,17 @@
           else if (it.status_posisi === 'Steril') badgeColorClass = 'bg-teal-100 text-teal-700';
           else if (it.status_posisi === 'Penyimpanan') badgeColorClass = 'bg-green-100 text-green-700';
 
+          let actionBtns = `<button onclick="Swal.close(); app.openDetailModal('${it.id_alat}')" class="text-brand-600 hover:text-brand-700 hover:underline font-bold text-xs">Detail</button>`;
+
+          if (type === 'EXP' && (this.user.peran === 'Admin' || this.user.peran === 'Super Admin')) {
+            if (it.status_posisi === 'Penyimpanan' || it.status_posisi === 'Steril') {
+              actionBtns += `<button onclick="Swal.close(); app.recallItemToKotor('${it.id_alat}')" class="bg-red-500 hover:bg-red-600 text-white font-bold text-[10px] px-2 py-1 rounded-lg shadow-sm ml-1.5 transition" title="RECALL alat ED ke status Kotor">🔄 RECALL</button>`;
+            } else if (it.status_posisi.startsWith('Dipinjam')) {
+              const roomName = it.status_posisi.replace('Dipinjam ', '');
+              actionBtns += `<button onclick="Swal.close(); app.sendEdRecallNotification('${it.id_alat}', '${it.nama_alat.replace(/'/g, "\\'")}', '${roomName.replace(/'/g, "\\'")}')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-[10px] px-2 py-1 rounded-lg shadow-sm ml-1.5 transition" title="Kirim Info Pengembalian ED ke Ruangan">🔔 Notif ED</button>`;
+            }
+          }
+
           rowsHtml += `
             <tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0 text-left">
               <td class="px-3 py-2.5 font-bold text-slate-800 whitespace-nowrap">${it.id_alat}</td>
@@ -3501,16 +3512,30 @@
               </td>
               <td class="px-3 py-2.5 text-slate-500 font-medium whitespace-nowrap">${expInfo}</td>
               <td class="px-3 py-2.5 text-center whitespace-nowrap">
-                <button onclick="Swal.close(); app.openDetailModal('${it.id_alat}')" class="text-brand-600 hover:text-brand-700 hover:underline font-bold text-xs">Detail</button>
+                ${actionBtns}
               </td>
             </tr>
           `;
         });
 
+        let batchHeaderHtml = '';
+        if (type === 'EXP' && (this.user.peran === 'Admin' || this.user.peran === 'Super Admin')) {
+          const cssdEdCount = filteredItems.filter(i => i.status_posisi === 'Penyimpanan' || i.status_posisi === 'Steril').length;
+          if (cssdEdCount > 0) {
+            batchHeaderHtml = `
+              <div class="mb-3 flex justify-between items-center bg-red-50 border border-red-200 p-2.5 rounded-xl">
+                <span class="font-semibold text-red-800 text-xs">Terdapat <strong>${cssdEdCount}</strong> alat ED di penyimpanan CSSD</span>
+                <button onclick="Swal.close(); app.recallItemToKotor(null, true)" class="bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow-sm transition">🔄 RECALL Massal ke Kotor</button>
+              </div>
+            `;
+          }
+        }
+
         Swal.fire({
           title: title,
           html: `
             <div class="font-sans text-xs">
+              ${batchHeaderHtml}
               <div class="overflow-x-auto rounded-xl border border-slate-200 mt-2 max-h-80 overflow-y-auto custom-scrollbar">
                 <table class="w-full min-w-[500px] table-auto">
                   <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 uppercase font-bold text-[10px] text-left">
@@ -5752,6 +5777,111 @@
               confirmButton: 'rounded-xl px-4 py-2.5 text-sm font-semibold'
             }
           });
+        }
+      }
+
+      async recallItemToKotor(itemId, isBatch = false) {
+        if (this.user.peran !== 'Admin' && this.user.peran !== 'Super Admin') return;
+
+        let confirmTitle = 'RECALL Alat Kadaluwarsa (ED)';
+        let confirmText = `Apakah Anda yakin ingin menarik alat '${itemId}' yang sudah ED di penyimpanan CSSD kembali ke status '1. Kotor'?`;
+
+        if (isBatch) {
+          confirmTitle = 'RECALL Massal Alat ED di CSSD';
+          confirmText = 'Apakah Anda yakin ingin menarik SEMUA alat ED yang tersimpan di CSSD kembali ke status 1. Kotor untuk disterilkan ulang?';
+        }
+
+        const confirmResult = await Swal.fire({
+          title: confirmTitle,
+          text: confirmText,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Ya, RECALL ke Kotor! 🔄',
+          cancelButtonText: 'Batal',
+          confirmButtonColor: '#ef4444',
+          cancelButtonColor: '#64748b',
+          customClass: {
+            popup: 'rounded-2xl font-sans',
+            title: 'font-bold text-slate-900',
+            confirmButton: 'rounded-xl px-4 py-2 text-xs font-semibold shadow-md',
+            cancelButton: 'rounded-xl px-4 py-2 text-xs font-semibold'
+          }
+        });
+
+        if (!confirmResult.isConfirmed) return;
+
+        try {
+          this.showToast('info', 'Memproses RECALL alat ED...');
+          const res = await this.callApiPost('recallItemToKotor', {
+            id_alat: itemId || '',
+            is_batch: isBatch
+          });
+
+          if (res.success) {
+            Swal.fire({
+              title: 'RECALL Berhasil!',
+              text: res.message,
+              icon: 'success',
+              confirmButtonColor: '#10b981',
+              customClass: {
+                popup: 'rounded-2xl font-sans',
+                confirmButton: 'rounded-xl px-4 py-2 text-xs font-semibold'
+              }
+            });
+            this.refreshData();
+          } else {
+            this.showToast('error', res.message || 'Gagal memproses RECALL.');
+          }
+        } catch (err) {
+          this.showToast('error', err.message || 'Terjadi kesalahan sistem.');
+        }
+      }
+
+      async sendEdRecallNotification(itemId, namaAlat, namaRuangan) {
+        if (this.user.peran !== 'Admin' && this.user.peran !== 'Super Admin') return;
+
+        const confirmResult = await Swal.fire({
+          title: 'Kirim Info Pengembalian ED',
+          html: `
+            <div class="text-left text-xs text-slate-600 space-y-2">
+              <p>Kirimkan notifikasi Telegram pengingat RECALL ke perwakilan <strong>${namaRuangan}</strong> untuk alat:</p>
+              <div class="bg-slate-100 p-2.5 rounded-xl font-medium text-slate-800">
+                • <strong>${namaAlat}</strong> (${itemId})
+              </div>
+              <p class="text-slate-500 italic">Pesan akan dikirim langsung ke grup/kontak Telegram koordinasi.</p>
+            </div>
+          `,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Kirim Notifikasi Telegram 🔔',
+          cancelButtonText: 'Batal',
+          confirmButtonColor: '#f59e0b',
+          cancelButtonColor: '#64748b',
+          customClass: {
+            popup: 'rounded-2xl font-sans',
+            title: 'font-bold text-slate-900 text-sm',
+            confirmButton: 'rounded-xl px-4 py-2 text-xs font-semibold shadow-md',
+            cancelButton: 'rounded-xl px-4 py-2 text-xs font-semibold'
+          }
+        });
+
+        if (!confirmResult.isConfirmed) return;
+
+        try {
+          this.showToast('info', 'Mengirimkan notifikasi Telegram...');
+          const res = await this.callApiPost('sendEdRecallNotification', {
+            id_alat: itemId,
+            nama_alat: namaAlat,
+            nama_ruangan: namaRuangan
+          });
+
+          if (res.success) {
+            this.showToast('success', res.message);
+          } else {
+            this.showToast('error', res.message || 'Gagal mengirim notifikasi.');
+          }
+        } catch (err) {
+          this.showToast('error', err.message || 'Terjadi kesalahan sistem.');
         }
       }
 
