@@ -369,6 +369,12 @@ function doPost(e) {
           return jsonResponse(false, "Akses ditolak. Hanya untuk Admin & Super Admin CSSD.");
         }
         return sendEdRecallNotification(postData, userEmail);
+
+      case 'toggleItemDisplay':
+        if (userRole !== 'Admin' && userRole !== 'Super Admin') {
+          return jsonResponse(false, "Akses ditolak. Hanya untuk Admin & Super Admin CSSD.");
+        }
+        return toggleItemDisplay(postData, userEmail);
         
       default:
         return jsonResponse(false, "Action POST '" + action + "' tidak dikenali.");
@@ -465,7 +471,8 @@ function getItemsData() {
       status_posisi: data[i][4],
       tanggal_sterilisasi: data[i][5] ? Utilities.formatDate(new Date(data[i][5]), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") : '',
       tanggal_kadaluwarsa_steril: data[i][6] ? Utilities.formatDate(new Date(data[i][6]), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") : '',
-      masa_aktif_hari: data[i][7] !== undefined && data[i][7] !== '' ? parseInt(data[i][7]) : 30
+      masa_aktif_hari: data[i][7] !== undefined && data[i][7] !== '' ? parseInt(data[i][7]) : 30,
+      status_display: (data[i][8] !== undefined && data[i][8] !== null && data[i][8] !== '') ? data[i][8].toString().trim() : 'ON'
     });
   }
   
@@ -1469,12 +1476,28 @@ function updateItemCycle(postData, actorEmail) {
         });
         
       } else if (nextCycle === 'Penyimpanan') {
+        // Rotasi Stok Cerdas (FEFO): Cek apakah ada unit sejenis lain yang sudah berstatus 'Penyimpanan' & status_display === 'ON'
+        var itemName = data[i][1];
+        var hasOtherDisplayedUnit = false;
+        for (var dIdx = 1; dIdx < data.length; dIdx++) {
+          if (dIdx !== i && data[dIdx][1] === itemName && data[dIdx][4] === 'Penyimpanan') {
+            var displayVal = (data[dIdx][8] !== undefined && data[dIdx][8] !== null && data[dIdx][8] !== '') ? data[dIdx][8].toString().trim() : 'ON';
+            if (displayVal === 'ON') {
+              hasOtherDisplayedUnit = true;
+              break;
+            }
+          }
+        }
+        
+        var initialDisplay = hasOtherDisplayedUnit ? 'OFF' : 'ON';
         sheet.getRange(row, 5).setValue('Penyimpanan');
-        writeLog(actorEmail, "Mengubah status " + itemId + " ke Penyimpanan.");
-        sendTelegramNotification("🏛️ *Alat Masuk Penyimpanan (Storage)*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\n\nOleh: " + actorInfo);
+        sheet.getRange(row, 9).setValue(initialDisplay);
+        
+        writeLog(actorEmail, "Mengubah status " + itemId + " ke Penyimpanan (Etalase Display: " + initialDisplay + ").");
+        sendTelegramNotification("🏛️ *Alat Masuk Penyimpanan (Storage)*\nAlat: " + data[i][1] + "\nID: `" + itemId + "`\nStatus Display Etalase: " + (initialDisplay === 'ON' ? 'Dipajang (ON) 👁️' : 'Disembunyikan (OFF) 🙈') + "\n\nOleh: " + actorInfo);
         clearItemsCache();
         addPoints(actorEmail, "Penyimpanan", 1);
-        return jsonResponse(true, "Alat dipindahkan ke Penyimpanan dan siap dipinjam kembali.", { id_alat: itemId, status: 'Penyimpanan' });
+        return jsonResponse(true, "Alat dipindahkan ke Penyimpanan (Display: " + initialDisplay + ").", { id_alat: itemId, status: 'Penyimpanan', status_display: initialDisplay });
         
       } else if (nextCycle === 'Kotor') {
         sheet.getRange(row, 5).setValue('Kotor');
@@ -1489,6 +1512,38 @@ function updateItemCycle(postData, actorEmail) {
       } else {
         return jsonResponse(false, "Status siklus '" + nextCycle + "' tidak valid.");
       }
+    }
+  }
+  return jsonResponse(false, "Alat dengan ID " + itemId + " tidak ditemukan.");
+}
+
+// Toggle Item Display Status (ON / OFF)
+function toggleItemDisplay(postData, actorEmail) {
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(ITEMS_SHEET_NAME);
+  var itemId = postData.id_alat;
+  var targetDisplay = postData.status_display; // 'ON' | 'OFF'
+  
+  if (!itemId) {
+    return jsonResponse(false, "Parameter 'id_alat' diperlukan.");
+  }
+  
+  var data = sheet.getDataRange().getValues();
+  var searchId = itemId.toString().trim().toLowerCase();
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] && data[i][0].toString().trim().toLowerCase() === searchId) {
+      var row = i + 1;
+      var currentDisplay = (data[i][8] !== undefined && data[i][8] !== null && data[i][8] !== '') ? data[i][8].toString().trim() : 'ON';
+      var newDisplay = targetDisplay ? targetDisplay : (currentDisplay === 'ON' ? 'OFF' : 'ON');
+      
+      sheet.getRange(row, 9).setValue(newDisplay);
+      writeLog(actorEmail, "Mengubah status display etalase item " + itemId + " ke " + newDisplay);
+      clearItemsCache();
+      
+      return jsonResponse(true, "Status etalase " + data[i][1] + " (" + itemId + ") berhasil diubah ke " + newDisplay + ".", {
+        id_alat: itemId,
+        status_display: newDisplay
+      });
     }
   }
   return jsonResponse(false, "Alat dengan ID " + itemId + " tidak ditemukan.");

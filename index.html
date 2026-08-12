@@ -3001,9 +3001,11 @@
           this.lastKatalogQuery = query;
         }
 
-        // Filter search items
+        // Filter search items & Etalase Display status (hanya tampilkan yang status_display !== 'OFF')
         let availableItems = this.items.filter(item => {
-          return item.nama_alat.toLowerCase().includes(query) || item.id_alat.toLowerCase().includes(query);
+          const matchQuery = item.nama_alat.toLowerCase().includes(query) || item.id_alat.toLowerCase().includes(query);
+          const isDisplayed = item.status_display !== 'OFF';
+          return matchQuery && isDisplayed;
         });
 
         // Filter berdasarkan Favorit
@@ -3011,7 +3013,7 @@
           availableItems = availableItems.filter(item => this.favorites.includes(item.id_alat));
         }
 
-        // Urutkan item secara lokal
+        // Urutkan item secara lokal (Prioritas FEFO: First Expired, First Out)
         const sortSelect = document.getElementById('katalog-sort');
         const sortType = sortSelect ? sortSelect.value : 'default';
         availableItems.sort((a, b) => {
@@ -3024,9 +3026,14 @@
             const bVal = b.status_posisi === 'Penyimpanan' ? 0 : 1;
             return aVal - bVal;
           } else {
-            const indexA = this.items.indexOf(a);
-            const indexB = this.items.indexOf(b);
-            return indexB - indexA;
+            // Default: FEFO (First Expired First Out) - Penyimpanan dulu, lalu ED terawal
+            const aAvail = a.status_posisi === 'Penyimpanan' ? 0 : 1;
+            const bAvail = b.status_posisi === 'Penyimpanan' ? 0 : 1;
+            if (aAvail !== bAvail) return aAvail - bAvail;
+
+            const expA = a.tanggal_kadaluwarsa_steril ? new Date(a.tanggal_kadaluwarsa_steril).getTime() : 9999999999999;
+            const expB = b.tanggal_kadaluwarsa_steril ? new Date(b.tanggal_kadaluwarsa_steril).getTime() : 9999999999999;
+            return expA - expB;
           }
         });
 
@@ -4675,6 +4682,11 @@
               ${(item.status_posisi === 'Steril' || item.status_posisi === 'Penyimpanan' || item.status_posisi.startsWith('Dipinjam')) ? this.getRemainingDaysHtml(item.tanggal_kadaluwarsa_steril) : '-'}
             </td>
             <td class="p-4 text-right space-x-1.5 whitespace-nowrap">
+              ${item.status_posisi === 'Penyimpanan' ? `
+                <button onclick="app.toggleItemDisplay('${item.id_alat}')" class="px-2.5 py-1 rounded-lg text-xs font-bold border transition duration-150 shadow-sm mr-1 ${item.status_display === 'OFF' ? 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100' : 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'}" title="Klik untuk memajang/menyembunyikan dari etalase Katalog Ruangan">
+                  ${item.status_display === 'OFF' ? '🙈 Hidden (OFF)' : '👁️ Dipajang (ON)'}
+                </button>
+              ` : ''}
               ${this.user.peran === 'Super Admin' ? `
                 <button onclick="app.changeItemId('${item.id_alat}')" class="text-brand-500 hover:text-brand-700 inline-block align-middle mr-1.5" title="Ubah ID Alat (Find & Replace)">
                   <svg class="h-5 w-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
@@ -5212,9 +5224,27 @@
         this.renderRiwayat();
       }
 
-      changeLogsPage(page) {
-        this.logsPage = page;
-        this.renderLogsPageOnly();
+      async toggleItemDisplay(itemId, targetStatus) {
+        if (this.isProcessingDisplay) return;
+        try {
+          this.isProcessingDisplay = true;
+          this.showToast('info', 'Updating status etalase...');
+          const res = await this.callApiPost('toggleItemDisplay', {
+            id_alat: itemId,
+            status_display: targetStatus
+          });
+
+          if (res.success) {
+            this.showToast('success', res.message);
+            this.refreshData();
+          } else {
+            this.showToast('error', res.message || 'Gagal mengubah status etalase.');
+          }
+        } catch (e) {
+          this.showToast('error', 'Gagal memproses request etalase.');
+        } finally {
+          this.isProcessingDisplay = false;
+        }
       }
 
       // --- SORTING HANDLERS ---
