@@ -3877,7 +3877,7 @@
           const { alasan } = result.value || {};
           await this.processUpdateOrderStatus(orderId, 'Batal', { alasan_batal: alasan });
         }
-      },
+      }
 
       async updateOrderStatus(orderId, nextStatus) {
         const order = this.orders.find(o => o.id_order === orderId);
