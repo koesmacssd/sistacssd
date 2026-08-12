@@ -994,6 +994,39 @@
               </div>
             </div>
 
+            <!-- Card Konfigurasi Maintenance Mode (Hanya untuk Super Admin) -->
+            <div id="config-maintenance-card" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6 hidden">
+              <div>
+                <h3 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+                  <span>🛠️ Mode Pemeliharaan Website (Maintenance Mode)</span>
+                </h3>
+                <p class="text-xs text-slate-500 mt-1">Jika mode ini diaktifkan (MAINTENANCE ON), pengguna umum/ruangan yang mengakses aplikasi tidak dapat menggunakan fitur dan akan melihat halaman Maintenance. <strong>Super Admin tetap dapat mengakses penuh seluruh aplikasi (Bypass).</strong></p>
+              </div>
+              <div class="pt-4 border-t border-slate-100 space-y-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-200 gap-3">
+                  <div>
+                    <span class="text-sm font-bold text-slate-800">Status Operasional Website:</span>
+                    <p class="text-xs text-slate-500 mt-0.5" id="desc-config-maintenance">Sistem berjalan normal secara Online untuk seluruh pengguna.</p>
+                  </div>
+                  <div class="flex items-center space-x-3 flex-shrink-0">
+                    <span id="label-config-maintenance" class="text-xs font-extrabold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">🟢 ONLINE (OFF)</span>
+                    <button type="button" onclick="app.toggleMaintenanceModeStatus()" id="btn-toggle-config-maintenance" class="inline-flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-sm transition duration-150">
+                      Aktifkan Maintenance (ON)
+                    </button>
+                  </div>
+                </div>
+                <div class="space-y-2">
+                  <label for="input-config-maintenance-message" class="block text-sm font-semibold text-slate-700">Pesan Pengumuman Pemeliharaan Sistem:</label>
+                  <textarea id="input-config-maintenance-message" rows="3" class="w-full text-sm border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white" placeholder="Masukkan pesan pengumuman maintenance..."></textarea>
+                </div>
+                <div class="flex justify-end">
+                  <button type="button" onclick="app.saveMaintenanceMessage()" id="btn-save-maintenance-message" class="inline-flex items-center justify-center bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold px-6 py-2.5 rounded-xl shadow-md transition duration-150">
+                    Simpan Pesan Maintenance
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <!-- Card Pencadangan Sistem (Database Backup) -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
               <div>
@@ -1467,6 +1500,75 @@
     </svg>
   </button>
 
+  <!-- 10. HALAMAN MAINTENANCE MODE (ENTERPRISE STANDARD) -->
+  <div id="maintenance-screen" class="hidden fixed inset-0 z-50 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white flex items-center justify-center p-4 overflow-y-auto min-h-screen">
+    <!-- Glowing Background Orbs -->
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" style="animation-delay: 1s;"></div>
+
+    <div class="relative z-10 max-w-2xl w-full bg-white/10 backdrop-blur-2xl border border-white/15 rounded-3xl p-8 sm:p-12 shadow-2xl text-center space-y-8 my-8">
+      <!-- Header Logo & Badge -->
+      <div class="flex flex-col items-center space-y-4">
+        <div class="h-20 w-20 bg-white/10 backdrop-blur border border-white/20 rounded-2xl flex items-center justify-center p-3 shadow-inner">
+          <img src="https://lh3.googleusercontent.com/d/16S9-K3F3yq48oTq72ZgL23pY2R5w9tT2=s300" alt="Logo RSUD dr. R. Koesma" class="max-h-full max-w-full object-contain" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%23ffffff\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4\' /></svg>';">
+        </div>
+        <div>
+          <h2 class="text-xl font-black tracking-wider uppercase text-slate-100">SISTA-CSSD</h2>
+          <p class="text-xs text-slate-400 font-medium">RSUD dr. R. KOESMA TUBAN</p>
+        </div>
+
+        <!-- Pulse Status Badge -->
+        <div class="inline-flex items-center space-x-2 bg-amber-500/20 border border-amber-400/40 text-amber-300 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide shadow-sm">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-400"></span>
+          </span>
+          <span>🛠️ SISTEM DALAM PEMELIHARAAN (MAINTENANCE)</span>
+        </div>
+      </div>
+
+      <!-- Title & Custom Announcement -->
+      <div class="space-y-3">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-white leading-tight">Pemeliharaan & Peningkatan Kinerja Server</h1>
+        <p id="maintenance-screen-message" class="text-slate-300 text-sm sm:text-base leading-relaxed bg-white/5 border border-white/10 rounded-2xl p-5 text-center font-normal shadow-inner">
+          Sistem SISTA-CSSD sedang dalam pemeliharaan rutin dan peningkatan kinerja server. Terima kasih atas kesabaran Anda.
+        </p>
+      </div>
+
+      <!-- Key Info Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+        <div class="bg-white/5 border border-white/10 p-4 rounded-2xl flex items-center space-x-3">
+          <div class="p-2.5 bg-emerald-500/20 text-emerald-400 rounded-xl border border-emerald-500/30 flex-shrink-0">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-200">Keamanan Data Terjamin</h4>
+            <p class="text-[11px] text-slate-400">Seluruh data riwayat & alat tersimpan aman di cloud.</p>
+          </div>
+        </div>
+        <div class="bg-white/5 border border-white/10 p-4 rounded-2xl flex items-center space-x-3">
+          <div class="p-2.5 bg-indigo-500/20 text-indigo-400 rounded-xl border border-indigo-500/30 flex-shrink-0">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-200">Estimasi Pemeliharaan</h4>
+            <p class="text-[11px] text-slate-400">Sistem akan segera kembali beroperasi normal.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions & Bypass -->
+      <div class="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <a id="maintenance-wa-btn" href="https://wa.me/6282330621303" target="_blank" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-5 py-3 rounded-xl transition duration-150 shadow-lg">
+          <span>💬 Hubungi Admin CSSD via WhatsApp</span>
+        </a>
+        <button onclick="app.showSuperAdminBypassModal()" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-white/10 hover:bg-white/20 border border-white/20 text-slate-200 text-xs font-bold px-5 py-3 rounded-xl transition duration-150">
+          <span>🔐 Super Admin Login (Bypass)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- SCRIPT LOGIKA SPA SISTA-CSSD -->
   <script>
     class SistaCSSD {
@@ -1538,6 +1640,9 @@
         window.addEventListener('hashchange', () => {
           this.handleHashRouting();
         });
+
+        // Cek status Maintenance publik dari server
+        this.checkMaintenanceStatusPublic();
 
         // Auto login jika credential sudah ada
         if (this.credential) {
@@ -1719,6 +1824,7 @@
               }
             }
             this.setTab(initialTab);
+            this.applyMaintenanceGuard();
             this.prefetchBackgroundData(); // Tarik data lainnya di background secara asinkron
           } else {
             if (res.data && res.data.code === 'NOT_REGISTERED') {
@@ -1941,6 +2047,40 @@
                 }
               } else {
                 popupConfigCard.classList.add('hidden');
+              }
+            }
+
+            // Render maintenance mode config card for Super Admin
+            const maintConfigCard = document.getElementById('config-maintenance-card');
+            if (maintConfigCard) {
+              if (this.user.peran === 'Super Admin') {
+                maintConfigCard.classList.remove('hidden');
+                const maintStatus = this.user.maintenance_status || 'OFF';
+                const maintMessage = this.user.maintenance_message || 'Sistem SISTA-CSSD sedang dalam pemeliharaan rutin dan peningkatan kinerja server. Terima kasih atas kesabaran Anda.';
+                
+                const label = document.getElementById('label-config-maintenance');
+                const btn = document.getElementById('btn-toggle-config-maintenance');
+                const desc = document.getElementById('desc-config-maintenance');
+                const textarea = document.getElementById('input-config-maintenance-message');
+                
+                if (label && btn && desc && textarea) {
+                  textarea.value = maintMessage;
+                  if (maintStatus === 'ON') {
+                    label.innerText = '🛠️ MAINTENANCE (ON)';
+                    label.className = 'text-xs font-extrabold px-3 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300';
+                    desc.innerText = 'Sistem sedang dalam Pemeliharaan (Maintenance Mode Active). Pengguna umum/ruangan tidak dapat meminjam atau mengakses fitur.';
+                    btn.innerText = 'Kembalikan ke Normal (OFF)';
+                    btn.className = 'inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-sm transition duration-150';
+                  } else {
+                    label.innerText = '🟢 ONLINE (OFF)';
+                    label.className = 'text-xs font-extrabold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300';
+                    desc.innerText = 'Sistem berjalan normal secara Online untuk seluruh pengguna.';
+                    btn.innerText = 'Aktifkan Maintenance (ON)';
+                    btn.className = 'inline-flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-sm transition duration-150';
+                  }
+                }
+              } else {
+                maintConfigCard.classList.add('hidden');
               }
             }
           } else if (tabName === 'admin-achievements') {
@@ -6669,6 +6809,101 @@
         } catch (err) {
           this.showToast('error', 'Gagal menyimpan pesan notifikasi.');
         }
+      }
+
+      async checkMaintenanceStatusPublic() {
+        try {
+          const res = await fetch(`${this.apiUrl}?action=getMaintenanceStatus`);
+          const data = await res.json();
+          if (data && data.success && data.data) {
+            this.maintenanceStatus = data.data.status || 'OFF';
+            this.maintenanceMessage = data.data.message || '';
+            this.applyMaintenanceGuard();
+          }
+        } catch(e) {
+          console.log("Check maintenance status error:", e);
+        }
+      }
+
+      applyMaintenanceGuard() {
+        const maintStatus = (this.user && this.user.maintenance_status) ? this.user.maintenance_status : (this.maintenanceStatus || 'OFF');
+        const maintMessage = (this.user && this.user.maintenance_message) ? this.user.maintenance_message : (this.maintenanceMessage || 'Sistem SISTA-CSSD sedang dalam pemeliharaan rutin dan peningkatan kinerja server. Terima kasih atas kesabaran Anda.');
+        
+        const maintScreen = document.getElementById('maintenance-screen');
+        const maintMsgEl = document.getElementById('maintenance-screen-message');
+        const appContainer = document.getElementById('app');
+
+        if (maintMsgEl) maintMsgEl.innerText = maintMessage;
+
+        if (maintStatus === 'ON') {
+          if (!this.user || this.user.peran !== 'Super Admin') {
+            if (maintScreen) maintScreen.classList.remove('hidden');
+            if (appContainer) appContainer.classList.add('hidden');
+          } else {
+            if (maintScreen) maintScreen.classList.add('hidden');
+            if (appContainer) appContainer.classList.remove('hidden');
+            this.showToast('info', '🛠️ Mode Pemeliharaan (Maintenance Mode) sedang AKTIF untuk pengguna biasa.', 6000);
+          }
+        } else {
+          if (maintScreen) maintScreen.classList.add('hidden');
+          if (appContainer) appContainer.classList.remove('hidden');
+        }
+      }
+
+      async toggleMaintenanceModeStatus() {
+        if (!this.user || this.user.peran !== 'Super Admin') return;
+        
+        const currentVal = this.user.maintenance_status || 'OFF';
+        const newVal = currentVal === 'ON' ? 'OFF' : 'ON';
+        const currentMessage = document.getElementById('input-config-maintenance-message')?.value || this.user.maintenance_message || '';
+        
+        try {
+          this.showToast('info', 'Mengubah status Maintenance Mode...');
+          const res = await this.callApiPost('updateMaintenanceConfig', { status: newVal, message: currentMessage });
+          if (res.success) {
+            this.showToast('success', res.message);
+            this.user.maintenance_status = newVal;
+            this.maintenanceStatus = newVal;
+            this.setTab('admin-settings', false);
+            this.applyMaintenanceGuard();
+          } else {
+            this.showToast('error', res.message);
+          }
+        } catch (err) {
+          this.showToast('error', 'Gagal mengubah status maintenance.');
+        }
+      }
+
+      async saveMaintenanceMessage() {
+        if (!this.user || this.user.peran !== 'Super Admin') return;
+        
+        const currentStatus = this.user.maintenance_status || 'OFF';
+        const messageVal = document.getElementById('input-config-maintenance-message')?.value || '';
+        
+        try {
+          this.showToast('info', 'Menyimpan pesan maintenance...');
+          const res = await this.callApiPost('updateMaintenanceConfig', { status: currentStatus, message: messageVal });
+          if (res.success) {
+            this.showToast('success', 'Pesan pengumuman maintenance berhasil disimpan.');
+            this.user.maintenance_message = messageVal;
+            this.maintenanceMessage = messageVal;
+            this.setTab('admin-settings', false);
+            this.applyMaintenanceGuard();
+          } else {
+            this.showToast('error', res.message);
+          }
+        } catch (err) {
+          this.showToast('error', 'Gagal menyimpan pesan maintenance.');
+        }
+      }
+
+      showSuperAdminBypassModal() {
+        const maintScreen = document.getElementById('maintenance-screen');
+        if (maintScreen) maintScreen.classList.add('hidden');
+        const appContainer = document.getElementById('app');
+        if (appContainer) appContainer.classList.remove('hidden');
+        this.showView('login');
+        this.showToast('info', 'Silakan masuk dengan akun Google Super Admin.');
       }
 
       linkify(text) {

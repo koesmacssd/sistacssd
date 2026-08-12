@@ -145,6 +145,15 @@ function doGet(e) {
       return initDatabase();
     }
 
+    if (action === 'getMaintenanceStatus') {
+      var mStatus = getConfig('SYSTEM_MAINTENANCE_STATUS', 'OFF');
+      var mMsg = getConfig('SYSTEM_MAINTENANCE_MESSAGE', 'Sistem SISTA-CSSD sedang dalam pemeliharaan rutin dan peningkatan kinerja server. Terima kasih atas kesabaran Anda.');
+      return jsonResponse(true, "Status maintenance berhasil diambil.", {
+        status: mStatus,
+        message: mMsg
+      });
+    }
+
     if (!userEmail) {
       return jsonResponse(false, "Autentikasi diperlukan. Kirim parameter 'credential' (Google Sign-In).");
     }
@@ -375,6 +384,12 @@ function doPost(e) {
           return jsonResponse(false, "Akses ditolak. Hanya untuk Admin & Super Admin CSSD.");
         }
         return toggleItemDisplay(postData, userEmail);
+
+      case 'updateMaintenanceConfig':
+        if (userRole !== 'Super Admin') {
+          return jsonResponse(false, "Akses ditolak. Hanya untuk Super Admin.");
+        }
+        return updateMaintenanceConfig(postData, userEmail);
         
       default:
         return jsonResponse(false, "Action POST '" + action + "' tidak dikenali.");
@@ -401,6 +416,8 @@ function getUserProfile(email) {
       var showAchievements = getConfig('SHOW_ACHIEVEMENTS', 'ON');
       var popupStatus = getConfig('POPUP_NOTIFICATION_STATUS', 'OFF');
       var popupMessage = getConfig('POPUP_NOTIFICATION_MESSAGE', '');
+      var maintenanceStatus = getConfig('SYSTEM_MAINTENANCE_STATUS', 'OFF');
+      var maintenanceMessage = getConfig('SYSTEM_MAINTENANCE_MESSAGE', 'Sistem SISTA-CSSD sedang dalam pemeliharaan rutin dan peningkatan kinerja server. Terima kasih atas kesabaran Anda.');
       return {
         id: data[i][0],
         email: data[i][1].toString().trim(),
@@ -412,7 +429,9 @@ function getUserProfile(email) {
         foto_profil_url: data[i][7] || '',
         show_achievements: showAchievements,
         popup_status: popupStatus,
-        popup_message: popupMessage
+        popup_message: popupMessage,
+        maintenance_status: maintenanceStatus,
+        maintenance_message: maintenanceMessage
       };
     }
   }
@@ -1547,6 +1566,47 @@ function toggleItemDisplay(postData, actorEmail) {
     }
   }
   return jsonResponse(false, "Alat dengan ID " + itemId + " tidak ditemukan.");
+}
+
+// Update Maintenance Config (Super Admin only)
+function updateMaintenanceConfig(postData, actorEmail) {
+  var ss = getSpreadsheet();
+  var sheet = ss.getSheetByName(CONFIG_SHEET_NAME);
+  if (!sheet) {
+    return jsonResponse(false, "Sheet config tidak ditemukan.");
+  }
+  
+  var newStatus = postData.status === 'ON' ? 'ON' : 'OFF';
+  var newMessage = postData.message ? postData.message.toString().trim() : '';
+  
+  setConfigValue(sheet, 'SYSTEM_MAINTENANCE_STATUS', newStatus);
+  if (newMessage) {
+    setConfigValue(sheet, 'SYSTEM_MAINTENANCE_MESSAGE', newMessage);
+  }
+  
+  writeLog(actorEmail, "Mengubah status Maintenance Mode ke: " + newStatus);
+  var actorInfo = getActorInfoString(actorEmail);
+  var notifMsg = (newStatus === 'ON') ?
+    "🛠️ *Website Maintenance Mode AKTIF*\nStatus: Maintenance (ON)\nOleh: " + actorInfo + "\nPesan: " + (newMessage || 'Pemeliharaan sistem sedang berlangsung.') :
+    "🟢 *Website Maintenance Mode NONAKTIF*\nStatus: Online (OFF)\nOleh: " + actorInfo + "\nSistem kembali beroperasi normal untuk seluruh pengguna.";
+  sendTelegramNotification(notifMsg);
+  
+  return jsonResponse(true, "Konfigurasi Maintenance Mode berhasil diperbarui ke " + (newStatus === 'ON' ? 'MAINTENANCE (ON)' : 'ONLINE (OFF)') + ".", {
+    status: newStatus,
+    message: newMessage
+  });
+}
+
+// Helper set config value
+function setConfigValue(sheet, key, value) {
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] === key) {
+      sheet.getRange(i + 1, 2).setValue(value);
+      return;
+    }
+  }
+  sheet.appendRow([key, value]);
 }
 
 // CRUD Items (Add/Edit/Delete)
