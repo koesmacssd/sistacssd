@@ -3833,6 +3833,9 @@
           }
         });
 
+        this.renderAdminOrders();
+      }
+
       async cancelOrder(orderId) {
         const order = this.orders.find(o => o.id_order === orderId);
         const currentStatus = order ? order.status_order : '';
