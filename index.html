@@ -1557,13 +1557,13 @@
         </div>
       </div>
 
-      <!-- Actions & Bypass -->
+      <!-- Actions -->
       <div class="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-center gap-3">
         <a id="maintenance-wa-btn" href="https://wa.me/6282330621303" target="_blank" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-5 py-3 rounded-xl transition duration-150 shadow-lg">
           <span>💬 Hubungi Admin CSSD via WhatsApp</span>
         </a>
-        <button onclick="app.showSuperAdminBypassModal()" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-white/10 hover:bg-white/20 border border-white/20 text-slate-200 text-xs font-bold px-5 py-3 rounded-xl transition duration-150">
-          <span>🔐 Super Admin Login (Bypass)</span>
+        <button onclick="app.logout()" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-white/10 hover:bg-white/20 border border-white/20 text-slate-200 text-xs font-bold px-5 py-3 rounded-xl transition duration-150">
+          <span>🚪 Keluar / Kembali ke Login</span>
         </button>
       </div>
     </div>
@@ -1641,9 +1641,6 @@
           this.handleHashRouting();
         });
 
-        // Cek status Maintenance publik dari server
-        this.checkMaintenanceStatusPublic();
-
         // Auto login jika credential sudah ada
         if (this.credential) {
           this.checkUserStatus();
@@ -1667,6 +1664,8 @@
         this.credential = '';
         this.user = null;
         localStorage.removeItem('sista_credential');
+        const maintScreen = document.getElementById('maintenance-screen');
+        if (maintScreen) maintScreen.classList.add('hidden');
         this.showView('login');
         this.showToast('info', 'Anda telah keluar.');
       }
@@ -6831,22 +6830,26 @@
         
         const maintScreen = document.getElementById('maintenance-screen');
         const maintMsgEl = document.getElementById('maintenance-screen-message');
-        const appContainer = document.getElementById('app');
 
         if (maintMsgEl) maintMsgEl.innerText = maintMessage;
 
-        if (maintStatus === 'ON') {
-          if (!this.user || this.user.peran !== 'Super Admin') {
+        // Maintenance Guard HANYA memblokir jika pengguna sudah LOGIN (punya profile this.user) & bukan Super Admin
+        if (this.user && maintStatus === 'ON') {
+          if (this.user.peran !== 'Super Admin') {
+            // User biasa yang sudah login -> Tampilkan Halaman Maintenance & Sembunyikan View Utama
+            ['view-login', 'view-register', 'view-pending', 'view-dashboard'].forEach(id => {
+              const el = document.getElementById(id);
+              if (el) el.classList.add('hidden');
+            });
             if (maintScreen) maintScreen.classList.remove('hidden');
-            if (appContainer) appContainer.classList.add('hidden');
           } else {
+            // Super Admin -> Sembunyikan Halaman Maintenance & beri toast info
             if (maintScreen) maintScreen.classList.add('hidden');
-            if (appContainer) appContainer.classList.remove('hidden');
             this.showToast('info', '🛠️ Mode Pemeliharaan (Maintenance Mode) sedang AKTIF untuk pengguna biasa.', 6000);
           }
         } else {
+          // Status ONLINE (OFF) atau belum Login -> Sembunyikan Halaman Maintenance
           if (maintScreen) maintScreen.classList.add('hidden');
-          if (appContainer) appContainer.classList.remove('hidden');
         }
       }
 
