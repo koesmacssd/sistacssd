@@ -3209,7 +3209,14 @@
           }
           
           let catatanMasalahHtml = '';
-          if (order.status_order === 'Tidak Lengkap' || order.catatan_kembali_cssd) {
+          if (order.status_order === 'Batal') {
+            catatanMasalahHtml = `
+              <div class="mt-4 p-3 bg-rose-50 rounded-xl border border-rose-200/50 space-y-1 text-xs">
+                <span class="text-rose-700 font-bold uppercase tracking-wider block">🚫 Catatan Pembatalan Pesanan</span>
+                <p class="text-rose-800 font-semibold">${order.catatan_kembali_cssd || 'Dibatalkan oleh peminjam / user.'}</p>
+              </div>
+            `;
+          } else if (order.status_order === 'Tidak Lengkap' || (order.catatan_kembali_cssd && order.status_order !== 'Batal')) {
             let fotoHtml = '';
             if (order.foto_kembali_cssd) {
               const directFotoUrl = this.getDirectImageUrl(order.foto_kembali_cssd);
@@ -3715,7 +3722,14 @@
           }
 
           let catatanMasalahHtml = '';
-          if (order.status_order === 'Tidak Lengkap' || order.catatan_kembali_cssd) {
+          if (order.status_order === 'Batal') {
+            catatanMasalahHtml = `
+              <div class="mt-4 p-3 bg-rose-50 rounded-xl border border-rose-200/50 space-y-1 text-xs">
+                <span class="text-rose-700 font-bold uppercase tracking-wider block">🚫 Catatan Pembatalan Pesanan</span>
+                <p class="text-rose-800 font-semibold">${order.catatan_kembali_cssd || 'Dibatalkan oleh peminjam / user.'}</p>
+              </div>
+            `;
+          } else if (order.status_order === 'Tidak Lengkap' || (order.catatan_kembali_cssd && order.status_order !== 'Batal')) {
             let fotoHtml = '';
             if (order.foto_kembali_cssd) {
               const directFotoUrl = this.getDirectImageUrl(order.foto_kembali_cssd);
