@@ -5,20 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panduan Penggunaan SISTA CSSD</title>
   
-  <meta name="description" content="Sistem cerdas berbasis serverless yang mengintegrasikan pemindaian QR Code kamera, tracking siklus sterilisasi, awarding kinerja staf, dan notifikasi otomatis multi-channel untuk mendukung akreditasi paripurna rumah sakit.">
+  <meta name="description" content="Sistem cerdas berbasis serverless yang mengintegrasikan pemindaian QR Code kamera, tracking siklus sterilisasi 7-tahap, kontrol etalase FEFO, awarding kinerja staf, dan notifikasi otomatis multi-channel untuk mendukung akreditasi paripurna rumah sakit.">
   
   <!-- Open Graph / Facebook / WhatsApp / Telegram -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://sista.koesma.biz.id/help.html">
   <meta property="og:title" content="Panduan Penggunaan SISTA CSSD">
-  <meta property="og:description" content="Sistem cerdas berbasis serverless yang mengintegrasikan pemindaian QR Code kamera, tracking siklus sterilisasi, awarding kinerja staf, dan notifikasi otomatis multi-channel untuk mendukung akreditasi paripurna rumah sakit.">
+  <meta property="og:description" content="Sistem cerdas berbasis serverless yang mengintegrasikan pemindaian QR Code kamera, tracking siklus sterilisasi 7-tahap, kontrol etalase FEFO, awarding kinerja staf, dan notifikasi otomatis multi-channel untuk mendukung akreditasi paripurna rumah sakit.">
   <meta property="og:image" content="https://raw.githubusercontent.com/simpegkoesma/1/refs/heads/main/logo%20rsud%202%20png.png">
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image">
   <meta property="twitter:url" content="https://sista.koesma.biz.id/help.html">
   <meta property="twitter:title" content="Panduan Penggunaan SISTA CSSD">
-  <meta property="twitter:description" content="Sistem cerdas berbasis serverless yang mengintegrasikan pemindaian QR Code kamera, tracking siklus sterilisasi, awarding kinerja staf, dan notifikasi otomatis multi-channel untuk mendukung akreditasi paripurna rumah sakit.">
+  <meta property="twitter:description" content="Sistem cerdas berbasis serverless yang mengintegrasikan pemindaian QR Code kamera, tracking siklus sterilisasi 7-tahap, kontrol etalase FEFO, awarding kinerja staf, dan notifikasi otomatis multi-channel untuk mendukung akreditasi paripurna rumah sakit.">
   <meta property="twitter:image" content="https://raw.githubusercontent.com/simpegkoesma/1/refs/heads/main/logo%20rsud%202%20png.png">
   
   <!-- Google Fonts: Outfit & Inter -->
@@ -116,7 +116,7 @@
           Panduan Penggunaan SISTA CSSD
         </h2>
         <p class="text-lg text-slate-300 leading-relaxed max-w-3xl">
-          Aplikasi SISTA-CSSD adalah sistem cerdas berbasis serverless yang mengintegrasikan pemindaian QR Code kamera, tracking siklus sterilisasi, awarding kinerja staf, dan notifikasi otomatis multi-channel untuk mendukung akreditasi paripurna rumah sakit.
+          Aplikasi SISTA-CSSD adalah sistem cerdas berbasis serverless yang mengintegrasikan pemindaian QR Code kamera, tracking siklus sterilisasi 7-tahap, kontrol etalase FEFO, awarding kinerja staf, dan notifikasi otomatis multi-channel untuk mendukung akreditasi paripurna rumah sakit.
         </p>
       </div>
     </div>
@@ -164,11 +164,40 @@
           </div>
           <h4 class="text-lg font-bold text-slate-900 font-display">Scan QR Kamera Cepat</h4>
           <p class="text-xs text-slate-600 leading-relaxed">
-            Integrasi pustaka pemindaian kamera HP secara langsung. Cukup arahkan kamera pada label QR alat medis untuk melihat isi set, status sterilisasi, masa aktif, serta langsung memproses penyerahan/pengembalian instan.
+            Integrasi pemindaian kamera HP secara langsung. Cukup arahkan kamera pada label QR alat medis untuk melihat isi set, status sterilisasi, masa aktif, serta langsung memproses penyerahan/pengembalian instan.
           </p>
         </div>
 
-        <!-- Feature 2: Gamification -->
+        <!-- Feature 2: Kontrol Etalase & FEFO -->
+        <div class="glass-card rounded-2xl p-6 shadow-sm hover:shadow-md transition duration-200 space-y-4 relative overflow-hidden group">
+          <div class="absolute top-0 right-0 h-24 w-24 bg-teal-500/5 rounded-full blur-xl group-hover:bg-teal-500/10 transition"></div>
+          <div class="p-3 bg-teal-50 text-teal-600 rounded-xl inline-block">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </div>
+          <h4 class="text-lg font-bold text-slate-900 font-display">Kontrol Etalase & Rotasi FEFO</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Admin CSSD dapat mengontrol tombol Pajang/Hidden (👁️/🙈) pada katalog ruangan untuk memastikan rotasi rotasi barang *First Expired, First Out* (FEFO) berjalan disiplin dan mencegah instrumen kadaluwarsa dini.
+          </p>
+        </div>
+
+        <!-- Feature 3: Modus Layar Luas & Ringkas List Mode -->
+        <div class="glass-card rounded-2xl p-6 shadow-sm hover:shadow-md transition duration-200 space-y-4 relative overflow-hidden group">
+          <div class="absolute top-0 right-0 h-24 w-24 bg-indigo-500/5 rounded-full blur-xl group-hover:bg-indigo-500/10 transition"></div>
+          <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl inline-block">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            </svg>
+          </div>
+          <h4 class="text-lg font-bold text-slate-900 font-display">Modus Layar Luas & Ringkas List</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Pengguna dapat menyembunyikan sidebar navigasi desktop (☰) serta memilih mode tampilan Katalog **Ringkas (List Mode 📑)** yang memuat 15–30 data sekaligus dalam 1 layar tanpa *scrolling* panjang.
+          </p>
+        </div>
+
+        <!-- Feature 4: Gamification -->
         <div class="glass-card rounded-2xl p-6 shadow-sm hover:shadow-md transition duration-200 space-y-4 relative overflow-hidden group">
           <div class="absolute top-0 right-0 h-24 w-24 bg-amber-500/5 rounded-full blur-xl group-hover:bg-amber-500/10 transition"></div>
           <div class="p-3 bg-amber-50 text-amber-600 rounded-xl inline-block">
@@ -182,7 +211,7 @@
           </p>
         </div>
 
-        <!-- Feature 3: Autoclave Cycle -->
+        <!-- Feature 5: Tracking 7-Siklus -->
         <div class="glass-card rounded-2xl p-6 shadow-sm hover:shadow-md transition duration-200 space-y-4 relative overflow-hidden group">
           <div class="absolute top-0 right-0 h-24 w-24 bg-emerald-500/5 rounded-full blur-xl group-hover:bg-emerald-500/10 transition"></div>
           <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl inline-block">
@@ -196,45 +225,17 @@
           </p>
         </div>
 
-        <!-- Feature 4: Cloud Engine -->
-        <div class="glass-card rounded-2xl p-6 shadow-sm hover:shadow-md transition duration-200 space-y-4 relative overflow-hidden group">
-          <div class="absolute top-0 right-0 h-24 w-24 bg-indigo-500/5 rounded-full blur-xl group-hover:bg-indigo-500/10 transition"></div>
-          <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl inline-block">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-          </div>
-          <h4 class="text-lg font-bold text-slate-900 font-display">Google Cloud Enterprise SSO</h4>
-          <p class="text-xs text-slate-600 leading-relaxed">
-            Login super aman menggunakan protokol otentikasi OAuth2 resmi Google. Backend memverifikasi token JWT secara berkala untuk menjaga kerahasiaan data pengguna dari pihak luar.
-          </p>
-        </div>
-
-        <!-- Feature 5: Multi-Channel Alert -->
+        <!-- Feature 6: Maintenance Mode Enterprise -->
         <div class="glass-card rounded-2xl p-6 shadow-sm hover:shadow-md transition duration-200 space-y-4 relative overflow-hidden group">
           <div class="absolute top-0 right-0 h-24 w-24 bg-rose-500/5 rounded-full blur-xl group-hover:bg-rose-500/10 transition"></div>
           <div class="p-3 bg-rose-50 text-rose-600 rounded-xl inline-block">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             </svg>
           </div>
-          <h4 class="text-lg font-bold text-slate-900 font-display">Notifikasi Multi-Channel</h4>
+          <h4 class="text-lg font-bold text-slate-900 font-display">Maintenance Mode Enterprise 🛠️</h4>
           <p class="text-xs text-slate-600 leading-relaxed">
-            Setiap aksi penting (registrasi akun baru, persetujuan admin, pembuatan peminjaman, barang siap diambil, selesai) memicu email HTML otomatis dan notifikasi real-time via bot Telegram ke grup koordinasi.
-          </p>
-        </div>
-
-        <!-- Feature 6: Excel Engine -->
-        <div class="glass-card rounded-2xl p-6 shadow-sm hover:shadow-md transition duration-200 space-y-4 relative overflow-hidden group">
-          <div class="absolute top-0 right-0 h-24 w-24 bg-cyan-500/5 rounded-full blur-xl group-hover:bg-cyan-500/10 transition"></div>
-          <div class="p-3 bg-cyan-50 text-cyan-600 rounded-xl inline-block">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-          </div>
-          <h4 class="text-lg font-bold text-slate-900 font-display">Auto-Backup & Ekspor Cepat</h4>
-          <p class="text-xs text-slate-600 leading-relaxed">
-            Dukungan pustaka SheetJS untuk ekspor sekali klik berkas Excel (.xlsx) untuk monitoring data logistik ruangan. Super Admin juga dapat mengunduh seluruh database (Backup) dalam satu file ber-tab.
+            Super Admin dapat mengaktifkan mode pemeliharaan server secara resmi. Halaman login Google SSO tetap terbuka, dan pesan pengumuman maintenance yang elegan akan tampil setelah login untuk pengguna biasa.
           </p>
         </div>
       </div>
@@ -298,7 +299,7 @@
           <div class="space-y-2">
             <div class="w-8 h-8 rounded-lg bg-green-100 text-green-700 font-extrabold flex items-center justify-center font-display text-sm">7</div>
             <h4 class="font-bold text-slate-900 text-sm">Penyimpanan</h4>
-            <p class="text-[11px] text-slate-500 leading-relaxed">Alat disimpan di ruang steril khusus dengan suhu dan kelembaban terkontrol. Alat **hanya dapat dipinjam ruangan** pada tahap ini.</p>
+            <p class="text-[11px] text-slate-500 leading-relaxed">Alat disimpan di ruang steril khusus. Alat **hanya dapat dipinjam ruangan** jika diset status etalase `ON` oleh Admin.</p>
           </div>
 
         </div>
@@ -326,30 +327,32 @@
             <h4 class="font-bold text-slate-900 text-xl font-display">Registrasi Cepat Berbasis Ruangan</h4>
           </div>
           <p class="text-slate-600 text-sm leading-relaxed">
-            Gunakan login akun <strong>Google</strong> Anda. Jika email Anda belum terdaftar di database, sistem secara otomatis mengalihkan Anda ke layar registrasi. Lengkapi nama Anda, pilih ruangan Anda (jika tidak tertera di pilihan utama, klik <span class="italic font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">Lainnya</span> dan ketik nama ruangan kustom Anda), serta isi nomor kontak HP/WhatsApp. Setelah mengklik kirim, notifikasi aktivasi otomatis terkirim ke Admin CSSD. Anda akan menerima email notifikasi setelah akun diaktifkan.
+            Gunakan akun <strong>Google SSO</strong> Anda. Jika email Anda belum terdaftar, isi nama Anda, pilih ruangan Anda (klik <span class="italic font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">Lainnya</span> untuk mengetik ruangan baru), dan nomor HP/WhatsApp. Setelah mengklik kirim, notifikasi aktivasi dikirimkan ke Admin CSSD untuk persetujuan.
           </p>
         </div>
 
-        <!-- Step 2: Keranjang Pintar -->
+        <!-- Step 2: Keranjang & Pembatalan -->
         <div class="p-6 sm:p-8 space-y-4">
           <div class="flex items-center space-x-3">
             <span class="text-xs font-bold text-brand-700 bg-brand-50 border border-brand-100 px-3 py-1 rounded-lg">Fase 2</span>
-            <h4 class="font-bold text-slate-900 text-xl font-display">Mengajukan Peminjaman via Katalog Pintar</h4>
+            <h4 class="font-bold text-slate-900 text-xl font-display">Mengajukan Peminjaman & Fitur Pembatalan (Batal Order)</h4>
           </div>
           <p class="text-slate-600 text-sm leading-relaxed">
-            Pada halaman <strong class="font-bold text-slate-900">Katalog Alat</strong>, Anda dapat meninjau alat-alat yang saat ini berkondisi <strong class="font-bold text-green-600">Penyimpanan</strong> (status akhir siklus sterilisasi siap pakai) di instalasi CSSD. Cari nama alat medis pada bilah pencarian, klik tombol <strong class="font-bold text-brand-600 bg-slate-100 px-1.5 py-0.5 rounded">+ Keranjang</strong>. Buka tab <strong class="font-bold text-slate-900">Keranjang Request</strong>, tambahkan catatan opsional jika diperlukan (misalnya detail tindakan atau nama dokter penanggung jawab), lalu klik <strong class="font-bold text-slate-900">Ajukan Peminjaman</strong>. Setelah dikonfirmasi, sistem otomatis mengirimkan notifikasi ke pihak CSSD untuk segera mengemas barang.
+            Pada menu <strong class="font-bold text-slate-900">Katalog Alat</strong>, Anda dapat memilih mode tampilan **Ringkas (List Mode 📑)** untuk memuat puluhan item sekaligus dalam 1 halaman. Klik <strong class="font-bold text-brand-600 bg-slate-100 px-1.5 py-0.5 rounded">+ Request</strong>, buka tab <strong class="font-bold text-slate-900">Keranjang Request</strong>, lalu kirimkan permintaan.
           </p>
+          <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 leading-relaxed font-semibold">
+            ✨ Fitur Pembatalan Pesanan: Jika Anda salah mengeklik barang yang dipinjam, Anda dapat membuka tab <strong>Riwayat & Status</strong> dan mengeklik tombol <strong>Batal Order</strong> selama status pesanan masih <em>Pending</em>. Barang yang dibatalkan akan otomatis dikembalikan ke stok penyimpanan CSSD tanpa membuat catatan barang kurang/rusak.
+          </div>
         </div>
 
-        <!-- Step 3: Scan QR Hasil & Riwayat -->
+        <!-- Step 3: Modus Layar Luas & Detail Modal -->
         <div class="p-6 sm:p-8 space-y-4">
           <div class="flex items-center space-x-3">
             <span class="text-xs font-bold text-brand-700 bg-brand-50 border border-brand-100 px-3 py-1 rounded-lg">Fase 3</span>
-            <h4 class="font-bold text-slate-900 text-xl font-display">Monitoring Status & Pemindaian QR Code Mandiri</h4>
+            <h4 class="font-bold text-slate-900 text-xl font-display">Modus Layar Luas (☰) & Detail Rincian Alat</h4>
           </div>
           <p class="text-slate-600 text-sm leading-relaxed">
-            Semua transaksi ruangan Anda dapat dipantau di tab <strong class="font-bold text-slate-900">Riwayat & Status</strong>. Anda dapat melacak status kesiapan alat (Pending, Ready, Aktif, Selesai). 
-            Selain itu, Anda dapat memindai label QR pada alat medis di ruangan Anda kapan saja. Arahkan kamera ponsel, sistem akan membuka pop-up <strong class="font-bold text-brand-600">Detail Hasil Scan</strong> yang berisi: ID Alat, Nama Alat, Komponen lengkap isi set alat tersebut, dan status posisinya saat ini untuk menjamin kesesuaian logistik steril secara akurat.
+            Untuk mendapatkan tampilan tabel yang sangat luas di layar komputer, klik **Tombol Menu Hamburger (☰)** di bagian kiri atas header. Sidebar navigasi akan tersembunyi sehingga area kerja meluas 100% penuh. Klik pada **Nama Alat** mana saja di katalog atau riwayat untuk membuka pop-up detail berisi foto HD, komponen rincian set, dan status sterilisasi.
           </p>
         </div>
 
@@ -360,34 +363,34 @@
     <section id="admin" class="scroll-mt-24 space-y-8">
       <div class="border-l-4 border-brand-500 pl-4">
         <h3 class="text-2xl sm:text-3xl font-black font-display text-slate-900 uppercase tracking-tight">4. Panduan Petugas (Admin & Super Admin CSSD)</h3>
-        <p class="text-sm text-slate-500 mt-1">Tata cara pengelolaan transaksi logistik steril, penanganan ketidaklengkapan, dan gamifikasi poin.</p>
+        <p class="text-sm text-slate-500 mt-1">Tata cara pengelolaan etalase, pemrosesan transaksi, dan maintenance server.</p>
       </div>
 
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-100">
         
-        <!-- Modul 1: Smart Scan Action -->
+        <!-- Modul 1: Kontrol Etalase & FEFO -->
         <div class="p-6 sm:p-8 space-y-4">
           <div class="flex items-center space-x-3">
             <span class="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-lg">Modul Admin</span>
-            <h4 class="font-bold text-slate-900 text-xl font-display">Pemrosesan Cepat Berbasis Scan (Zero-Typing Handover)</h4>
+            <h4 class="font-bold text-slate-900 text-xl font-display">Sistem Kontrol Etalase (Tampilkan/Sembunyikan 👁️/🙈)</h4>
           </div>
           <p class="text-slate-600 text-sm leading-relaxed">
-            Petugas CSSD dapat mempercepat pemrosesan serah terima dan pengembalian alat medis dengan memindai kode QR fisik pada set alat medis menggunakan kamera:
+            Buka tab <strong class="font-bold text-slate-900">Inventaris Alat</strong>. Pada kolom *Etalase*, Admin dapat mengklik tombol toggle untuk mengubah status tampilan alat:
           </p>
           <ul class="list-disc pl-5 text-sm text-slate-600 space-y-2">
-            <li><strong class="font-bold text-slate-900">Proses Serah Terima</strong>: Arahkan pemindai pada alat medis berstatus <span class="italic font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">Ready for Pickup</span>, modal hasil scan akan muncul. Klik <strong class="font-bold text-brand-600">Proses Serah Terima</strong>, Anda akan dialihkan secara instan ke halaman monitor dengan filter pesanan terkait, dan pop-up konfirmasi penerima otomatis terbuka.</li>
-            <li><strong class="font-bold text-slate-900">Proses Pengembalian</strong>: Pindai alat berstatus <span class="italic font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">Dipinjam</span>, klik <strong class="font-bold text-emerald-600">Proses Pengembalian</strong>, sistem akan mengarahkan ke menu monitor peminjaman dan membuka pop-up konfirmasi pengembalian alat medis.</li>
+            <li><strong class="font-bold text-emerald-600">Dipajang (ON 👁️)</strong>: Alat medis berstatus Penyimpanan dapat dilihat dan dipinjam oleh ruangan di Katalog.</li>
+            <li><strong class="font-bold text-slate-500">Sembunyi (OFF 🙈)</strong>: Alat medis disembunyikan dari Katalog Ruangan (misalnya untuk mengontrol rotasi FEFO atau menyimpan alat cadangan agar alat lama dihabiskan terlebih dahulu).</li>
           </ul>
         </div>
 
-        <!-- Modul 2: Siklus Sterilisasi & Lifetime Count -->
+        <!-- Modul 2: Maintenance Server -->
         <div class="p-6 sm:p-8 space-y-4">
           <div class="flex items-center space-x-3">
             <span class="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-lg">Modul Admin</span>
-            <h4 class="font-bold text-slate-900 text-xl font-display">Manajemen Siklus Sterilisasi & Pelacakan Kadaluwarsa</h4>
+            <h4 class="font-bold text-slate-900 text-xl font-display">Manajemen Maintenance Mode (Super Admin Only)</h4>
           </div>
           <p class="text-slate-600 text-sm leading-relaxed">
-            Buka tab <strong class="font-bold text-slate-900">Inventaris Alat</strong> untuk melacak daur hidup alat. Ketika alat berstatus <span class="italic font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">1. Kotor</span>, klik dropdown/edit untuk mengubah siklus ke <span class="italic font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">2. Pencucian</span>, <span class="italic font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">3. Setting</span>, <span class="italic font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">4. Labelling/Packing</span>, lalu <span class="italic font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">5. Proses Sterilisasi</span>. Setelah mesin sterilisasi selesai, set status alat ke <strong class="font-bold text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded">6. Steril</strong> (memasukkan tanggal sterilisasi dan secara otomatis mengkalkulasi tanggal kedaluwarsa berdasarkan masa aktif steril alat tersebut), lalu dilanjutkan ke status akhir <strong class="font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">7. Penyimpanan</strong> di rak khusus agar dapat dipinjam ruangan. Alat yang kedaluwarsa secara otomatis ditandai bahaya oleh sistem di database dan disembunyikan dari katalog ruangan.
+            Pada tab <strong class="font-bold text-slate-900">Pengaturan</strong>, Super Admin dapat mengaktifkan atau mematikan **Maintenance Mode (ONLINE / MAINTENANCE)** dan mengubah pesan pengumuman server. Saat mode aktif, pengguna umum yang login akan diarahkan ke halaman maintenance resmi, sementara Super Admin dapat melakukan *Bypass* otomatis untuk pengujian sistem.
           </p>
         </div>
 
@@ -415,7 +418,7 @@
             </div>
           </div>
           <p class="text-slate-600 text-sm leading-relaxed mt-2">
-            Perolehan poin bulanan dikompilasi secara real-time pada tab <strong class="font-bold text-slate-900">Prestasi Staf 🏆</strong>, lengkap dengan visualisasi podium untuk 3 peringkat teratas. Fitur ini dirancang untuk memacu dedikasi dan budaya pelayanan prima di internal CSSD.
+            Perolehan poin bulanan dikompilasi secara real-time pada tab <strong class="font-bold text-slate-900">Prestasi Staf 🏆</strong>, lengkap dengan visualisasi podium 3 besar, ekspor berkas Excel (.xlsx), dan cetak PDF resmi A4 lengkap dengan Kop Surat RSUD.
           </p>
         </div>
 
@@ -435,10 +438,10 @@
         <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-2">
           <h4 class="font-bold text-slate-900 text-sm sm:text-base flex items-center space-x-2">
             <span class="text-brand-500">Q:</span>
-            <span>Bagaimana jika alat medis steril telah melewati tanggal kedaluwarsa steril?</span>
+            <span>Apakah pengguna ruangan dapat membatalkan pesanan jika salah memilih barang?</span>
           </h4>
           <p class="text-slate-600 text-xs sm:text-sm leading-relaxed pl-6">
-            Sistem secara otomatis mendeteksi tanggal kedaluwarsa steril. Jika masa aktif steril terlampaui, alat medis tersebut akan ditandai dengan warna merah bahaya dan <strong class="font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">otomatis disembunyikan dari katalog ruangan</strong> sehingga tidak bisa dipinjam. Alat medis fisik harus dikirim ulang ke CSSD untuk disterilkan kembali melalui siklus autoklaf.
+            Ya! Selama status peminjaman di tab <strong class="font-bold text-slate-900">Riwayat & Status</strong> masih <em>Pending</em> (belum disetujui petugas CSSD), Anda dapat mengeklik tombol <strong class="font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">Batal Order</strong>. Alat yang dibatalkan akan otomatis dikembalikan ke stok Penyimpanan CSSD tanpa menimbulkan status barang rusak/kurang.
           </p>
         </div>
 
@@ -446,10 +449,10 @@
         <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-2">
           <h4 class="font-bold text-slate-900 text-sm sm:text-base flex items-center space-x-2">
             <span class="text-brand-500">Q:</span>
-            <span>Bagaimana cara melaporkan jika ada alat yang hilang atau rusak saat dikembalikan?</span>
+            <span>Mengapa suatu alat steril di ruang Penyimpanan CSSD belum muncul di Katalog Ruangan?</span>
           </h4>
           <p class="text-slate-600 text-xs sm:text-sm leading-relaxed pl-6">
-            Saat memproses pengembalian di tab <span class="italic font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">Monitor Peminjaman</span>, klik opsi <strong class="font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">Barang Tidak Lengkap / Rusak</strong> pada pop-up konfirmasi. Masukkan deskripsi kehilangan/kerusakan fisik alat, ambil foto bukti fisik menggunakan kamera ponsel, lalu simpan. Sistem akan menandai transaksi tersebut dengan status <strong class="font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">Tidak Lengkap</strong> (merah bahaya) dan mengirim notifikasi WhatsApp/Telegram kepada perwakilan ruangan agar segera ditindaklanjuti.
+            Petugas CSSD menerapkan sistem kontrol etalase <strong class="font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">FEFO (First Expired, First Out)</strong>. Alat medis yang baru disterilkan dapat disembunyikan sementara (`OFF`) dari katalog oleh admin agar ruangan meminjam stok alat steril lama yang kedaluwarsanya lebih awal terlebih dahulu.
           </p>
         </div>
 
@@ -457,10 +460,10 @@
         <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-2">
           <h4 class="font-bold text-slate-900 text-sm sm:text-base flex items-center space-x-2">
             <span class="text-brand-500">Q:</span>
-            <span>Apakah aplikasi SISTA-CSSD dapat diinstal di ponsel (HP) tanpa masuk ke Play Store?</span>
+            <span>Bagaimana jika website SISTA-CSSD sedang dalam pemeliharaan (Maintenance Mode)?</span>
           </h4>
           <p class="text-slate-600 text-xs sm:text-sm leading-relaxed pl-6">
-            Ya! Aplikasi SISTA-CSSD mendukung teknologi PWA. Buka tautan aplikasi di browser Google Chrome (Android) atau Safari (iOS) ponsel Anda, tekan menu browser, lalu pilih <strong class="font-bold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">Tambahkan ke Layar Utama</strong> / <strong class="font-bold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">Install App</strong>. Aplikasi akan terinstal langsung di layar ponsel Anda dan dapat diakses dengan cepat seperti aplikasi asli.
+            Anda dapat tetap melakukan login dengan Google SSO. Jika sistem sedang dalam masa pemeliharaan (`ON`), Anda akan disajikan Halaman Maintenance resmi yang berisi pengumuman estimasi waktu selesai, tombol pintasan WhatsApp Admin CSSD, dan tombol Keluar.
           </p>
         </div>
 
@@ -468,10 +471,10 @@
         <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-2">
           <h4 class="font-bold text-slate-900 text-sm sm:text-base flex items-center space-x-2">
             <span class="text-brand-500">Q:</span>
-            <span>Bagaimana jika akun pendaftaran staf tertunda (Pending)?</span>
+            <span>Bagaimana cara memuat puluhan item katalog sekaligus agar lebih cepat dibaca?</span>
           </h4>
           <p class="text-slate-600 text-xs sm:text-sm leading-relaxed pl-6">
-            Demi menjaga keamanan logistik instrumen bedah rumah sakit, setiap akun pendaftar ruangan baru wajib diverifikasi oleh Kepala Unit CSSD. Silakan hubungi admin CSSD melalui tombol pintasan <span class="italic font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">Hubungi Admin</span> di menu sidebar untuk aktivasi cepat akun Anda.
+            Di menu Katalog Alat, ubah mode tampilan dari <strong class="font-bold text-slate-900">Grid</strong> menjadi <strong class="font-bold text-brand-600">Ringkas (List Mode 📑)</strong> dan pilih opsi <strong class="font-bold text-slate-900">Muat: 36 / hal</strong> atau <strong class="font-bold text-slate-900">100 (Semua)</strong> pada dropdown per halaman.
           </p>
         </div>
 
@@ -575,4 +578,3 @@
 
 </body>
 </html>
-<!-- Trigger deployment -->
