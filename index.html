@@ -3185,7 +3185,11 @@
           this.showToast('error', 'Koneksi ke server terputus.');
         } finally {
           btn.disabled = false;
-          btn.innerHTML = `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /><      setKatalogViewMode(mode) {
+          btn.innerHTML = `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg> <span>Kirim Request Peminjaman</span>`;
+        }
+      }
+
+      setKatalogViewMode(mode) {
         this.katalogViewMode = mode;
         localStorage.setItem('sista_katalog_view_mode', mode);
         this.renderKatalog();
