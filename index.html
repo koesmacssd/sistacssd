@@ -397,14 +397,41 @@
               </div>
             </div>
 
-            <!-- Tab Filter Kategori & Favorit -->
-            <div class="flex items-center space-x-2 border-b border-slate-100 pb-2">
-              <button onclick="app.setCatalogFilter('all')" id="btn-filter-cat-all" class="px-4 py-2 rounded-xl text-xs font-bold transition bg-brand-500 text-white shadow-sm flex items-center space-x-1">
-                <span>🎒 Semua Alat</span>
-              </button>
-              <button onclick="app.setCatalogFilter('fav')" id="btn-filter-cat-fav" class="px-4 py-2 rounded-xl text-xs font-bold transition bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center space-x-1">
-                <span>⭐ Favorit Saya</span>
-              </button>
+            <!-- Tab Filter Kategori, Favorit, View Mode & Jumlah Data Per Halaman -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+              <div class="flex items-center space-x-2">
+                <button onclick="app.setCatalogFilter('all')" id="btn-filter-cat-all" class="px-4 py-2 rounded-xl text-xs font-bold transition bg-brand-500 text-white shadow-sm flex items-center space-x-1">
+                  <span>🎒 Semua Alat</span>
+                </button>
+                <button onclick="app.setCatalogFilter('fav')" id="btn-filter-cat-fav" class="px-4 py-2 rounded-xl text-xs font-bold transition bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center space-x-1">
+                  <span>⭐ Favorit Saya</span>
+                </button>
+              </div>
+
+              <div class="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-end">
+                <!-- Page Size Selector -->
+                <div class="flex items-center space-x-1.5 text-xs text-slate-500 font-medium">
+                  <span>Muat:</span>
+                  <select id="katalog-page-size" onchange="app.setKatalogPageSize(this.value)" class="border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white font-bold text-slate-700 cursor-pointer">
+                    <option value="9">9 / hal</option>
+                    <option value="18" selected>18 / hal</option>
+                    <option value="36">36 / hal</option>
+                    <option value="100">100 (Semua)</option>
+                  </select>
+                </div>
+
+                <!-- Toggle View Mode: Grid (🎴) vs Ringkas/List (📑) -->
+                <div class="bg-slate-100 p-1 rounded-xl flex items-center space-x-1 border border-slate-200">
+                  <button onclick="app.setKatalogViewMode('grid')" id="btn-view-grid" class="px-2.5 py-1 rounded-lg text-xs font-bold transition duration-150 flex items-center space-x-1 bg-white text-brand-600 shadow-sm" title="Tampilan Kartu / Grid">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" /></svg>
+                    <span class="hidden md:inline">Grid</span>
+                  </button>
+                  <button onclick="app.setKatalogViewMode('list')" id="btn-view-list" class="px-2.5 py-1 rounded-lg text-xs font-bold transition duration-150 flex items-center space-x-1 text-slate-600 hover:text-slate-900" title="Tampilan Ringkas / Daftar Baris (Muat Banyak Data)">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+                    <span class="hidden md:inline">Ringkas (Banyak Data)</span>
+                  </button>
+                </div>
+              </div>
             </div>
             
             <!-- Grid Katalog -->
@@ -1592,9 +1619,10 @@
         this.catalogFilter = 'all'; // 'all' | 'fav'
         this.selectedInventarisIds = []; // ID alat yang dicentang untuk cetak label
         
-        // State Paginasi
+        // State Paginasi & Mode Tampilan
         this.katalogPage = 1;
-        this.katalogPageSize = 12;
+        this.katalogPageSize = parseInt(localStorage.getItem('sista_katalog_page_size')) || 18;
+        this.katalogViewMode = localStorage.getItem('sista_katalog_view_mode') || 'grid';
         this.lastKatalogQuery = '';
 
         this.inventarisPage = 1;
@@ -3157,11 +3185,18 @@
           this.showToast('error', 'Koneksi ke server terputus.');
         } finally {
           btn.disabled = false;
-          btn.innerHTML = `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg> <span>Kirim Request Peminjaman</span>`;
-        }
+          btn.innerHTML = `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /><      setKatalogViewMode(mode) {
+        this.katalogViewMode = mode;
+        localStorage.setItem('sista_katalog_view_mode', mode);
+        this.renderKatalog();
       }
 
-      // --- RENDERING VIEWS ---
+      setKatalogPageSize(size) {
+        this.katalogPageSize = parseInt(size) || 18;
+        this.katalogPage = 1;
+        localStorage.setItem('sista_katalog_page_size', this.katalogPageSize);
+        this.renderKatalog();
+      }
 
       // A. Katalog Alat (Ruangan)
       renderKatalog() {
@@ -3173,6 +3208,22 @@
         if (query !== this.lastKatalogQuery) {
           this.katalogPage = 1;
           this.lastKatalogQuery = query;
+        }
+
+        // Sync UI Controls
+        const pageSizeSelect = document.getElementById('katalog-page-size');
+        if (pageSizeSelect) pageSizeSelect.value = this.katalogPageSize.toString();
+
+        const btnGrid = document.getElementById('btn-view-grid');
+        const btnList = document.getElementById('btn-view-list');
+        if (btnGrid && btnList) {
+          if (this.katalogViewMode === 'list') {
+            btnList.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition duration-150 flex items-center space-x-1 bg-white text-brand-600 shadow-sm';
+            btnGrid.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition duration-150 flex items-center space-x-1 text-slate-600 hover:text-slate-900';
+          } else {
+            btnGrid.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition duration-150 flex items-center space-x-1 bg-white text-brand-600 shadow-sm';
+            btnList.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition duration-150 flex items-center space-x-1 text-slate-600 hover:text-slate-900';
+          }
         }
 
         // Filter search items & Etalase Display status (hanya tampilkan yang status_display !== 'OFF')
@@ -3212,6 +3263,7 @@
         });
 
         if (availableItems.length === 0) {
+          grid.className = 'grid grid-cols-1 gap-6';
           grid.innerHTML = `
             <div class="col-span-full py-12 text-center bg-white rounded-2xl border border-slate-200">
               <p class="text-slate-500 text-sm font-medium">Tidak ada alat medis steril yang ditemukan.</p>
@@ -3226,84 +3278,160 @@
         const end = start + this.katalogPageSize;
         const slicedItems = availableItems.slice(start, end);
 
-        slicedItems.forEach(item => {
-          const inCart = this.cart.includes(item.id_alat);
-          const isAvailableForBorrow = item.status_posisi === 'Penyimpanan';
-          const isSteril = item.status_posisi === 'Steril' || item.status_posisi === 'Penyimpanan';
-          const isSterilOrBorrowed = isSteril || item.status_posisi.startsWith('Dipinjam');
-          
-          let actionBtnHtml = '';
-          if (isAvailableForBorrow) {
-            if (inCart) {
-              actionBtnHtml = `
-                <button onclick="app.removeFromCart('${item.id_alat}')" class="w-full bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-2 px-4 rounded-xl text-xs flex items-center justify-center space-x-1 transition duration-150">
-                  <span>Hapus dari Keranjang</span>
-                </button>
-              `;
+        if (this.katalogViewMode === 'list') {
+          grid.className = 'bg-white rounded-2xl shadow-sm border border-slate-200 divide-y divide-slate-100 overflow-hidden';
+
+          slicedItems.forEach(item => {
+            const inCart = this.cart.includes(item.id_alat);
+            const isAvailableForBorrow = item.status_posisi === 'Penyimpanan';
+            const isSteril = item.status_posisi === 'Steril' || item.status_posisi === 'Penyimpanan';
+            const isSterilOrBorrowed = isSteril || item.status_posisi.startsWith('Dipinjam');
+            
+            let actionBtnHtml = '';
+            if (isAvailableForBorrow) {
+              if (inCart) {
+                actionBtnHtml = `
+                  <button onclick="app.removeFromCart('${item.id_alat}')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold py-1.5 px-3 rounded-lg text-xs flex items-center space-x-1 transition duration-150 whitespace-nowrap">
+                    <span>Hapus</span>
+                  </button>
+                `;
+              } else {
+                actionBtnHtml = `
+                  <button onclick="app.addToCart('${item.id_alat}')" class="bg-brand-500 hover:bg-brand-600 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center space-x-1 transition duration-150 shadow-sm whitespace-nowrap">
+                    <span>+ Request</span>
+                  </button>
+                `;
+              }
             } else {
               actionBtnHtml = `
-                <button onclick="app.addToCart('${item.id_alat}')" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-2 px-4 rounded-xl text-xs flex items-center justify-center space-x-1 transition duration-150 shadow-md">
-                  <span>Tambah ke Request</span>
+                <button disabled class="bg-slate-100 text-slate-400 py-1.5 px-3 rounded-lg text-xs font-medium cursor-not-allowed whitespace-nowrap">
+                  ${item.status_posisi}
                 </button>
               `;
             }
-          } else {
-            actionBtnHtml = `
-              <button disabled class="w-full bg-slate-100 text-slate-400 py-2 px-4 rounded-xl text-xs font-semibold cursor-not-allowed">
-                Tidak Tersedia (${item.status_posisi})
-              </button>
-            `;
-          }
 
-          let imgHtml = '';
-          if (item.foto_drive_url) {
-            const cdnUrl = this.getDirectImageUrl(item.foto_drive_url);
-            imgHtml = `<img onclick="app.openDetailModal('${item.id_alat}')" src="${cdnUrl}" alt="${item.nama_alat}" class="w-full h-40 object-cover rounded-xl mb-3 bg-slate-50 border border-slate-100 cursor-pointer hover:opacity-90 transition duration-150" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z\' /></svg>';">`;
-          } else {
-            imgHtml = `<div onclick="app.openDetailModal('${item.id_alat}')" class="w-full h-40 bg-slate-50 border border-slate-100 rounded-xl mb-3 flex items-center justify-center text-slate-400 cursor-pointer hover:bg-slate-100 transition duration-150">
-              <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-            </div>`;
-          }
+            let imgHtml = '';
+            if (item.foto_drive_url) {
+              const cdnUrl = this.getDirectImageUrl(item.foto_drive_url);
+              imgHtml = `<img onclick="app.openDetailModal('${item.id_alat}')" src="${cdnUrl}" alt="${item.nama_alat}" class="h-9 w-9 object-cover rounded-lg bg-slate-50 border border-slate-200 flex-shrink-0 cursor-pointer hover:opacity-80 transition" onerror="this.style.display='none';">`;
+            } else {
+              imgHtml = `<div onclick="app.openDetailModal('${item.id_alat}')" class="h-9 w-9 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 flex-shrink-0 cursor-pointer hover:bg-slate-100 transition">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              </div>`;
+            }
 
-          const card = document.createElement('div');
-          card.className = 'relative bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col justify-between p-5 hover:shadow-md transition duration-200';
-          card.innerHTML = `
-            <button onclick="app.toggleFavorite('${item.id_alat}')" class="absolute top-8 right-8 p-1.5 rounded-full bg-white/90 backdrop-blur shadow-sm hover:bg-white border border-slate-200 hover:scale-110 transition duration-150 z-10 text-sm focus:outline-none flex items-center justify-center h-8 w-8" title="Tandai Favorit">
-              ${this.favorites.includes(item.id_alat) ? '⭐' : '☆'}
-            </button>
-            <div class="space-y-3">
-              ${imgHtml}
-              <div class="flex justify-between items-start">
-                <span class="inline-block text-[10px] bg-slate-100 text-slate-600 font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">${item.id_alat}</span>
-                 <span class="inline-block text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider ${
-                  isSteril ? 'bg-green-100 text-green-700' : 
-                  item.status_posisi.startsWith('Dipinjam') ? 'bg-indigo-100 text-indigo-700' : 'bg-yellow-100 text-yellow-700'
-                }">
-                  ${item.status_posisi}
-                </span>
-              </div>
-              <div>
-                <h3 onclick="app.openDetailModal('${item.id_alat}')" class="text-base font-bold text-slate-900 hover:text-brand-500 cursor-pointer transition line-clamp-1">${item.nama_alat}</h3>
-                <p class="text-xs text-slate-500 line-clamp-2 mt-1 min-h-[32px]">${item.deskripsi || 'Tidak ada deskripsi.'}</p>
-              </div>
-              <div class="border-t border-slate-100 pt-3 text-[11px] text-slate-400 space-y-1">
-                <div class="flex justify-between items-center">
-                  <span>Kadaluwarsa:</span>
-                  <span class="font-bold text-slate-700">${isSterilOrBorrowed ? (item.tanggal_kadaluwarsa_steril ? this.formatDateTime(item.tanggal_kadaluwarsa_steril).split(' ')[0] : '-') : '-'}</span>
+            const row = document.createElement('div');
+            row.className = 'p-3 hover:bg-slate-50 flex items-center justify-between gap-3 transition duration-150';
+            row.innerHTML = `
+              <div class="flex items-center space-x-3 min-w-0 flex-1">
+                <button onclick="app.toggleFavorite('${item.id_alat}')" class="text-sm focus:outline-none hover:scale-110 transition flex-shrink-0" title="Tandai Favorit">
+                  ${this.favorites.includes(item.id_alat) ? '⭐' : '☆'}
+                </button>
+                ${imgHtml}
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center space-x-2">
+                    <span class="inline-block text-[10px] bg-slate-100 text-slate-600 font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider">${item.id_alat}</span>
+                    <h3 onclick="app.openDetailModal('${item.id_alat}')" class="text-xs sm:text-sm font-bold text-slate-900 hover:text-brand-600 cursor-pointer truncate" title="Klik untuk melihat detail">${item.nama_alat}</h3>
+                  </div>
+                  <p class="text-[11px] text-slate-500 truncate hidden sm:block">${item.deskripsi || 'Tidak ada deskripsi.'}</p>
                 </div>
-                ${isSterilOrBorrowed && item.tanggal_kadaluwarsa_steril ? `
-                <div class="flex justify-between items-center">
-                  <span>Sisa Aktif:</span>
-                  ${this.getRemainingDaysBadge(item.tanggal_kadaluwarsa_steril)}
-                </div>` : ''}
               </div>
-            </div>
-            <div class="mt-4 pt-3 border-t border-slate-100">
-              ${actionBtnHtml}
-            </div>
-          `;
-          grid.appendChild(card);
-        });
+
+              <div class="flex items-center space-x-3 flex-shrink-0">
+                <div class="text-right hidden md:block text-[11px]">
+                  <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
+                    isSteril ? 'bg-green-100 text-green-700' : 
+                    item.status_posisi.startsWith('Dipinjam') ? 'bg-indigo-100 text-indigo-700' : 'bg-yellow-100 text-yellow-700'
+                  }">
+                    ${item.status_posisi}
+                  </span>
+                  ${isSterilOrBorrowed && item.tanggal_kadaluwarsa_steril ? `<p class="text-[10px] text-slate-400 mt-0.5">ED: ${this.formatDateTime(item.tanggal_kadaluwarsa_steril).split(' ')[0]}</p>` : ''}
+                </div>
+                ${actionBtnHtml}
+              </div>
+            `;
+            grid.appendChild(row);
+          });
+        } else {
+          grid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6';
+
+          slicedItems.forEach(item => {
+            const inCart = this.cart.includes(item.id_alat);
+            const isAvailableForBorrow = item.status_posisi === 'Penyimpanan';
+            const isSteril = item.status_posisi === 'Steril' || item.status_posisi === 'Penyimpanan';
+            const isSterilOrBorrowed = isSteril || item.status_posisi.startsWith('Dipinjam');
+            
+            let actionBtnHtml = '';
+            if (isAvailableForBorrow) {
+              if (inCart) {
+                actionBtnHtml = `
+                  <button onclick="app.removeFromCart('${item.id_alat}')" class="w-full bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-2 px-4 rounded-xl text-xs flex items-center justify-center space-x-1 transition duration-150">
+                    <span>Hapus dari Keranjang</span>
+                  </button>
+                `;
+              } else {
+                actionBtnHtml = `
+                  <button onclick="app.addToCart('${item.id_alat}')" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-2 px-4 rounded-xl text-xs flex items-center justify-center space-x-1 transition duration-150 shadow-md">
+                    <span>Tambah ke Request</span>
+                  </button>
+                `;
+              }
+            } else {
+              actionBtnHtml = `
+                <button disabled class="w-full bg-slate-100 text-slate-400 py-2 px-4 rounded-xl text-xs font-semibold cursor-not-allowed">
+                  Tidak Tersedia (${item.status_posisi})
+                </button>
+              `;
+            }
+
+            let imgHtml = '';
+            if (item.foto_drive_url) {
+              const cdnUrl = this.getDirectImageUrl(item.foto_drive_url);
+              imgHtml = `<img onclick="app.openDetailModal('${item.id_alat}')" src="${cdnUrl}" alt="${item.nama_alat}" class="w-full h-40 object-cover rounded-xl mb-3 bg-slate-50 border border-slate-100 cursor-pointer hover:opacity-90 transition duration-150" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z\' /></svg>';">`;
+            } else {
+              imgHtml = `<div onclick="app.openDetailModal('${item.id_alat}')" class="w-full h-40 bg-slate-50 border border-slate-100 rounded-xl mb-3 flex items-center justify-center text-slate-400 cursor-pointer hover:bg-slate-100 transition duration-150">
+                <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              </div>`;
+            }
+
+            const card = document.createElement('div');
+            card.className = 'relative bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col justify-between p-5 hover:shadow-md transition duration-200';
+            card.innerHTML = `
+              <button onclick="app.toggleFavorite('${item.id_alat}')" class="absolute top-8 right-8 p-1.5 rounded-full bg-white/90 backdrop-blur shadow-sm hover:bg-white border border-slate-200 hover:scale-110 transition duration-150 z-10 text-sm focus:outline-none flex items-center justify-center h-8 w-8" title="Tandai Favorit">
+                ${this.favorites.includes(item.id_alat) ? '⭐' : '☆'}
+              </button>
+              <div class="space-y-3">
+                ${imgHtml}
+                <div class="flex justify-between items-start">
+                  <span class="inline-block text-[10px] bg-slate-100 text-slate-600 font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">${item.id_alat}</span>
+                   <span class="inline-block text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider ${
+                    isSteril ? 'bg-green-100 text-green-700' : 
+                    item.status_posisi.startsWith('Dipinjam') ? 'bg-indigo-100 text-indigo-700' : 'bg-yellow-100 text-yellow-700'
+                  }">
+                    ${item.status_posisi}
+                  </span>
+                </div>
+                <div>
+                  <h3 onclick="app.openDetailModal('${item.id_alat}')" class="text-base font-bold text-slate-900 hover:text-brand-500 cursor-pointer transition line-clamp-1">${item.nama_alat}</h3>
+                  <p class="text-xs text-slate-500 line-clamp-2 mt-1 min-h-[32px]">${item.deskripsi || 'Tidak ada deskripsi.'}</p>
+                </div>
+                <div class="border-t border-slate-100 pt-3 text-[11px] text-slate-400 space-y-1">
+                  <div class="flex justify-between items-center">
+                    <span>Kadaluwarsa:</span>
+                    <span class="font-bold text-slate-700">${isSterilOrBorrowed ? (item.tanggal_kadaluwarsa_steril ? this.formatDateTime(item.tanggal_kadaluwarsa_steril).split(' ')[0] : '-') : '-'}</span>
+                  </div>
+                  ${isSterilOrBorrowed && item.tanggal_kadaluwarsa_steril ? `
+                  <div class="flex justify-between items-center">
+                    <span>Sisa Aktif:</span>
+                    ${this.getRemainingDaysBadge(item.tanggal_kadaluwarsa_steril)}
+                  </div>` : ''}
+                </div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100">
+                ${actionBtnHtml}
+              </div>
+            `;
+        }
 
         // Render pagination controls
         this.renderPaginationControls('katalog-pagination', availableItems.length, this.katalogPage, this.katalogPageSize, 'changeKatalogPage');
