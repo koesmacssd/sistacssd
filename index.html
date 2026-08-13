@@ -745,7 +745,6 @@
                           <span id="sort-icon-inventaris-nama_alat" class="text-slate-400 group-hover:text-slate-600"></span>
                         </div>
                       </th>
-                      <th class="p-4">Deskripsi</th>
                       <th onclick="app.sortInventaris('status_posisi')" class="p-4 cursor-pointer hover:bg-slate-100 hover:text-slate-700 transition duration-150 group">
                         <div class="flex items-center space-x-1">
                           <span>Status</span>
@@ -4769,7 +4768,7 @@
         if (filtered.length === 0) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="9" class="p-8 text-center text-slate-500">Tidak ada alat yang cocok dengan pencarian Anda.</td>
+              <td colspan="8" class="p-8 text-center text-slate-500">Tidak ada alat yang cocok dengan pencarian Anda.</td>
             </tr>
           `;
           this.renderPaginationControls('inventaris-pagination', 0, 1, this.inventarisPageSize, 'changeInventarisPage');
@@ -4860,8 +4859,7 @@
               <input type="checkbox" class="inventaris-item-checkbox rounded text-brand-500 focus:ring-brand-500 h-4 w-4 border-slate-300 cursor-pointer" data-id="${item.id_alat}" ${isChecked} onclick="app.updateInventarisSelection()">
             </td>
             <td class="p-4"><span onclick="app.showItemHistory('${item.id_alat}')" class="font-bold text-brand-600 hover:text-brand-800 cursor-pointer hover:underline" title="Klik untuk melihat riwayat alat">${item.id_alat}</span></td>
-            <td class="p-4 flex items-center font-semibold text-slate-800">${imgHtml} <span onclick="app.openDetailModal('${item.id_alat}')" class="cursor-pointer hover:text-brand-500 hover:underline transition duration-150">${item.nama_alat}</span></td>
-            <td class="p-4 text-slate-500 text-xs truncate max-w-xs">${item.deskripsi || '-'}</td>
+            <td class="p-4 flex items-center font-semibold text-slate-800">${imgHtml} <span onclick="app.openDetailModal('${item.id_alat}')" class="cursor-pointer hover:text-brand-500 hover:underline transition duration-150" title="Klik untuk melihat detail & deskripsi alat">${item.nama_alat}</span></td>
             <td class="p-4">
               ${statusSelectHtml}
             </td>
