@@ -1624,6 +1624,7 @@
         this.isProcessingOrder = false;
         this.catalogFilter = 'all'; // 'all' | 'fav'
         this.selectedInventarisIds = []; // ID alat yang dicentang untuk cetak label
+        this.isGoogleSSOInitialized = false;
         
         // State Paginasi & Mode Tampilan
         this.katalogPage = 1;
@@ -1724,11 +1725,15 @@
           attempts++;
           if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
             try {
-              google.accounts.id.initialize({
-                client_id: '404619775216-omjf6cn7j82kdnmev20rr9vp11hr7fka.apps.googleusercontent.com',
-                callback: this.handleCredentialResponse.bind(this),
-                auto_select: false
-              });
+              if (!this.isGoogleSSOInitialized) {
+                google.accounts.id.initialize({
+                  client_id: '404619775216-omjf6cn7j82kdnmev20rr9vp11hr7fka.apps.googleusercontent.com',
+                  callback: this.handleCredentialResponse.bind(this),
+                  auto_select: false
+                });
+                this.isGoogleSSOInitialized = true;
+              }
+              btn.innerHTML = '';
               google.accounts.id.renderButton(
                 btn,
                 { theme: "outline", size: "large", width: "320" }
@@ -1754,11 +1759,6 @@
           this.checkUserStatus();
         } else {
           this.showView('login');
-          if (document.readyState === 'complete') {
-            this.initGoogleSSO();
-          } else {
-            window.addEventListener('load', () => this.initGoogleSSO());
-          }
         }
       }
 
@@ -1778,7 +1778,6 @@
         const maintScreen = document.getElementById('maintenance-screen');
         if (maintScreen) maintScreen.classList.add('hidden');
         this.showView('login');
-        this.initGoogleSSO();
         this.showToast('info', 'Anda telah keluar.');
       }
 
