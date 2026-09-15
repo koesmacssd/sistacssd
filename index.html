@@ -29,13 +29,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Google Sign-In Library -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  
   <!-- SweetAlert2 for Aesthetic Alerts -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
-  <!-- Note: SheetJS (XLSX) and HTML5-QRCode are lazy-loaded on demand to speed up initial page load by >1.1MB -->
+  <!-- Note: Google SSO (GSI), SheetJS (XLSX), and HTML5-QRCode are lazy-loaded on demand to maximize speed and eliminate COOP console warnings -->
   
   <script>
     tailwind.config = {
@@ -1715,37 +1712,34 @@
         `).join('');
       }
 
-      initGoogleSSO() {
+      async initGoogleSSO() {
         if (this.credential || this.user) return;
         const btn = document.getElementById("google-signin-btn");
         if (!btn) return;
 
-        let attempts = 0;
-        const tryRender = () => {
-          attempts++;
-          if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-            try {
-              if (!this.isGoogleSSOInitialized) {
-                google.accounts.id.initialize({
-                  client_id: '404619775216-omjf6cn7j82kdnmev20rr9vp11hr7fka.apps.googleusercontent.com',
-                  callback: this.handleCredentialResponse.bind(this),
-                  auto_select: false
-                });
-                this.isGoogleSSOInitialized = true;
-              }
-              btn.innerHTML = '';
-              google.accounts.id.renderButton(
-                btn,
-                { theme: "outline", size: "large", width: "320" }
-              );
-            } catch (e) {
-              console.warn("Google SSO Init warning:", e);
-            }
-          } else if (attempts < 20) {
-            setTimeout(tryRender, 150);
+        try {
+          if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
+            await this.loadScript('https://accounts.google.com/gsi/client');
           }
-        };
-        tryRender();
+
+          if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+            if (!this.isGoogleSSOInitialized) {
+              google.accounts.id.initialize({
+                client_id: '404619775216-omjf6cn7j82kdnmev20rr9vp11hr7fka.apps.googleusercontent.com',
+                callback: this.handleCredentialResponse.bind(this),
+                auto_select: false
+              });
+              this.isGoogleSSOInitialized = true;
+            }
+            btn.innerHTML = '';
+            google.accounts.id.renderButton(
+              btn,
+              { theme: "outline", size: "large", width: "320" }
+            );
+          }
+        } catch (e) {
+          console.warn("Google SSO Init warning:", e);
+        }
       }
 
       init() {
