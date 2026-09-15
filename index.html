@@ -32,7 +32,8 @@
   <!-- SweetAlert2 for Aesthetic Alerts -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
-  <!-- Note: Google SSO (GSI), SheetJS (XLSX), and HTML5-QRCode are lazy-loaded on demand to maximize speed and eliminate COOP console warnings -->
+  <!-- Google Sign-In Library (Prefetch for reliable SSO button rendering on mobile & desktop) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   
   <script>
     tailwind.config = {
@@ -1713,16 +1714,22 @@
       }
 
       async initGoogleSSO() {
-        if (this.credential || this.user) return;
+        if (this.user) return;
         const btn = document.getElementById("google-signin-btn");
         if (!btn) return;
 
-        try {
-          if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
-            await this.loadScript('https://accounts.google.com/gsi/client');
-          }
+        // Tampilkan placeholder loading halus jika tombol masih kosong
+        if (!btn.hasChildNodes() || btn.innerHTML.trim() === '') {
+          btn.innerHTML = `
+            <div class="h-10 w-full max-w-[320px] bg-white/5 animate-pulse rounded-full flex items-center justify-center border border-white/10 text-xs text-slate-300">
+              <span>Memuat Google Sign-In...</span>
+            </div>
+          `;
+        }
 
-          if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+        const renderBtn = () => {
+          if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) return false;
+          try {
             if (!this.isGoogleSSOInitialized) {
               google.accounts.id.initialize({
                 client_id: '404619775216-omjf6cn7j82kdnmev20rr9vp11hr7fka.apps.googleusercontent.com',
@@ -1731,15 +1738,57 @@
               });
               this.isGoogleSSOInitialized = true;
             }
+
+            // Hitung lebar tombol secara dinamis dan aman untuk mobile (200px s.d. 320px)
+            const parentWidth = btn.parentElement ? btn.parentElement.clientWidth : 0;
+            const targetWidth = Math.min(320, Math.max(200, parentWidth > 0 ? parentWidth : (window.innerWidth - 64)));
+
             btn.innerHTML = '';
             google.accounts.id.renderButton(
               btn,
-              { theme: "outline", size: "large", width: "320" }
+              { 
+                theme: "outline", 
+                size: "large", 
+                width: targetWidth.toString(),
+                text: "signin_with",
+                shape: "rectangular",
+                logo_alignment: "left"
+              }
             );
+            return true;
+          } catch (e) {
+            console.warn("Google SSO Init warning:", e);
+            return false;
+          }
+        };
+
+        // Jika library sudah siap, render langsung
+        if (renderBtn()) return;
+
+        // Jika belum siap, pastikan script dimuat
+        try {
+          if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
+            await this.loadScript('https://accounts.google.com/gsi/client');
           }
         } catch (e) {
-          console.warn("Google SSO Init warning:", e);
+          console.warn("GSI load error:", e);
         }
+
+        // Retry loop untuk koneksi mobile yang memerlukan waktu beberapa ratus ms
+        let attempts = 0;
+        const interval = setInterval(() => {
+          attempts++;
+          if (renderBtn() || attempts >= 30) {
+            clearInterval(interval);
+            if (attempts >= 30 && (!btn.hasChildNodes() || btn.innerHTML.includes('Memuat'))) {
+              btn.innerHTML = `
+                <button onclick="app.initGoogleSSO()" class="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-xs text-white flex items-center space-x-2 transition">
+                  <span>Muat Ulang Tombol Login</span>
+                </button>
+              `;
+            }
+          }
+        }, 150);
       }
 
       init() {
@@ -1948,6 +1997,9 @@
               document.getElementById('pending-email-text').innerText = res.data.email;
               this.showView('pending');
             } else {
+              // Jika token kadaluwarsa atau tidak valid, bersihkan credential lokal agar tombol login siap digunakan kembali
+              this.credential = '';
+              localStorage.removeItem('sista_credential');
               this.showToast('error', res.message || 'Terjadi kesalahan sistem.');
               this.showView('login');
             }
