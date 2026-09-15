@@ -1647,22 +1647,36 @@
         this.logsSortDir = 'desc';
       }
 
-      init() {
+      initGoogleSSO() {
+        if (this.credential || this.user) return;
+        const btn = document.getElementById("google-signin-btn");
+        if (!btn) return;
 
-        // Inisialisasi Google SSO
-        window.onload = () => {
-          if (typeof google !== 'undefined') {
-            google.accounts.id.initialize({
-              client_id: '404619775216-omjf6cn7j82kdnmev20rr9vp11hr7fka.apps.googleusercontent.com',
-              callback: this.handleCredentialResponse.bind(this)
-            });
-            google.accounts.id.renderButton(
-              document.getElementById("google-signin-btn"),
-              { theme: "outline", size: "large", width: "320" }
-            );
+        let attempts = 0;
+        const tryRender = () => {
+          attempts++;
+          if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+            try {
+              google.accounts.id.initialize({
+                client_id: '404619775216-omjf6cn7j82kdnmev20rr9vp11hr7fka.apps.googleusercontent.com',
+                callback: this.handleCredentialResponse.bind(this),
+                auto_select: false
+              });
+              google.accounts.id.renderButton(
+                btn,
+                { theme: "outline", size: "large", width: "320" }
+              );
+            } catch (e) {
+              console.warn("Google SSO Init warning:", e);
+            }
+          } else if (attempts < 20) {
+            setTimeout(tryRender, 150);
           }
         };
+        tryRender();
+      }
 
+      init() {
         // Listen hash routing
         window.addEventListener('hashchange', () => {
           this.handleHashRouting();
@@ -1673,6 +1687,11 @@
           this.checkUserStatus();
         } else {
           this.showView('login');
+          if (document.readyState === 'complete') {
+            this.initGoogleSSO();
+          } else {
+            window.addEventListener('load', () => this.initGoogleSSO());
+          }
         }
       }
 
@@ -1684,8 +1703,6 @@
         this.checkUserStatus(true);
       }
 
-
-
       // Logout dari aplikasi
       logout() {
         this.credential = '';
@@ -1694,17 +1711,29 @@
         const maintScreen = document.getElementById('maintenance-screen');
         if (maintScreen) maintScreen.classList.add('hidden');
         this.showView('login');
+        this.initGoogleSSO();
         this.showToast('info', 'Anda telah keluar.');
       }
 
       // Routing Tampilan Utama
-       showView(viewName) {
+      showView(viewName) {
         document.getElementById('view-login').classList.add('hidden');
         document.getElementById('view-register').classList.add('hidden');
         document.getElementById('view-pending').classList.add('hidden');
         document.getElementById('view-dashboard').classList.add('hidden');
 
         document.getElementById(`view-${viewName}`).classList.remove('hidden');
+
+        if (viewName === 'login') {
+          this.initGoogleSSO();
+        } else {
+          // Bersihkan tombol dan hentikan listener SSO di background saat sudah di dalam dashboard
+          const btn = document.getElementById("google-signin-btn");
+          if (btn) btn.innerHTML = '';
+          if (typeof google !== 'undefined' && google.accounts && google.accounts.id && google.accounts.id.cancel) {
+            google.accounts.id.cancel();
+          }
+        }
 
         const floatBtn = document.getElementById('floating-scan-btn');
         if (floatBtn) {
